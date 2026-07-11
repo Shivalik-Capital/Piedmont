@@ -1,331 +1,210 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import PriceChart from './components/PriceChart';
 
 interface IndexData {
-  id: string;
+  symbol: string;
   name: string;
   exchange: string;
-  symbol: string;
   price: number;
-  previous_close: number;
   change: number;
   change_pct: number;
+  previous_close: number;
 }
 
 interface MarketResponse {
-  indices: {
-    nifty50: IndexData;
-    sensex: IndexData;
-    banknifty: IndexData;
-  };
-  meta: {
-    source: string;
-    fetched_at: string;
-    timezone: string;
-  };
+  indices: Record<string, IndexData>;
+  meta: { source: string; fetched_at: string; timezone: string };
 }
 
-const API_BASE_URL = 'http://localhost:8000';
-
-const indexOrder = ['nifty50', 'sensex', 'banknifty'] as const;
-
-const nextModules = [
-  'Sector indices',
-  'Macro dashboard',
-  'Company analytics',
-  'Watchlists',
-  'AI summaries',
-];
-
-function formatNumber(value: number) {
-  return value.toLocaleString('en-IN', {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-  });
+interface SectorResponse {
+  sectors: Record<string, IndexData>;
+  meta: { source: string; fetched_at: string; timezone: string };
 }
 
-function formatSigned(value: number) {
-  const sign = value >= 0 ? '+' : '';
-  return `${sign}${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+interface SelectedIndex {
+  symbol: string;
+  name: string;
 }
 
-function formatTimestamp(value?: string) {
-  if (!value) {
-    return 'Connecting...';
-  }
-
-  return new Intl.DateTimeFormat('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    timeZone: 'Asia/Kolkata',
-    timeZoneName: 'short',
-  }).format(new Date(value));
-}
-
-function ChangePill({ change, pct }: { change: number; pct: number }) {
-  const isUp = change >= 0;
-
+function LiveDot() {
   return (
-    <span
-      className={`inline-flex min-h-8 items-center justify-center rounded-md border px-3 font-mono text-sm font-semibold tabular-nums ${
-        isUp
-          ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
-          : 'border-rose-400/30 bg-rose-400/10 text-rose-300'
-      }`}
-    >
-      {formatSigned(change)} / {isUp ? '+' : ''}
-      {pct.toFixed(2)}%
+    <span className="relative flex h-2 w-2">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
     </span>
   );
 }
 
-function LoadingPanel() {
+function IndexCard({ data, onClick }: { data: IndexData; onClick: () => void }) {
+  const isPositive = data.change >= 0;
   return (
-    <section className="grid grid-cols-1 gap-4 lg:grid-cols-3" aria-label="Loading market data">
-      {[0, 1, 2].map((item) => (
-        <div
-          key={item}
-          className="h-52 animate-pulse rounded-lg border border-white/10 bg-white/[0.04] p-5"
-        >
-          <div className="h-3 w-24 rounded bg-white/10" />
-          <div className="mt-8 h-9 w-40 rounded bg-white/10" />
-          <div className="mt-5 h-8 w-32 rounded bg-white/10" />
+    <div
+      onClick={onClick}
+      className="bg-[#0F1520] border border-[#1C2840] rounded-lg p-5 flex flex-col gap-3 hover:border-amber-500/50 transition-colors cursor-pointer"
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">
+            {data.exchange} / {data.symbol}
+          </p>
+          <p className="text-sm font-semibold text-slate-200">{data.name}</p>
         </div>
-      ))}
-    </section>
+        <span className={`text-[10px] px-2 py-0.5 rounded font-medium ${isPositive ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`}>
+          {isPositive ? '▲' : '▼'} {Math.abs(data.change_pct)}%
+        </span>
+      </div>
+      <p className="text-2xl font-bold text-slate-100 tabular-nums">
+        {data.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      </p>
+      <div className="flex items-center justify-between text-xs tabular-nums">
+        <span className={isPositive ? 'text-emerald-400' : 'text-red-400'}>
+          {isPositive ? '+' : ''}{data.change.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+        <span className="text-slate-600">
+          Prev {data.previous_close.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+      </div>
+      <p className="text-[10px] text-slate-600">Click to view chart</p>
+    </div>
   );
 }
 
-function IndexCard({ data }: { data: IndexData }) {
-  const isUp = data.change >= 0;
-
+function SectorCard({ data }: { data: IndexData }) {
+  const isPositive = data.change >= 0;
   return (
-    <article className="rounded-lg border border-white/10 bg-[#131929] p-5 shadow-2xl shadow-black/20">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-mono text-xs font-semibold uppercase text-slate-500">
-            {data.exchange} / {data.symbol}
-          </p>
-          <h3 className="mt-2 text-lg font-semibold text-white">{data.name}</h3>
-        </div>
-        <span
-          className={`mt-1 h-2.5 w-2.5 rounded-full ${
-            isUp ? 'bg-emerald-300' : 'bg-rose-300'
-          }`}
-          aria-label={isUp ? 'Index is up' : 'Index is down'}
-        />
+    <div className="bg-[#0F1520] border border-[#1C2840] rounded-lg px-4 py-3 flex items-center justify-between hover:border-[#2A3F60] transition-colors">
+      <div>
+        <p className="text-xs font-medium text-slate-300">{data.name}</p>
+        <p className="text-sm font-bold text-slate-100 tabular-nums mt-0.5">
+          {data.price?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '—'}
+        </p>
       </div>
-
-      <p className="mt-7 font-mono text-4xl font-semibold tabular-nums text-white">
-        {formatNumber(data.price)}
-      </p>
-
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-        <ChangePill change={data.change} pct={data.change_pct} />
-        <div className="text-right">
-          <p className="font-mono text-sm text-slate-300">
-            {formatNumber(data.previous_close)}
-          </p>
-          <p className="text-xs text-slate-500">Previous close</p>
-        </div>
-      </div>
-    </article>
+      <span className={`text-xs font-semibold tabular-nums ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+        {isPositive ? '+' : ''}{data.change_pct}%
+      </span>
+    </div>
   );
 }
 
 export default function Home() {
   const [market, setMarket] = useState<MarketResponse | null>(null);
+  const [sectors, setSectors] = useState<SectorResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [selected, setSelected] = useState<SelectedIndex | null>(null);
+
+  const fetchAll = () => {
+    Promise.all([
+      fetch('http://localhost:8000/api/market/indices').then(r => r.json()),
+      fetch('http://localhost:8000/api/market/sectors').then(r => r.json()),
+    ]).then(([marketData, sectorData]) => {
+      setMarket(marketData);
+      setSectors(sectorData);
+      setLastUpdated(new Date().toLocaleTimeString('en-IN', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
+      }));
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  };
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/market/indices`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Market API unavailable');
-        }
-
-        return res.json();
-      })
-      .then((data: MarketResponse) => {
-        setMarket(data);
-        setError(null);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Failed to load market data');
-        setLoading(false);
-      });
+    fetchAll();
+    const interval = setInterval(fetchAll, 60000);
+    return () => clearInterval(interval);
   }, []);
 
-  const indices = useMemo(
-    () => (market ? indexOrder.map((key) => market.indices[key]) : []),
-    [market],
-  );
+  const indices = market ? Object.values(market.indices) : [];
+  const sectorList = sectors ? Object.values(sectors.sectors) : [];
 
-  const positiveCount = indices.filter((index) => index.change >= 0).length;
-  const marketTone =
-    indices.length === 0
-      ? 'Pending'
-      : positiveCount >= 2
-        ? 'Positive'
-        : positiveCount === 1
-          ? 'Mixed'
-          : 'Negative';
+ const handleIndexClick = (data: IndexData) => {
+  const symbolToKey: Record<string, string> = {
+    '^NSEI': 'nifty50',
+    '^BSESN': 'sensex',
+    '^NSEBANK': 'banknifty',
+  };
+  const key = symbolToKey[data.symbol] ?? data.symbol.replace('^', '').toLowerCase();
+  setSelected({ symbol: key, name: data.name });
+};
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#0a0e1a] text-slate-100">
-      <div className="h-1 w-full bg-amber-500" />
-      <section className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-4 border-b border-white/10 pb-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-amber-400/40 bg-amber-400/10 text-lg font-black text-amber-300">
-              P
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold tracking-normal text-white sm:text-3xl">
-                Piedmont
-              </h1>
-              <p className="text-sm text-slate-400">Indian Financial Intelligence</p>
-            </div>
+    <div className="min-h-screen bg-[#080C14]">
+      <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
+
+      <nav className="border-b border-[#1C2840] px-8 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 bg-amber-500 rounded flex items-center justify-center">
+            <span className="text-black text-xs font-black">P</span>
           </div>
-
-          <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 sm:flex sm:items-center">
-            <div className="flex items-center gap-2 rounded-md border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 font-mono font-semibold text-emerald-300">
-              <span className="h-2 w-2 rounded-full bg-emerald-300" />
-              LIVE
-            </div>
-            <div className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 font-mono text-slate-300">
-              {formatTimestamp(market?.meta.fetched_at)}
-            </div>
+          <div>
+            <span className="text-sm font-bold text-slate-100 tracking-tight">Piedmont</span>
+            <span className="text-xs text-slate-600 ml-2">Indian Financial Intelligence</span>
           </div>
-        </header>
-
-        <div className="grid flex-1 grid-cols-1 gap-5 py-5 xl:grid-cols-[1fr_340px]">
-          <div className="space-y-5">
-            <section className="flex flex-col gap-4 rounded-lg border border-white/10 bg-[#131929] p-5 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="font-mono text-xs font-semibold uppercase text-amber-300">
-                  V1 Market Dashboard
-                </p>
-                <h2 className="mt-2 text-3xl font-semibold text-white sm:text-4xl">
-                  India indices at a glance
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-                  Live index data for the first Piedmont release. Future market modules
-                  will build on this API and interface foundation.
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div>
-                  <p className="font-mono text-xl font-semibold text-white">{indices.length || 3}</p>
-                  <p className="text-xs text-slate-500">Indices</p>
-                </div>
-                <div>
-                  <p
-                    className={`font-mono text-xl font-semibold ${
-                      marketTone === 'Negative' ? 'text-rose-300' : 'text-emerald-300'
-                    }`}
-                  >
-                    {marketTone}
-                  </p>
-                  <p className="text-xs text-slate-500">Tone</p>
-                </div>
-                <div>
-                  <p className="font-mono text-xl font-semibold text-amber-300">IST</p>
-                  <p className="text-xs text-slate-500">Session</p>
-                </div>
-              </div>
-            </section>
-
-            {loading && <LoadingPanel />}
-            {error && (
-              <div className="rounded-lg border border-rose-400/30 bg-rose-400/10 p-5 text-rose-200">
-                {error}. Make sure the backend is running on port 8000.
-              </div>
-            )}
-
-            {indices.length > 0 && (
-              <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                {indices.map((index) => (
-                  <IndexCard key={index.id} data={index} />
-                ))}
-              </section>
-            )}
-
-            <section className="rounded-lg border border-white/10 bg-[#131929] p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">Coverage</h2>
-                  <p className="text-sm text-slate-500">
-                    V1 only shows markets backed by the current API response.
-                  </p>
-                </div>
-                <span className="rounded-md border border-amber-400/30 px-3 py-1 font-mono text-xs text-amber-300">
-                  Real data only
-                </span>
-              </div>
-
-              <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
-                {indices.map((index) => (
-                  <div key={index.id} className="rounded-md border border-white/10 bg-[#0a0e1a] p-4">
-                    <p className="font-mono text-xs text-slate-500">{index.symbol}</p>
-                    <p className="mt-1 font-semibold text-white">{index.name}</p>
-                    <p className="mt-2 text-sm text-slate-400">{index.exchange}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-
-          <aside className="space-y-5">
-            <section className="rounded-lg border border-white/10 bg-[#131929] p-5">
-              <h2 className="text-lg font-semibold text-white">Data Status</h2>
-              <div className="mt-5 space-y-4">
-                <div className="border-b border-white/10 pb-4">
-                  <p className="text-sm text-slate-500">Source</p>
-                  <p className="mt-1 font-mono text-sm text-slate-200">
-                    {market?.meta.source || 'Waiting for backend'}
-                  </p>
-                </div>
-                <div className="border-b border-white/10 pb-4">
-                  <p className="text-sm text-slate-500">Last fetched</p>
-                  <p className="mt-1 font-mono text-sm text-slate-200">
-                    {formatTimestamp(market?.meta.fetched_at)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500">API</p>
-                  <p className="mt-1 font-mono text-sm text-slate-200">
-                    /api/market/indices
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-lg border border-white/10 bg-[#131929] p-5">
-              <h2 className="text-lg font-semibold text-white">Next Modules</h2>
-              <div className="mt-5 space-y-3">
-                {nextModules.map((module) => (
-                  <div
-                    key={module}
-                    className="flex min-h-10 items-center justify-between border-b border-white/10 pb-3 last:border-0 last:pb-0"
-                  >
-                    <span className="text-sm text-slate-300">{module}</span>
-                    <span className="rounded border border-white/10 px-2 py-1 font-mono text-[11px] text-slate-500">
-                      queued
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </aside>
         </div>
-      </section>
-    </main>
+        <div className="flex items-center gap-3">
+          {lastUpdated && <span className="text-xs text-slate-600">{lastUpdated} IST</span>}
+          <div className="flex items-center gap-1.5 bg-emerald-950 border border-emerald-900 rounded px-2 py-1">
+            <LiveDot />
+            <span className="text-xs text-emerald-400 font-medium">LIVE</span>
+          </div>
+        </div>
+      </nav>
+
+      <main className="px-8 py-8 max-w-6xl mx-auto space-y-10">
+        {loading && (
+          <div className="flex items-center gap-2 text-slate-500">
+            <div className="w-3 h-3 border border-slate-600 border-t-amber-500 rounded-full animate-spin" />
+            <span className="text-sm">Fetching market data...</span>
+          </div>
+        )}
+
+        {indices.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Major Indices</h2>
+              <div className="flex-1 h-[1px] bg-[#1C2840]" />
+              <span className="text-xs text-slate-600">{market?.meta.fetched_at}</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {indices.map(index => (
+                <IndexCard
+                  key={index.symbol}
+                  data={index}
+                  onClick={() => handleIndexClick(index)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {sectorList.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Sector Performance</h2>
+              <div className="flex-1 h-[1px] bg-[#1C2840]" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {sectorList.map(sector => (
+                <SectorCard key={sector.symbol} data={sector} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div className="border-t border-[#1C2840] pt-4 flex items-center justify-between">
+          <span className="text-xs text-slate-700">Data via Yahoo Finance · 15-min delay · Not financial advice</span>
+          <span className="text-xs text-slate-700">Piedmont V1</span>
+        </div>
+      </main>
+
+      {selected && (
+        <PriceChart
+          symbol={selected.symbol}
+          name={selected.name}
+          onClose={() => setSelected(null)}
+        />
+      )}
+    </div>
   );
 }
