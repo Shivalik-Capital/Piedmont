@@ -97,8 +97,8 @@ export default function Home() {
 
   const fetchAll = () => {
     Promise.all([
-      fetch('http://localhost:8000/api/market/indices').then(r => r.json()),
-      fetch('http://localhost:8000/api/market/sectors').then(r => r.json()),
+      ${process.env.NEXT_PUBLIC_API_URL}
+      ${process.env.NEXT_PUBLIC_API_URL}
     ]).then(([marketData, sectorData]) => {
       setMarket(marketData);
       setSectors(sectorData);
