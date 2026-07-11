@@ -95,19 +95,21 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [selected, setSelected] = useState<SelectedIndex | null>(null);
 
-  const fetchAll = () => {
-    Promise.all([
-      ${process.env.NEXT_PUBLIC_API_URL}
-      ${process.env.NEXT_PUBLIC_API_URL}
-    ]).then(([marketData, sectorData]) => {
-      setMarket(marketData);
-      setSectors(sectorData);
-      setLastUpdated(new Date().toLocaleTimeString('en-IN', {
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
-      }));
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  };
+  const API = process.env.NEXT_PUBLIC_API_URL;
+
+const fetchAll = () => {
+  Promise.all([
+    fetch(API + '/api/market/indices').then(r => r.json()),
+    fetch(API + '/api/market/sectors').then(r => r.json()),
+  ]).then(([marketData, sectorData]) => {
+    setMarket(marketData);
+    setSectors(sectorData);
+    setLastUpdated(new Date().toLocaleTimeString('en-IN', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
+    }));
+    setLoading(false);
+  }).catch(() => setLoading(false));
+};
 
   useEffect(() => {
     fetchAll();
