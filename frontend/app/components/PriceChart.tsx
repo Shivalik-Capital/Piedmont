@@ -22,7 +22,7 @@ export default function PriceChart({ symbol, name, onClose }: PriceChartProps) {
   useEffect(() => {
     setLoading(true);
     setData([]);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/market/indices/${symbol}/history?period=${period}`)
+    fetch(process.env.NEXT_PUBLIC_API_URL + '/api/market/history/' + symbol + '?period=' + period)
       .then(r => r.json())
       .then(res => {
         setData(res.data ?? []);
