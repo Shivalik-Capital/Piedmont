@@ -55,7 +55,7 @@ export default function PriceChart({ symbol, name, onClose }: PriceChartProps) {
       });
 
       const series = chart.addLineSeries({
-        color: '#F59E0B',
+        color: '#3B82F6',
         lineWidth: 2,
       });
 
@@ -85,7 +85,7 @@ export default function PriceChart({ symbol, name, onClose }: PriceChartProps) {
                 <button
                   key={p}
                   onClick={() => setPeriod(p)}
-                  className={`text-xs px-2 py-1 rounded ${period === p ? 'bg-amber-500 text-black font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
+                  className={`text-xs px-2 py-1 rounded ${period === p ? 'bg-blue-500 text-white font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
                 >
                   {p}
                 </button>
@@ -102,7 +102,7 @@ export default function PriceChart({ symbol, name, onClose }: PriceChartProps) {
 
         {loading ? (
           <div className="h-[300px] flex items-center justify-center">
-            <div className="w-4 h-4 border border-slate-600 border-t-amber-500 rounded-full animate-spin" />
+            <div className="w-4 h-4 border border-slate-600 border-t-blue-400 rounded-full animate-spin" />
           </div>
         ) : (
           <div ref={chartRef} className="w-full h-[300px]" />
