@@ -120,6 +120,50 @@ def get_commodities(request: Request):
             result["commodities"][key] = {**config, "price": None, "change": None, "change_pct": None, "previous_close": None}
     return result
 
+fii_dii_cache = {
+    "data": None,
+    "last_fetched": None
+}
+
+def get_fii_dii_data():
+    now = datetime.now(IST)
+    if fii_dii_cache["data"] and fii_dii_cache["last_fetched"]:
+        if (now - fii_dii_cache["last_fetched"]).total_seconds() < 21600:
+            return fii_dii_cache["data"]
+            
+    try:
+        url = "https://www.nseindia.com/api/fiidiiTradeReact"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': '*/*',
+            'Accept-Language': 'en-US,en;q=0.9',
+        }
+        session = requests.Session()
+        session.get("https://www.nseindia.com/", headers=headers, timeout=10)
+        res = session.get(url, headers=headers, timeout=10)
+        data = res.json()
+        
+        fii_val, dii_val, date_str = "N/A", "N/A", ""
+        
+        for item in data:
+            if item.get("category") == "FII/FPI":
+                net = float(item.get("netValue", 0))
+                fii_val = f"₹{net:,.2f} Cr"
+                date_str = item.get("date", "")
+            elif item.get("category") == "DII":
+                net = float(item.get("netValue", 0))
+                dii_val = f"₹{net:,.2f} Cr"
+                
+        result = {
+            "fii": {"name": "FII Flows (Cash)", "value": fii_val, "trend": "Up" if not fii_val.startswith("₹-") else "Down", "date": date_str},
+            "dii": {"name": "DII Flows (Cash)", "value": dii_val, "trend": "Up" if not dii_val.startswith("₹-") else "Down", "date": date_str}
+        }
+        fii_dii_cache["data"] = result
+        fii_dii_cache["last_fetched"] = now
+        return result
+    except Exception:
+        return None
+
 @app.get("/api/market/macro")
 @limiter.limit("60/minute")
 def get_macro(request: Request):
@@ -188,8 +232,14 @@ def get_macro(request: Request):
             indicators["fiscal_deficit"] = macro_data["domestic_macro"]["fiscal_deficit"]
 
             # Markets
-            indicators["fii_flows"] = macro_data["market_liquidity"]["fii_flows"]
-            indicators["dii_flows"] = macro_data["market_liquidity"]["dii_flows"]
+            fii_dii = get_fii_dii_data()
+            if fii_dii:
+                indicators["fii_flows"] = fii_dii["fii"]
+                indicators["dii_flows"] = fii_dii["dii"]
+            else:
+                indicators["fii_flows"] = macro_data["market_liquidity"]["fii_flows"]
+                indicators["dii_flows"] = macro_data["market_liquidity"]["dii_flows"]
+                
             indicators["borrowing_cal"] = macro_data["market_liquidity"]["borrowing_cal"]
             indicators["econ_cal"] = macro_data["market_liquidity"]["econ_cal"]
     except Exception:
