@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 import yfinance as yf
 from datetime import datetime
 import pytz
-
+import requests
+import json
+import os
 app = FastAPI(title="Piedmont API")
 
 app.add_middleware(
@@ -33,6 +35,13 @@ SECTOR_SYMBOLS = {
     "nifty_fmcg": {"symbol": "^CNXFMCG", "name": "Nifty FMCG", "exchange": "NSE"},
     "nifty_metal": {"symbol": "^CNXMETAL", "name": "Nifty Metal", "exchange": "NSE"},
     "nifty_realty": {"symbol": "^CNXREALTY", "name": "Nifty Realty", "exchange": "NSE"},
+}
+
+COMMODITY_SYMBOLS = {
+    "usd_inr": {"symbol": "INR=X", "name": "USD/INR", "exchange": "FOREX"},
+    "gold": {"symbol": "GC=F", "name": "Gold", "exchange": "COMEX"},
+    "crude_oil": {"symbol": "CL=F", "name": "Crude Oil", "exchange": "NYMEX"},
+    "10y_gsec": {"symbol": "NIFTYGS10YR.NS", "name": "10Y G-Sec Index", "exchange": "NSE"},
 }
 
 def fetch_quote(symbol: str) -> dict:
@@ -87,6 +96,100 @@ def get_sectors():
             result["sectors"][key] = {**config, "price": None, "change": None, "change_pct": None, "previous_close": None}
     return result
 
+@app.get("/api/market/commodities")
+def get_commodities():
+    result = {"commodities": {}, "meta": {
+        "source": "Yahoo Finance via yfinance",
+        "fetched_at": datetime.now(IST).strftime("%-d %b at %I:%M:%S %p IST"),
+        "timezone": "IST"
+    }}
+    for key, config in COMMODITY_SYMBOLS.items():
+        try:
+            quote = fetch_quote(config["symbol"])
+            result["commodities"][key] = {**config, **quote}
+        except Exception:
+            result["commodities"][key] = {**config, "price": None, "change": None, "change_pct": None, "previous_close": None}
+    return result
+
+@app.get("/api/market/macro")
+def get_macro():
+    indicators = {}
+
+    headers = {'User-Agent': 'Piedmont-App/1.0'}
+
+    # Fetch GDP
+    try:
+        res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/NY.GDP.MKTP.KD.ZG?format=json&per_page=1", headers=headers, timeout=5)
+        data = res.json()
+        val = round(data[1][0]['value'], 2)
+        indicators["gdp"] = {"name": "GDP Growth", "value": f"{val}%", "trend": "Up"}
+    except Exception:
+        indicators["gdp"] = {"name": "GDP Growth", "value": "N/A", "trend": "Stable"}
+
+    # Fetch CPI
+    try:
+        res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/FP.CPI.TOTL.ZG?format=json&per_page=1", headers=headers, timeout=5)
+        data = res.json()
+        val = round(data[1][0]['value'], 2)
+        indicators["inflation"] = {"name": "CPI Inflation", "value": f"{val}%", "trend": "Stable"}
+    except Exception:
+        indicators["inflation"] = {"name": "CPI Inflation", "value": "N/A", "trend": "Stable"}
+
+    # Fetch Forex Reserves
+    try:
+        res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/FI.RES.TOTL.CD?format=json&per_page=1", headers=headers, timeout=5)
+        data = res.json()
+        val = data[1][0]['value']
+        # Convert to Billions
+        val_b = round(val / 1e9, 1)
+        indicators["forex"] = {"name": "Forex Reserves", "value": f"${val_b}B", "trend": "Up"}
+    except Exception:
+        indicators["forex"] = {"name": "Forex Reserves", "value": "N/A", "trend": "Stable"}
+
+    # Fetch Current Account
+    try:
+        res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/BN.CAB.XOKA.CD?format=json&per_page=1", headers=headers, timeout=5)
+        data = res.json()
+        val = data[1][0]['value']
+        # Convert to Billions
+        val_b = round(val / 1e9, 2)
+        indicators["current_account"] = {"name": "Current Account", "value": f"${val_b}B", "trend": "Down"}
+    except Exception:
+        indicators["current_account"] = {"name": "Current Account", "value": "N/A", "trend": "Stable"}
+
+    # Fetch static macro data
+    try:
+        file_path = os.path.join(os.path.dirname(__file__), "data", "macro_data.json")
+        with open(file_path, "r") as f:
+            macro_data = json.load(f)
+            # RBI
+            indicators["rbi_repo"] = macro_data["rbi_rates"]["repo_rate"]
+            indicators["reverse_repo"] = macro_data["rbi_rates"]["reverse_repo"]
+            indicators["sdf"] = macro_data["rbi_rates"]["sdf"]
+            
+            # Domestic
+            indicators["wpi"] = macro_data["domestic_macro"]["wpi"]
+            indicators["pmi"] = macro_data["domestic_macro"]["pmi"]
+            indicators["iip"] = macro_data["domestic_macro"]["iip"]
+            indicators["fiscal_deficit"] = macro_data["domestic_macro"]["fiscal_deficit"]
+
+            # Markets
+            indicators["fii_flows"] = macro_data["market_liquidity"]["fii_flows"]
+            indicators["dii_flows"] = macro_data["market_liquidity"]["dii_flows"]
+            indicators["borrowing_cal"] = macro_data["market_liquidity"]["borrowing_cal"]
+            indicators["econ_cal"] = macro_data["market_liquidity"]["econ_cal"]
+    except Exception:
+        pass # If file fails, we just don't add these keys
+
+    result = {
+        "indicators": indicators,
+        "meta": {
+            "source": "World Bank API & RBI / Static",
+            "fetched_at": datetime.now(IST).strftime("%-d %b at %I:%M:%S %p IST"),
+            "timezone": "IST"
+        }
+    }
+    return result
 @app.get("/api/market/history/{symbol}")
 def get_history(symbol: str, period: str = "1mo"):
     valid_periods = ["1mo", "3mo", "6mo", "1y"]
@@ -94,7 +197,8 @@ def get_history(symbol: str, period: str = "1mo"):
         raise HTTPException(status_code=400, detail=f"Period must be one of {valid_periods}")
     
     symbol_map = {**{k: v["symbol"] for k, v in INDEX_SYMBOLS.items()},
-                  **{k: v["symbol"] for k, v in SECTOR_SYMBOLS.items()}}
+                  **{k: v["symbol"] for k, v in SECTOR_SYMBOLS.items()},
+                  **{k: v["symbol"] for k, v in COMMODITY_SYMBOLS.items()}}
     
     if symbol not in symbol_map:
         raise HTTPException(status_code=404, detail=f"Symbol '{symbol}' not found")

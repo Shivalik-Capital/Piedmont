@@ -1,0 +1,63 @@
+{
+  "rbi_rates": {
+    "repo_rate": {
+      "name": "RBI Repo Rate",
+      "value": "6.50%",
+      "trend": "Stable"
+    },
+    "reverse_repo": {
+      "name": "Reverse Repo",
+      "value": "3.35%",
+      "trend": "Stable"
+    },
+    "sdf": {
+      "name": "Standing Deposit Facility",
+      "value": "6.25%",
+      "trend": "Stable"
+    }
+  },
+  "domestic_macro": {
+    "wpi": {
+      "name": "WPI Inflation",
+      "value": "0.53%",
+      "trend": "Down"
+    },
+    "pmi": {
+      "name": "Manufacturing PMI",
+      "value": "59.1",
+      "trend": "Up"
+    },
+    "iip": {
+      "name": "IIP Growth",
+      "value": "5.7%",
+      "trend": "Up"
+    },
+    "fiscal_deficit": {
+      "name": "Fiscal Deficit",
+      "value": "5.6%",
+      "trend": "Stable"
+    }
+  },
+  "market_liquidity": {
+    "fii_flows": {
+      "name": "FII Flows (MTD)",
+      "value": "₹12,450 Cr",
+      "trend": "Up"
+    },
+    "dii_flows": {
+      "name": "DII Flows (MTD)",
+      "value": "₹21,100 Cr",
+      "trend": "Up"
+    },
+    "borrowing_cal": {
+      "name": "Govt Borrowing",
+      "value": "₹7.5L Cr",
+      "trend": "Stable"
+    },
+    "econ_cal": {
+      "name": "Next Event",
+      "value": "RBI MPC",
+      "trend": "Stable"
+    }
+  }
+}

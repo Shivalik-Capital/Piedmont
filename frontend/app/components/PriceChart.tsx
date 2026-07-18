@@ -20,20 +20,29 @@ export default function PriceChart({ symbol, name, onClose }: PriceChartProps) {
   const [period, setPeriod] = useState('1mo');
 
   useEffect(() => {
-    setLoading(true);
-    setData([]);
-    fetch(process.env.NEXT_PUBLIC_API_URL + '/api/market/history/' + symbol + '?period=' + period)
-      .then(r => r.json())
-      .then(res => {
-        setData(res.data ?? []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    let isMounted = true;
+    const fetchData = async () => {
+      setLoading(true);
+      setData([]);
+      try {
+        const r = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/market/history/' + symbol + '?period=' + period);
+        const res = await r.json();
+        if (isMounted) {
+          setData(res.data ?? []);
+          setLoading(false);
+        }
+      } catch {
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchData();
+    return () => { isMounted = false; };
   }, [symbol, period]);
 
   useEffect(() => {
     if (!chartRef.current || !data || data.length === 0) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let chart: any;
 
     import('lightweight-charts').then(({ createChart, ColorType, LineStyle }) => {

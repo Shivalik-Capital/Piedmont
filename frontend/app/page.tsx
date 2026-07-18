@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import PriceChart from './components/PriceChart';
 
 interface IndexData {
@@ -20,6 +20,22 @@ interface MarketResponse {
 
 interface SectorResponse {
   sectors: Record<string, IndexData>;
+  meta: { source: string; fetched_at: string; timezone: string };
+}
+
+interface CommodityResponse {
+  commodities: Record<string, IndexData>;
+  meta: { source: string; fetched_at: string; timezone: string };
+}
+
+interface MacroIndicator {
+  name: string;
+  value: string;
+  trend: string;
+}
+
+interface MacroResponse {
+  indicators: Record<string, MacroIndicator>;
   meta: { source: string; fetched_at: string; timezone: string };
 }
 
@@ -88,37 +104,84 @@ function SectorCard({ data }: { data: IndexData }) {
   );
 }
 
+function CommodityCard({ data }: { data: IndexData }) {
+  const isPositive = data.change >= 0;
+  return (
+    <div className="bg-[#0F1520] border border-[#1C2840] rounded-lg px-4 py-3 flex items-center justify-between hover:border-[#2A3F60] transition-colors">
+      <div>
+        <p className="text-xs font-medium text-slate-300">{data.name}</p>
+        <p className="text-sm font-bold text-amber-400 tabular-nums mt-0.5">
+          {data.price?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '—'}
+        </p>
+      </div>
+      <span className={`text-xs font-semibold tabular-nums ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+        {isPositive ? '+' : ''}{data.change_pct}%
+      </span>
+    </div>
+  );
+}
+
+function MacroCard({ data }: { data: MacroIndicator }) {
+  const trendColor = data.trend === 'Up' ? 'text-emerald-400' : data.trend === 'Down' ? 'text-red-400' : 'text-slate-400';
+  return (
+    <div className="bg-[#0F1520] border border-[#1C2840] rounded-lg px-4 py-3 flex items-center justify-between hover:border-[#2A3F60] transition-colors">
+      <p className="text-xs font-medium text-slate-300">{data.name}</p>
+      <div className="flex items-center gap-2">
+        <p className="text-sm font-bold text-slate-100 tabular-nums">
+          {data.value}
+        </p>
+        <span className={`text-xs ${trendColor}`}>
+          {data.trend === 'Up' ? '▲' : data.trend === 'Down' ? '▼' : '▬'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [market, setMarket] = useState<MarketResponse | null>(null);
   const [sectors, setSectors] = useState<SectorResponse | null>(null);
+  const [commodities, setCommodities] = useState<CommodityResponse | null>(null);
+  const [macro, setMacro] = useState<MacroResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [selected, setSelected] = useState<SelectedIndex | null>(null);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
-const fetchAll = () => {
-  Promise.all([
-    fetch(API + '/api/market/indices').then(r => r.json()),
-    fetch(API + '/api/market/sectors').then(r => r.json()),
-  ]).then(([marketData, sectorData]) => {
-    setMarket(marketData);
-    setSectors(sectorData);
-    setLastUpdated(new Date().toLocaleTimeString('en-IN', {
-      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
-    }));
-    setLoading(false);
-  }).catch(() => setLoading(false));
-};
+  const fetchAll = useCallback(() => {
+    Promise.all([
+      fetch(API + '/api/market/indices').then(r => r.json()),
+      fetch(API + '/api/market/sectors').then(r => r.json()),
+      fetch(API + '/api/market/commodities').then(r => r.json()),
+      fetch(API + '/api/market/macro').then(r => r.json()),
+    ]).then(([marketData, sectorData, commodityData, macroData]) => {
+      setMarket(marketData);
+      setSectors(sectorData);
+      setCommodities(commodityData);
+      setMacro(macroData);
+      setLastUpdated(new Date().toLocaleTimeString('en-IN', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
+      }));
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [API]);
 
   useEffect(() => {
     fetchAll();
     const interval = setInterval(fetchAll, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchAll]);
 
   const indices = market ? Object.values(market.indices) : [];
   const sectorList = sectors ? Object.values(sectors.sectors) : [];
+  const commodityList = commodities ? Object.values(commodities.commodities) : [];
+  const macroIndicators = macro?.indicators || {};
+
+  const rbiRates = ['rbi_repo', 'reverse_repo', 'sdf'].map(k => macroIndicators[k]).filter(Boolean);
+  const domesticMacro = ['gdp', 'inflation', 'wpi', 'pmi', 'iip', 'fiscal_deficit'].map(k => macroIndicators[k]).filter(Boolean);
+  const externalSector = ['forex', 'current_account', 'fii_flows', 'dii_flows'].map(k => macroIndicators[k]).filter(Boolean);
+  const calendars = ['borrowing_cal', 'econ_cal'].map(k => macroIndicators[k]).filter(Boolean);
 
   const handleIndexClick = (data: IndexData) => {
     const symbolToKey: Record<string, string> = {
@@ -194,9 +257,78 @@ const fetchAll = () => {
           </section>
         )}
 
+        {commodityList.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Commodities, Forex & Bonds</h2>
+              <div className="flex-1 h-[1px] bg-[#1C2840]" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {commodityList.map(commodity => (
+                <CommodityCard key={commodity.symbol} data={commodity} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {Object.keys(macroIndicators).length > 0 && (
+          <section className="space-y-8">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Central Bank & Rates</h2>
+                <div className="flex-1 h-[1px] bg-[#1C2840]" />
+                <span className="text-xs text-slate-600">RBI</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {rbiRates.map((indicator, idx) => (
+                  <MacroCard key={idx} data={indicator} />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Domestic Macro Economy</h2>
+                <div className="flex-1 h-[1px] bg-[#1C2840]" />
+                <span className="text-xs text-slate-600">World Bank / Static</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {domesticMacro.map((indicator, idx) => (
+                  <MacroCard key={idx} data={indicator} />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest">External Sector & Flows</h2>
+                <div className="flex-1 h-[1px] bg-[#1C2840]" />
+                <span className="text-xs text-slate-600">World Bank / Static</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {externalSector.map((indicator, idx) => (
+                  <MacroCard key={idx} data={indicator} />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Calendars & Events</h2>
+                <div className="flex-1 h-[1px] bg-[#1C2840]" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {calendars.map((indicator, idx) => (
+                  <MacroCard key={idx} data={indicator} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         <div className="border-t border-[#1C2840] pt-4 flex items-center justify-between">
           <span className="text-xs text-slate-700">Data via Yahoo Finance · 15-min delay · Not financial advice</span>
-          <span className="text-xs text-slate-700">Piedmont V1</span>
+          <span className="text-xs text-slate-700">Piedmont V2</span>
         </div>
       </main>
 
