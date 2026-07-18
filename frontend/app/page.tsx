@@ -706,7 +706,7 @@ export default function Home() {
         {/* Footer */}
         <div className="border-t border-white/5 pt-6 flex items-center justify-between mt-16">
           <span className="text-xs text-on-surface-variant/60">
-            Data via Yahoo Finance · World Bank · 15-min delay · Not financial advice
+            Data via Yahoo Finance, World Bank, NSE · Equities 15-min delay · Macro updates daily · Not financial advice
           </span>
           <span className="text-xs text-primary/60 font-bold tracking-widest">PIEDMONT V2.0</span>
         </div>

@@ -248,7 +248,7 @@ def get_macro(request: Request):
     result = {
         "indicators": indicators,
         "meta": {
-            "source": "World Bank API & RBI / Static",
+            "source": "World Bank, RBI, NSE (Updates Daily)",
             "fetched_at": datetime.now(IST).strftime("%-d %b at %I:%M:%S %p IST"),
             "timezone": "IST"
         }
