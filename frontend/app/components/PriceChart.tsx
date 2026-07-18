@@ -34,8 +34,9 @@ export default function PriceChart({ symbol, name, onClose }: PriceChartProps) {
     setError(null);
     setData([]);
     try {
+      const API = process.env.NEXT_PUBLIC_API_URL || '';
       const r = await fetch(
-        process.env.NEXT_PUBLIC_API_URL + '/api/market/history/' + symbol + '?period=' + period
+        API + '/api/market/history/' + symbol + '?period=' + period
       );
       if (!r.ok) throw new Error('Failed to load data');
       const res = await r.json();

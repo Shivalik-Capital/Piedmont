@@ -388,7 +388,7 @@ export default function Home() {
   const [selected, setSelected] = useState<SelectedIndex | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
-  const API = process.env.NEXT_PUBLIC_API_URL;
+  const API = process.env.NEXT_PUBLIC_API_URL || '';
 
   const fetchAll = useCallback(() => {
     Promise.all([
