@@ -385,6 +385,17 @@ export default function Home() {
   const [macro, setMacro] = useState<MacroResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      setLastUpdated(new Date().toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+      }));
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
   const [selected, setSelected] = useState<SelectedIndex | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
@@ -401,9 +412,6 @@ export default function Home() {
       setSectors(sectorData);
       setCommodities(commodityData);
       setMacro(macroData);
-      setLastUpdated(new Date().toLocaleTimeString('en-IN', {
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
-      }));
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [API]);
