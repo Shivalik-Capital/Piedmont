@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Piedmont",
-  description: "Indian financial intelligence terminal",
+  title: "PIEDMONT | Indian Financial Intelligence",
+  description: "Institutional-grade macroeconomic intelligence for the Indian markets. Real-time indices, RBI policy rates, GDP, CPI, and more.",
 };
 
 export default function RootLayout({
@@ -12,8 +12,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-[#070b12] text-slate-100">
+    <html lang="en" className="dark h-full antialiased">
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-full flex flex-col">
         {children}
       </body>
     </html>
