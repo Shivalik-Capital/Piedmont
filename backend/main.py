@@ -132,40 +132,44 @@ def get_macro(request: Request):
         res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/NY.GDP.MKTP.KD.ZG?format=json&per_page=1", headers=headers, timeout=5)
         data = res.json()
         val = round(data[1][0]['value'], 2)
-        indicators["gdp"] = {"name": "GDP Growth", "value": f"{val}%", "trend": "Up"}
+        date = data[1][0]['date']
+        indicators["gdp"] = {"name": "GDP Growth", "value": f"{val}%", "trend": "Up", "date": date}
     except Exception:
-        indicators["gdp"] = {"name": "GDP Growth", "value": "N/A", "trend": "Stable"}
+        indicators["gdp"] = {"name": "GDP Growth", "value": "N/A", "trend": "Stable", "date": ""}
 
     # Fetch CPI
     try:
         res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/FP.CPI.TOTL.ZG?format=json&per_page=1", headers=headers, timeout=5)
         data = res.json()
         val = round(data[1][0]['value'], 2)
-        indicators["inflation"] = {"name": "CPI Inflation", "value": f"{val}%", "trend": "Stable"}
+        date = data[1][0]['date']
+        indicators["inflation"] = {"name": "CPI Inflation", "value": f"{val}%", "trend": "Stable", "date": date}
     except Exception:
-        indicators["inflation"] = {"name": "CPI Inflation", "value": "N/A", "trend": "Stable"}
+        indicators["inflation"] = {"name": "CPI Inflation", "value": "N/A", "trend": "Stable", "date": ""}
 
     # Fetch Forex Reserves
     try:
         res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/FI.RES.TOTL.CD?format=json&per_page=1", headers=headers, timeout=5)
         data = res.json()
         val = data[1][0]['value']
+        date = data[1][0]['date']
         # Convert to Billions
         val_b = round(val / 1e9, 1)
-        indicators["forex"] = {"name": "Forex Reserves", "value": f"${val_b}B", "trend": "Up"}
+        indicators["forex"] = {"name": "Forex Reserves", "value": f"${val_b}B", "trend": "Up", "date": date}
     except Exception:
-        indicators["forex"] = {"name": "Forex Reserves", "value": "N/A", "trend": "Stable"}
+        indicators["forex"] = {"name": "Forex Reserves", "value": "N/A", "trend": "Stable", "date": ""}
 
     # Fetch Current Account
     try:
         res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/BN.CAB.XOKA.CD?format=json&per_page=1", headers=headers, timeout=5)
         data = res.json()
         val = data[1][0]['value']
+        date = data[1][0]['date']
         # Convert to Billions
         val_b = round(val / 1e9, 2)
-        indicators["current_account"] = {"name": "Current Account", "value": f"${val_b}B", "trend": "Down"}
+        indicators["current_account"] = {"name": "Current Account", "value": f"${val_b}B", "trend": "Down", "date": date}
     except Exception:
-        indicators["current_account"] = {"name": "Current Account", "value": "N/A", "trend": "Stable"}
+        indicators["current_account"] = {"name": "Current Account", "value": "N/A", "trend": "Stable", "date": ""}
 
     # Fetch static macro data
     try:

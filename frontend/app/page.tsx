@@ -34,6 +34,7 @@ interface MacroIndicator {
   name: string;
   value: string;
   trend: string;
+  date?: string;
 }
 
 interface MacroResponse {
@@ -323,7 +324,10 @@ function MacroGlassCard({ data, accent = 'primary' }: { data: MacroIndicator; ac
 
   return (
     <div className="glass-card p-5 rounded-2xl group">
-      <p className="text-on-surface-variant text-xs uppercase tracking-widest font-semibold mb-3">{data.name}</p>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-on-surface-variant text-xs uppercase tracking-widest font-semibold">{data.name}</p>
+        {data.date && <span className="bg-white/5 border border-white/10 text-on-surface-variant/80 text-[10px] px-2 py-0.5 rounded-md tracking-wider font-semibold">{data.date}</span>}
+      </div>
       <div className="flex items-end justify-between">
         <p className={`text-2xl font-bold tabular-nums ${accentColor}`}>{data.value}</p>
         <span className={`${trendColor}`}>
