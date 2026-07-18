@@ -1,4 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from fastapi.middleware.cors import CORSMiddleware
 import yfinance as yf
 from datetime import datetime
@@ -6,7 +9,10 @@ import pytz
 import requests
 import json
 import os
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Piedmont API")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -69,7 +75,8 @@ def root():
     return {"message": "Piedmont API is running"}
 
 @app.get("/api/market/indices")
-def get_indices():
+@limiter.limit("60/minute")
+def get_indices(request: Request):
     result = {"indices": {}, "meta": {
         "source": "Yahoo Finance via yfinance",
         "fetched_at": datetime.now(IST).strftime("%-d %b at %I:%M:%S %p IST"),
@@ -81,7 +88,8 @@ def get_indices():
     return result
 
 @app.get("/api/market/sectors")
-def get_sectors():
+@limiter.limit("60/minute")
+def get_sectors(request: Request):
     result = {"sectors": {}, "meta": {
         "source": "Yahoo Finance via yfinance",
         "fetched_at": datetime.now(IST).strftime("%-d %b at %I:%M:%S %p IST"),
@@ -97,7 +105,8 @@ def get_sectors():
     return result
 
 @app.get("/api/market/commodities")
-def get_commodities():
+@limiter.limit("60/minute")
+def get_commodities(request: Request):
     result = {"commodities": {}, "meta": {
         "source": "Yahoo Finance via yfinance",
         "fetched_at": datetime.now(IST).strftime("%-d %b at %I:%M:%S %p IST"),
@@ -112,7 +121,8 @@ def get_commodities():
     return result
 
 @app.get("/api/market/macro")
-def get_macro():
+@limiter.limit("60/minute")
+def get_macro(request: Request):
     indicators = {}
 
     headers = {'User-Agent': 'Piedmont-App/1.0'}
@@ -191,7 +201,8 @@ def get_macro():
     }
     return result
 @app.get("/api/market/history/{symbol}")
-def get_history(symbol: str, period: str = "1mo"):
+@limiter.limit("120/minute")
+def get_history(symbol: str, request: Request, period: str = "1mo"):
     valid_periods = ["1mo", "3mo", "6mo", "1y"]
     if period not in valid_periods:
         raise HTTPException(status_code=400, detail=f"Period must be one of {valid_periods}")
