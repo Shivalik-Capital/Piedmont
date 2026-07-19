@@ -29,25 +29,25 @@ app.add_middleware(
 IST = pytz.timezone("Asia/Kolkata")
 
 INDEX_SYMBOLS = {
-    "nifty50": {"symbol": "^NSEI", "name": "Nifty 50", "exchange": "NSE"},
-    "sensex": {"symbol": "^BSESN", "name": "Sensex", "exchange": "BSE"},
-    "banknifty": {"symbol": "^NSEBANK", "name": "Bank Nifty", "exchange": "NSE"},
+    "nifty50": {"symbol": "^NSEI", "name": "Nifty 50", "exchange": "NSE", "prefix": ""},
+    "sensex": {"symbol": "^BSESN", "name": "Sensex", "exchange": "BSE", "prefix": ""},
+    "banknifty": {"symbol": "^NSEBANK", "name": "Bank Nifty", "exchange": "NSE", "prefix": ""},
 }
 
 SECTOR_SYMBOLS = {
-    "nifty_it": {"symbol": "^CNXIT", "name": "Nifty IT", "exchange": "NSE"},
-    "nifty_pharma": {"symbol": "^CNXPHARMA", "name": "Nifty Pharma", "exchange": "NSE"},
-    "nifty_auto": {"symbol": "^CNXAUTO", "name": "Nifty Auto", "exchange": "NSE"},
-    "nifty_fmcg": {"symbol": "^CNXFMCG", "name": "Nifty FMCG", "exchange": "NSE"},
-    "nifty_metal": {"symbol": "^CNXMETAL", "name": "Nifty Metal", "exchange": "NSE"},
-    "nifty_realty": {"symbol": "^CNXREALTY", "name": "Nifty Realty", "exchange": "NSE"},
+    "nifty_it": {"symbol": "^CNXIT", "name": "Nifty IT", "exchange": "NSE", "prefix": ""},
+    "nifty_pharma": {"symbol": "^CNXPHARMA", "name": "Nifty Pharma", "exchange": "NSE", "prefix": ""},
+    "nifty_auto": {"symbol": "^CNXAUTO", "name": "Nifty Auto", "exchange": "NSE", "prefix": ""},
+    "nifty_fmcg": {"symbol": "^CNXFMCG", "name": "Nifty FMCG", "exchange": "NSE", "prefix": ""},
+    "nifty_metal": {"symbol": "^CNXMETAL", "name": "Nifty Metal", "exchange": "NSE", "prefix": ""},
+    "nifty_realty": {"symbol": "^CNXREALTY", "name": "Nifty Realty", "exchange": "NSE", "prefix": ""},
 }
 
 COMMODITY_SYMBOLS = {
-    "usd_inr": {"symbol": "INR=X", "name": "USD/INR", "exchange": "FOREX"},
-    "gold": {"symbol": "GC=F", "name": "Gold", "exchange": "COMEX"},
-    "crude_oil": {"symbol": "CL=F", "name": "Crude Oil", "exchange": "NYMEX"},
-    "10y_gsec": {"symbol": "NIFTYGS10YR.NS", "name": "10Y G-Sec Index", "exchange": "NSE"},
+    "usd_inr": {"symbol": "INR=X", "name": "USD/INR", "exchange": "FOREX", "prefix": "₹"},
+    "gold": {"symbol": "GC=F", "name": "Gold", "exchange": "COMEX", "prefix": "$"},
+    "crude_oil": {"symbol": "CL=F", "name": "Crude Oil", "exchange": "NYMEX", "prefix": "$"},
+    "10y_gsec": {"symbol": "NIFTYGS10YR.NS", "name": "10Y G-Sec Index", "exchange": "NSE", "prefix": ""},
 }
 
 def fetch_quote(symbol: str) -> dict:

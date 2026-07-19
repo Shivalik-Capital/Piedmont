@@ -13,6 +13,7 @@ interface IndexData {
   change_pct: number;
   previous_close: number;
   id?: string;
+  prefix?: string;
 }
 
 interface MarketResponse {
@@ -303,7 +304,7 @@ function IndexBentoCard({ data, onClick }: { data: IndexData; onClick: () => voi
       <div className="flex items-end justify-between">
         <div>
           <p className={`text-[32px] font-bold tabular-nums tracking-tight ${colorMap[data.symbol] || 'text-primary'}`}>
-            {data.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {data.prefix || ''}{data.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className={`font-medium text-sm flex items-center gap-1 ${isPositive ? 'text-positive' : 'text-negative'}`}>
             <Icon name={isPositive ? 'arrow_upward' : 'arrow_downward'} className="text-xs" />
@@ -348,7 +349,7 @@ function SectorRowCard({ data, onClick }: { data: IndexData; onClick?: () => voi
           {data.name} <ActiveDot active={getMarketStatus(data.exchange)} />
         </p>
         <p className="text-on-surface-variant text-xs tabular-nums mt-0.5">
-          {data.price?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) ?? '—'}
+          {data.price ? (data.prefix || '') + data.price.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—'}
         </p>
       </div>
       <div className="flex items-center gap-3">
@@ -371,7 +372,7 @@ function CommodityGlassCard({ data, onClick }: { data: IndexData; onClick?: () =
       </div>
       <div className="flex items-end justify-between">
         <p className="text-xl font-bold tabular-nums text-on-surface">
-          {data.price?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) ?? '—'}
+          {data.price ? (data.prefix || '') + data.price.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—'}
         </p>
         <span className={`text-xs font-bold tabular-nums ${isPositive ? 'text-positive' : 'text-negative'}`}>
           {isPositive ? '▲' : '▼'} {Math.abs(data.change_pct)}%
@@ -541,7 +542,7 @@ export default function Home() {
                           <p className="text-on-surface-variant text-xs">{idx.exchange}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-on-surface font-bold tabular-nums">{idx.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                          <p className="text-on-surface font-bold tabular-nums">{idx.prefix || ''}{idx.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
                           <p className={`text-xs font-semibold tabular-nums ${isPos ? 'text-positive' : 'text-negative'}`}>
                             {isPos ? '+' : ''}{idx.change_pct}%
                           </p>
@@ -556,7 +557,7 @@ export default function Home() {
                       <span className="text-on-surface-variant text-xs flex items-center">
                         {c.name} <ActiveDot active={getMarketStatus(c.exchange)} />
                       </span>
-                      <span className="text-primary font-bold tabular-nums">{c.price?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) ?? '—'}</span>
+                      <span className="text-primary font-bold tabular-nums">{c.price ? (c.prefix || '') + c.price.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—'}</span>
                     </div>
                   ))}
                 </div>
