@@ -611,7 +611,11 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-2xl font-semibold text-primary">Sector Performance</h2>
                   <span className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> Live
+                    {getMarketStatus('NSE') ? (
+                      <><span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> Live</>
+                    ) : (
+                      <><span className="w-2 h-2 rounded-full bg-surface-variant" /> Closed</>
+                    )}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
