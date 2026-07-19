@@ -164,6 +164,47 @@ def get_fii_dii_data():
     except Exception:
         return None
 
+rbi_cache = {
+    "data": None,
+    "last_fetched": None
+}
+
+def get_rbi_rates():
+    now = datetime.now(IST)
+    if rbi_cache["data"] and rbi_cache["last_fetched"]:
+        if (now - rbi_cache["last_fetched"]).total_seconds() < 86400:
+            return rbi_cache["data"]
+            
+    try:
+        url = "https://www.rbi.org.in/"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+        import urllib3
+        urllib3.disable_warnings()
+        import re
+        res = requests.get(url, headers=headers, timeout=10, verify=False)
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(res.text, 'html.parser')
+        text = soup.text
+        
+        repo = re.search(r'Policy Repo Rate\s*:\s*([\d.]+%?)', text)
+        sdf = re.search(r'Standing Deposit Facility Rate\s*:\s*([\d.]+%?)', text)
+        rev_repo = re.search(r'Fixed Reverse Repo Rate\s*:\s*([\d.]+%?)', text)
+        
+        repo_val = repo.group(1) if repo else "N/A"
+        sdf_val = sdf.group(1) if sdf else "N/A"
+        rev_repo_val = rev_repo.group(1) if rev_repo else "N/A"
+        
+        result = {
+            "rbi_repo": {"name": "RBI Repo Rate", "value": repo_val, "trend": "Stable", "date": "Current"},
+            "reverse_repo": {"name": "Reverse Repo", "value": rev_repo_val, "trend": "Stable", "date": "Current"},
+            "sdf": {"name": "Standing Deposit Facility", "value": sdf_val, "trend": "Stable", "date": "Current"}
+        }
+        rbi_cache["data"] = result
+        rbi_cache["last_fetched"] = now
+        return result
+    except Exception:
+        return None
+
 @app.get("/api/market/macro")
 @limiter.limit("60/minute")
 def get_macro(request: Request):
@@ -181,15 +222,7 @@ def get_macro(request: Request):
     except Exception:
         indicators["gdp"] = {"name": "GDP Growth", "value": "N/A", "trend": "Stable", "date": ""}
 
-    # Fetch CPI
-    try:
-        res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/FP.CPI.TOTL.ZG?format=json&per_page=1", headers=headers, timeout=5)
-        data = res.json()
-        val = round(data[1][0]['value'], 2)
-        date = data[1][0]['date']
-        indicators["inflation"] = {"name": "CPI Inflation", "value": f"{val}%", "trend": "Stable", "date": date}
-    except Exception:
-        indicators["inflation"] = {"name": "CPI Inflation", "value": "N/A", "trend": "Stable", "date": ""}
+    # CPI is now handled statically since World Bank only provides annual data
 
     # Fetch Forex Reserves
     try:
@@ -220,12 +253,20 @@ def get_macro(request: Request):
         file_path = os.path.join(os.path.dirname(__file__), "data", "macro_data.json")
         with open(file_path, "r") as f:
             macro_data = json.load(f)
-            # RBI
-            indicators["rbi_repo"] = macro_data["rbi_rates"]["repo_rate"]
-            indicators["reverse_repo"] = macro_data["rbi_rates"]["reverse_repo"]
-            indicators["sdf"] = macro_data["rbi_rates"]["sdf"]
+            
+            # RBI Rates
+            rbi_rates = get_rbi_rates()
+            if rbi_rates:
+                indicators["rbi_repo"] = rbi_rates["rbi_repo"]
+                indicators["reverse_repo"] = rbi_rates["reverse_repo"]
+                indicators["sdf"] = rbi_rates["sdf"]
+            else:
+                indicators["rbi_repo"] = macro_data["rbi_rates"]["repo_rate"]
+                indicators["reverse_repo"] = macro_data["rbi_rates"]["reverse_repo"]
+                indicators["sdf"] = macro_data["rbi_rates"]["sdf"]
             
             # Domestic
+            indicators["inflation"] = macro_data["domestic_macro"]["cpi"]
             indicators["wpi"] = macro_data["domestic_macro"]["wpi"]
             indicators["pmi"] = macro_data["domestic_macro"]["pmi"]
             indicators["iip"] = macro_data["domestic_macro"]["iip"]
