@@ -20,29 +20,35 @@
     }
   },
   "domestic_macro": {
+    "cpi": {
+      "name": "CPI Inflation",
+      "value": "4.38%",
+      "trend": "Up",
+      "date": "June 2026"
+    },
     "wpi": {
       "name": "WPI Inflation",
-      "value": "0.53%",
-      "trend": "Down",
-      "date": "Feb 2024"
+      "value": "9.87%",
+      "trend": "Up",
+      "date": "June 2026"
     },
     "pmi": {
       "name": "Manufacturing PMI",
-      "value": "59.1",
-      "trend": "Up",
-      "date": "Mar 2024"
+      "value": "54.2",
+      "trend": "Down",
+      "date": "June 2026"
     },
     "iip": {
       "name": "IIP Growth",
-      "value": "5.7%",
+      "value": "5.1%",
       "trend": "Up",
-      "date": "Feb 2024"
+      "date": "May 2026"
     },
     "fiscal_deficit": {
-      "name": "Fiscal Deficit",
-      "value": "5.6%",
+      "name": "Fiscal Deficit Target",
+      "value": "4.3%",
       "trend": "Stable",
-      "date": "FY24"
+      "date": "FY27"
     }
   },
   "market_liquidity": {
