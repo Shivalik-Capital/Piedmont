@@ -165,49 +165,88 @@ void main() {
 /* ─── Market Time Helpers ─── */
 function getMarketStatus(exchange: string): boolean {
   const now = new Date();
-  const day = now.getUTCDay();
-  const time = now.getUTCHours() + now.getUTCMinutes() / 60;
+  const utcDay = now.getUTCDay(); // 0=Sun, 6=Sat
+  const utcTime = now.getUTCHours() + now.getUTCMinutes() / 60;
   
-  let timeIst = time + 5.5;
-  let dayIst = day;
+  // IST = UTC + 5.5
+  let timeIst = utcTime + 5.5;
+  let dayIst = utcDay;
   if (timeIst >= 24) {
     timeIst -= 24;
     dayIst = (dayIst + 1) % 7;
   }
   
-  if (dayIst === 0 || dayIst === 6) return false;
-  
+  // Indian exchanges: Mon-Fri, 9:15 AM – 3:30 PM IST
   if (exchange === 'NSE' || exchange === 'BSE') {
-    return timeIst >= 9.25 && timeIst < 15.5; // 9:15 AM to 3:30 PM IST
+    if (dayIst === 0 || dayIst === 6) return false;
+    return timeIst >= 9.25 && timeIst < 15.5;
   }
-  // COMEX, NYMEX, FOREX, etc. (Approx 24/5)
-  return true; 
+  
+  // US exchanges & Forex operate on a UTC weekly cycle:
+  // Closed: Sat 00:00 UTC (Fri 5PM ET close) → Sun 22:00 UTC (Sun 5PM ET open for Forex)
+  // COMEX/NYMEX: Sun 23:00 UTC (Sun 6PM ET) → Fri 22:00 UTC (Fri 5PM ET)
+  // NYSE: Mon-Fri 13:30-20:00 UTC (9:30AM-4PM ET)
+  
+  // Full weekend closure: All of Saturday, Sunday until 22:00 UTC
+  if (utcDay === 6) return false; // All Saturday UTC = closed
+  if (utcDay === 0 && utcTime < 22) return false; // Sunday before 5PM ET = closed
+  
+  if (exchange === 'FOREX') {
+    // Forex: Sun 22:00 UTC → Fri 22:00 UTC (continuous)
+    if (utcDay === 5 && utcTime >= 22) return false; // Fri after 5PM ET
+    return true;
+  }
+  
+  if (exchange === 'COMEX' || exchange === 'NYMEX') {
+    // Futures: Sun 23:00 UTC → Fri 22:00 UTC (with daily 1hr break 22:00-23:00 UTC)
+    if (utcDay === 0 && utcTime < 23) return false; // Sun before 6PM ET
+    if (utcDay === 5 && utcTime >= 22) return false; // Fri after 5PM ET
+    // Daily maintenance break: 22:00-23:00 UTC (5PM-6PM ET) Mon-Thu
+    if (utcTime >= 22 && utcTime < 23) return false;
+    return true;
+  }
+  
+  // Default fallback
+  return false;
 }
 
 function getGlobalSessionName(): { label: string; active: boolean } {
   const now = new Date();
-  const day = now.getUTCDay();
-  const time = now.getUTCHours() + now.getUTCMinutes() / 60;
+  const utcDay = now.getUTCDay();
+  const utcTime = now.getUTCHours() + now.getUTCMinutes() / 60;
   
-  let timeIst = time + 5.5;
-  let dayIst = day;
+  let timeIst = utcTime + 5.5;
+  let dayIst = utcDay;
   if (timeIst >= 24) {
     timeIst -= 24;
     dayIst = (dayIst + 1) % 7;
   }
   
-  if (dayIst === 0 || dayIst === 6) return { label: 'MARKETS: CLOSED', active: false };
+  // Full weekend: Sat all day + Sun until 10:30 PM UTC (Mon 4 AM IST)
+  // Use IST perspective for user-facing label
+  if (dayIst === 6) return { label: 'MARKETS: CLOSED', active: false }; // Saturday IST
+  if (dayIst === 0) {
+    // Sunday IST: markets are closed (US markets don't open until Sun 5-6 PM ET = Mon ~3-4 AM IST)
+    return { label: 'MARKETS: CLOSED', active: false };
+  }
   
+  // Weekday IST sessions
   if (timeIst >= 9.25 && timeIst < 15.5) {
     return { label: 'INDIAN MARKET', active: true };
-  } else if (timeIst >= 19 || timeIst < 2.5) {
+  } else if (timeIst >= 19 || (timeIst >= 0 && timeIst < 1.5)) {
+    // NYSE: 9:30 AM - 4:00 PM ET = 7:00 PM - 1:30 AM IST
     return { label: 'NEW YORK SESSION', active: true };
   } else if (timeIst >= 13.5 && timeIst < 19) {
+    // London: 8:00 AM - 4:30 PM GMT = 1:30 PM - 10:00 PM IST (overlap with NY after 7 PM)
     return { label: 'LONDON SESSION', active: true };
   } else if (timeIst >= 3.5 && timeIst < 9.25) {
+    // Asian session: covers Tokyo/HK/SGX
     return { label: 'ASIAN SESSION', active: true };
+  } else if (timeIst >= 1.5 && timeIst < 3.5) {
+    // Between NY close and Asian open
+    return { label: 'MARKETS: CLOSED', active: false };
   }
-  return { label: 'GLOBAL MARKET', active: true };
+  return { label: 'GLOBAL MARKET', active: false };
 }
 
 function ActiveDot({ active }: { active: boolean }) {
