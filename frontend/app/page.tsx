@@ -222,25 +222,24 @@ function getGlobalSessionName(): { label: string; active: boolean } {
     dayIst = (dayIst + 1) % 7;
   }
   
-  // Full weekend: Sat all day + Sun until 10:30 PM UTC (Mon 4 AM IST)
-  // Use IST perspective for user-facing label
-  if (dayIst === 6) return { label: 'MARKETS: CLOSED', active: false }; // Saturday IST
-  if (dayIst === 0) {
-    // Sunday IST: markets are closed (US markets don't open until Sun 5-6 PM ET = Mon ~3-4 AM IST)
-    return { label: 'MARKETS: CLOSED', active: false };
-  }
+  // Global weekend check using UTC (the authoritative clock for exchange closures):
+  // All of Saturday UTC = closed. Sunday UTC before 22:00 (5PM ET) = closed.
+  // Friday UTC after 22:00 (5PM ET) = closed.
+  if (utcDay === 6) return { label: 'MARKETS: CLOSED', active: false };
+  if (utcDay === 0 && utcTime < 22) return { label: 'MARKETS: CLOSED', active: false };
+  if (utcDay === 5 && utcTime >= 22) return { label: 'MARKETS: CLOSED', active: false };
   
-  // Weekday IST sessions
+  // Weekday IST sessions (only reached when markets are actually open globally)
   if (timeIst >= 9.25 && timeIst < 15.5) {
     return { label: 'INDIAN MARKET', active: true };
   } else if (timeIst >= 19 || (timeIst >= 0 && timeIst < 1.5)) {
     // NYSE: 9:30 AM - 4:00 PM ET = 7:00 PM - 1:30 AM IST
     return { label: 'NEW YORK SESSION', active: true };
   } else if (timeIst >= 13.5 && timeIst < 19) {
-    // London: 8:00 AM - 4:30 PM GMT = 1:30 PM - 10:00 PM IST (overlap with NY after 7 PM)
+    // London: 8:00 AM - 4:30 PM GMT = 1:30 PM - 10:00 PM IST
     return { label: 'LONDON SESSION', active: true };
   } else if (timeIst >= 3.5 && timeIst < 9.25) {
-    // Asian session: covers Tokyo/HK/SGX
+    // Asian session: Tokyo/HK/SGX
     return { label: 'ASIAN SESSION', active: true };
   } else if (timeIst >= 1.5 && timeIst < 3.5) {
     // Between NY close and Asian open
