@@ -205,6 +205,24 @@ def get_rbi_rates():
     except Exception:
         return None
 
+# RBI MPC Meeting Schedule FY 2026-27
+# Each entry: (last_day_of_meeting, display_label)
+# After the last day passes, we roll to the next meeting
+MPC_SCHEDULE = [
+    (datetime(2026, 8, 5, tzinfo=pytz.UTC).astimezone(IST).date(), "Aug 3-5"),
+    (datetime(2026, 10, 7, tzinfo=pytz.UTC).astimezone(IST).date(), "Oct 5-7"),
+    (datetime(2026, 12, 4, tzinfo=pytz.UTC).astimezone(IST).date(), "Dec 2-4"),
+    (datetime(2027, 2, 5, tzinfo=pytz.UTC).astimezone(IST).date(), "Feb 3-5"),
+]
+
+def get_next_mpc_meeting():
+    today = datetime.now(IST).date()
+    for end_date, label in MPC_SCHEDULE:
+        if today <= end_date:
+            return {"name": "Next RBI MPC", "value": label, "trend": "Stable", "date": "Scheduled"}
+    # If all meetings have passed, show the last one as completed
+    return {"name": "Next RBI MPC", "value": "TBA", "trend": "Stable", "date": "FY28"}
+
 @app.get("/api/market/macro")
 @limiter.limit("60/minute")
 def get_macro(request: Request):
@@ -223,30 +241,8 @@ def get_macro(request: Request):
         indicators["gdp"] = {"name": "GDP Growth", "value": "N/A", "trend": "Stable", "date": ""}
 
     # CPI is now handled statically since World Bank only provides annual data
-
-    # Fetch Forex Reserves
-    try:
-        res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/FI.RES.TOTL.CD?format=json&per_page=1", headers=headers, timeout=5)
-        data = res.json()
-        val = data[1][0]['value']
-        date = data[1][0]['date']
-        # Convert to Billions
-        val_b = round(val / 1e9, 1)
-        indicators["forex"] = {"name": "Forex Reserves", "value": f"${val_b}B", "trend": "Up", "date": date}
-    except Exception:
-        indicators["forex"] = {"name": "Forex Reserves", "value": "N/A", "trend": "Stable", "date": ""}
-
-    # Fetch Current Account
-    try:
-        res = requests.get("http://api.worldbank.org/v2/country/IN/indicator/BN.CAB.XOKA.CD?format=json&per_page=1", headers=headers, timeout=5)
-        data = res.json()
-        val = data[1][0]['value']
-        date = data[1][0]['date']
-        # Convert to Billions
-        val_b = round(val / 1e9, 2)
-        indicators["current_account"] = {"name": "Current Account", "value": f"${val_b}B", "trend": "Down", "date": date}
-    except Exception:
-        indicators["current_account"] = {"name": "Current Account", "value": "N/A", "trend": "Stable", "date": ""}
+    # Forex Reserves and Current Account are also static — World Bank lags 1-2 years,
+    # while our JSON has the latest RBI weekly/quarterly data
 
     # Fetch static macro data
     try:
@@ -272,6 +268,9 @@ def get_macro(request: Request):
             indicators["iip"] = macro_data["domestic_macro"]["iip"]
             indicators["fiscal_deficit"] = macro_data["domestic_macro"]["fiscal_deficit"]
 
+            # External Sector
+            indicators["forex"] = macro_data["external_sector"]["forex_reserves"]
+
             # Markets
             fii_dii = get_fii_dii_data()
             if fii_dii:
@@ -282,7 +281,8 @@ def get_macro(request: Request):
                 indicators["dii_flows"] = macro_data["market_liquidity"]["dii_flows"]
                 
             indicators["borrowing_cal"] = macro_data["market_liquidity"]["borrowing_cal"]
-            indicators["econ_cal"] = macro_data["market_liquidity"]["econ_cal"]
+            indicators["current_account"] = macro_data["market_liquidity"]["current_account"]
+            indicators["econ_cal"] = get_next_mpc_meeting()
     except Exception:
         pass # If file fails, we just don't add these keys
 

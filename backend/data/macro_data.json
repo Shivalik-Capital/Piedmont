@@ -45,10 +45,18 @@
       "date": "May 2026"
     },
     "fiscal_deficit": {
-      "name": "Fiscal Deficit Target",
-      "value": "4.3%",
+      "name": "Fiscal Deficit",
+      "value": "₹3.08L Cr",
       "trend": "Stable",
-      "date": "FY27"
+      "date": "Q1 FY27"
+    }
+  },
+  "external_sector": {
+    "forex_reserves": {
+      "name": "Forex Reserves",
+      "value": "$682.4B",
+      "trend": "Up",
+      "date": "Jul 24, 2026"
     }
   },
   "market_liquidity": {
@@ -66,15 +74,21 @@
     },
     "borrowing_cal": {
       "name": "Govt Borrowing",
-      "value": "₹7.5L Cr",
+      "value": "₹8.20L Cr",
       "trend": "Stable",
-      "date": "H1 FY25"
+      "date": "H1 FY27"
+    },
+    "current_account": {
+      "name": "Current Account",
+      "value": "+$2.8B",
+      "trend": "Up",
+      "date": "Apr-May 2026"
     },
     "econ_cal": {
       "name": "Next Event",
       "value": "RBI MPC",
       "trend": "Stable",
-      "date": "Upcoming"
+      "date": "Aug 4-6"
     }
   }
 }
