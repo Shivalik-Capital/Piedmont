@@ -2,9 +2,9 @@
   "rbi_rates": {
     "repo_rate": {
       "name": "RBI Repo Rate",
-      "value": "6.50%",
-      "trend": "Stable",
-      "date": "Current"
+      "value": "5.25%",
+      "trend": "Down",
+      "date": "Aug 2026"
     },
     "reverse_repo": {
       "name": "Reverse Repo",
@@ -14,23 +14,23 @@
     },
     "sdf": {
       "name": "Standing Deposit Facility",
-      "value": "6.25%",
-      "trend": "Stable",
-      "date": "Current"
+      "value": "5.00%",
+      "trend": "Down",
+      "date": "Aug 2026"
     }
   },
   "domestic_macro": {
     "cpi": {
       "name": "CPI Inflation",
-      "value": "4.38%",
+      "value": "4.45%",
       "trend": "Up",
-      "date": "June 2026"
+      "date": "July 2026"
     },
     "wpi": {
       "name": "WPI Inflation",
-      "value": "9.87%",
-      "trend": "Up",
-      "date": "June 2026"
+      "value": "9.78%",
+      "trend": "Down",
+      "date": "July 2026"
     },
     "pmi": {
       "name": "Manufacturing PMI",
@@ -40,9 +40,9 @@
     },
     "iip": {
       "name": "IIP Growth",
-      "value": "5.1%",
+      "value": "7.3%",
       "trend": "Up",
-      "date": "May 2026"
+      "date": "June 2026"
     },
     "fiscal_deficit": {
       "name": "Fiscal Deficit",
