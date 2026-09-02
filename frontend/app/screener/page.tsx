@@ -44,6 +44,7 @@ export default function ScreenerPage() {
         if (minDivYield) params.append('min_dividend_yield', minDivYield);
         if (maxDebtEquity) params.append('max_debt_to_equity', maxDebtEquity);
 
+        params.append('t', Date.now().toString());
         const res = await fetch(`${API}/api/company/screen?${params.toString()}`);
         const data = await res.json();
         setCompanies(Array.isArray(data) ? data : []);

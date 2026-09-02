@@ -18,9 +18,11 @@ export default function CompaniesPage() {
       setLoading(true);
       try {
         const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-        const res = await fetch(`${API}/api/company/screen`); // Just fetch some to show
+        const params = new URLSearchParams();
+        params.append('t', Date.now().toString());
+        const res = await fetch(`${API}/api/company/list?${params.toString()}`);
         const data = await res.json();
-        setCompanies(data.companies || []);
+        setCompanies(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
       } finally {
