@@ -518,32 +518,24 @@ def screen_companies(
     try:
         # We need to join companies and company_metrics
         query = supabase.table("company_metrics").select(
-            "*, companies(name, sector)"
+            "*, companies(*)"
         )
         
         if sector:
             query = query.eq("companies.sector", sector)
             
-        # These fields are stored as JSON inside metrics. It's tricky to query deep JSON fields directly 
-        # in standard Supabase python client without raw SQL, so we might pull more data and filter in Python
-        # for a quick MVP. A better long term approach is extracting these to dedicated columns.
-        
-        # Let's pull top 500
         res = query.limit(500).execute()
         results = res.data
         
-        # In-memory filtering
         filtered = []
         for row in results:
-            if not row.get('metrics'): continue
-            
-            # Extract values
-            mc = row['metrics'].get('marketCap', {}).get('value')
-            pe = row['metrics'].get('pe', {}).get('value')
-            pb = row['metrics'].get('pb', {}).get('value')
-            roe = row['metrics'].get('roe', {}).get('value')
-            div = row['metrics'].get('dividendYield', {}).get('value')
-            dte = row['metrics'].get('debtToEquity', {}).get('value')
+            comp = row.get('companies') or {}
+            mc = comp.get('market_cap')
+            pe = row.get('pe_value')
+            pb = row.get('pb_value')
+            roe = row.get('roe_value')
+            div = row.get('dividend_yield_value')
+            dte = row.get('debt_to_equity_value')
             
             if min_market_cap and (mc is None or mc < min_market_cap): continue
             if max_pe and (pe is None or pe > max_pe): continue
@@ -551,30 +543,38 @@ def screen_companies(
             if min_roe and (roe is None or roe < min_roe): continue
             if min_dividend_yield and (div is None or div < min_dividend_yield): continue
             if max_debt_to_equity and (dte is None or dte > max_debt_to_equity): continue
+            formatted_row = {
+                "symbol": row.get('symbol'),
+                "name": comp.get('name', 'Unknown'),
+                "sector": comp.get('sector', 'Unknown'),
+                "market_cap": mc,
+                "pe_ratio": pe,
+                "pb_ratio": pb,
+                "roe": roe,
+                "dividend_yield": div,
+                "debt_to_equity": dte
+            }
             
-            filtered.append(row)
+            filtered.append(formatted_row)
             
-        # In-memory sorting
         reverse = sort_order.lower() == "desc"
         
         def sort_key(x):
-            metrics = x.get('metrics', {})
-            # Handle potential None values safely by returning 0 or inf
             if sort_by == 'market_cap':
-                return metrics.get('marketCap', {}).get('value') or 0
+                return x.get('market_cap') or 0
             elif sort_by == 'pe':
-                return metrics.get('pe', {}).get('value') or float('inf')
+                return x.get('pe_ratio') or float('inf')
             elif sort_by == 'pb':
-                return metrics.get('pb', {}).get('value') or float('inf')
+                return x.get('pb_ratio') or float('inf')
             elif sort_by == 'roe':
-                return metrics.get('roe', {}).get('value') or -float('inf')
+                return x.get('roe') or -float('inf')
             elif sort_by == 'dividend_yield':
-                return metrics.get('dividendYield', {}).get('value') or 0
+                return x.get('dividend_yield') or 0
             return 0
             
         filtered.sort(key=sort_key, reverse=reverse)
         
-        return filtered[:50] # return top 50 matches
+        return filtered[:50]
         
     except Exception as e:
         print(f"Screening failed: {e}")
@@ -583,10 +583,19 @@ def screen_companies(
 @limiter.limit("60/minute")
 def get_company_detail(symbol: str, request: Request):
     try:
-        if symbol in NIFTY_50:
-            yf_symbol = NIFTY_50[symbol].get("symbol", f"{symbol}.NS")
+        symbol_upper = symbol.upper()
+        symbol_lower = symbol.lower()
+        
+        if symbol_upper in NIFTY_50:
+            yf_symbol = NIFTY_50[symbol_upper].get("symbol", f"{symbol_upper}.NS")
+        elif symbol_lower in INDEX_SYMBOLS:
+            yf_symbol = INDEX_SYMBOLS[symbol_lower]["symbol"]
+        elif symbol_lower in SECTOR_SYMBOLS:
+            yf_symbol = SECTOR_SYMBOLS[symbol_lower]["symbol"]
+        elif symbol_lower in COMMODITY_SYMBOLS:
+            yf_symbol = COMMODITY_SYMBOLS[symbol_lower]["symbol"]
         else:
-            yf_symbol = symbol if symbol.endswith(".NS") or symbol.startswith("^") else f"{symbol}.NS"
+            yf_symbol = symbol_upper if symbol_upper.endswith(".NS") or symbol_upper.startswith("^") or "=" in symbol_upper else f"{symbol_upper}.NS"
             
         ticker = yf.Ticker(yf_symbol)
         info = ticker.info
@@ -674,10 +683,19 @@ def get_company_history(symbol: str, request: Request, period: str = "1y"):
     if period not in valid_periods:
         raise HTTPException(status_code=400, detail=f"Period must be one of {valid_periods}")
     
-    if symbol in NIFTY_50:
-        yf_symbol = NIFTY_50[symbol].get("symbol", f"{symbol}.NS")
+    symbol_upper = symbol.upper()
+    symbol_lower = symbol.lower()
+    
+    if symbol_upper in NIFTY_50:
+        yf_symbol = NIFTY_50[symbol_upper].get("symbol", f"{symbol_upper}.NS")
+    elif symbol_lower in INDEX_SYMBOLS:
+        yf_symbol = INDEX_SYMBOLS[symbol_lower]["symbol"]
+    elif symbol_lower in SECTOR_SYMBOLS:
+        yf_symbol = SECTOR_SYMBOLS[symbol_lower]["symbol"]
+    elif symbol_lower in COMMODITY_SYMBOLS:
+        yf_symbol = COMMODITY_SYMBOLS[symbol_lower]["symbol"]
     else:
-        yf_symbol = symbol if symbol.endswith(".NS") or symbol.startswith("^") else f"{symbol}.NS"
+        yf_symbol = symbol_upper if symbol_upper.endswith(".NS") or symbol_upper.startswith("^") or "=" in symbol_upper else f"{symbol_upper}.NS"
         
     ticker = yf.Ticker(yf_symbol)
     hist = ticker.history(period=period)
