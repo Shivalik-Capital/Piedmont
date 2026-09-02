@@ -9,6 +9,21 @@ import pytz
 import requests
 import json
 import os
+import time
+from concurrent.futures import ThreadPoolExecutor
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") # Use service key for backend bypass RLS
+
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+else:
+    supabase = None
+    
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Piedmont API")
 app.state.limiter = limiter
@@ -328,3 +343,398 @@ def get_history(symbol: str, request: Request, period: str = "1mo"):
     ]
     
     return {"symbol": symbol, "period": period, "data": data}
+
+NIFTY_50 = {
+    "RELIANCE": {"name": "Reliance Industries", "sector": "Oil & Gas"},
+    "TCS": {"name": "Tata Consultancy Services", "sector": "IT"},
+    "HDFCBANK": {"name": "HDFC Bank", "sector": "Financial Services"},
+    "INFY": {"name": "Infosys", "sector": "IT"},
+    "ICICIBANK": {"name": "ICICI Bank", "sector": "Financial Services"},
+    "HINDUNILVR": {"name": "Hindustan Unilever", "sector": "Consumer Goods"},
+    "BHARTIARTL": {"name": "Bharti Airtel", "sector": "Telecommunication"},
+    "ITC": {"name": "ITC", "sector": "Consumer Goods"},
+    "KOTAKBANK": {"name": "Kotak Mahindra Bank", "sector": "Financial Services"},
+    "LT": {"name": "Larsen & Toubro", "sector": "Construction"},
+    "SBIN": {"name": "State Bank of India", "sector": "Financial Services"},
+    "AXISBANK": {"name": "Axis Bank", "sector": "Financial Services"},
+    "BAJFINANCE": {"name": "Bajaj Finance", "sector": "Financial Services"},
+    "MARUTI": {"name": "Maruti Suzuki", "sector": "Automobile"},
+    "HCLTECH": {"name": "HCL Technologies", "sector": "IT"},
+    "ASIANPAINT": {"name": "Asian Paints", "sector": "Consumer Goods"},
+    "TITAN": {"name": "Titan Company", "sector": "Consumer Durables"},
+    "SUNPHARMA": {"name": "Sun Pharmaceutical", "sector": "Pharma"},
+    "ULTRACEMCO": {"name": "UltraTech Cement", "sector": "Cement"},
+    "NTPC": {"name": "NTPC", "sector": "Power"},
+    "WIPRO": {"name": "Wipro", "sector": "IT"},
+    "POWERGRID": {"name": "Power Grid Corporation", "sector": "Power"},
+    "M_M": {"name": "Mahindra & Mahindra", "sector": "Automobile", "symbol": "M&M.NS"},
+    "TATAMOTORS": {"name": "Tata Motors", "sector": "Automobile"},
+    "TATASTEEL": {"name": "Tata Steel", "sector": "Metals"},
+    "NESTLEIND": {"name": "Nestle India", "sector": "Consumer Goods"},
+    "JSWSTEEL": {"name": "JSW Steel", "sector": "Metals"},
+    "ADANIENT": {"name": "Adani Enterprises", "sector": "Services"},
+    "ADANIPORTS": {"name": "Adani Ports", "sector": "Services"},
+    "TECHM": {"name": "Tech Mahindra", "sector": "IT"},
+    "INDUSINDBK": {"name": "IndusInd Bank", "sector": "Financial Services"},
+    "CIPLA": {"name": "Cipla", "sector": "Pharma"},
+    "DRREDDY": {"name": "Dr. Reddy's Laboratories", "sector": "Pharma"},
+    "BAJAJ_AUTO": {"name": "Bajaj Auto", "sector": "Automobile", "symbol": "BAJAJ-AUTO.NS"},
+    "BAJAJFINSV": {"name": "Bajaj Finserv", "sector": "Financial Services"},
+    "COALINDIA": {"name": "Coal India", "sector": "Mining"},
+    "BPCL": {"name": "Bharat Petroleum", "sector": "Oil & Gas"},
+    "EICHERMOT": {"name": "Eicher Motors", "sector": "Automobile"},
+    "HEROMOTOCO": {"name": "Hero MotoCorp", "sector": "Automobile"},
+    "GRASIM": {"name": "Grasim Industries", "sector": "Cement"},
+    "DIVISLAB": {"name": "Divi's Laboratories", "sector": "Pharma"},
+    "APOLLOHOSP": {"name": "Apollo Hospitals", "sector": "Healthcare"},
+    "BRITANNIA": {"name": "Britannia Industries", "sector": "Consumer Goods"},
+    "TATACONSUM": {"name": "Tata Consumer Products", "sector": "Consumer Goods"},
+    "ONGC": {"name": "Oil & Natural Gas Corp", "sector": "Oil & Gas"},
+    "HINDALCO": {"name": "Hindalco Industries", "sector": "Metals"},
+    "SBILIFE": {"name": "SBI Life Insurance", "sector": "Financial Services"},
+    "HDFCLIFE": {"name": "HDFC Life Insurance", "sector": "Financial Services"},
+    "SHRIRAMFIN": {"name": "Shriram Finance", "sector": "Financial Services"},
+}
+
+def format_indian_number(n):
+    if not isinstance(n, (int, float)) or n is None:
+        return "N/A"
+    if n >= 1_000_000_000_000:
+        return f"₹{n / 1_000_000_000_000:.1f}L Cr"
+    elif n >= 10_000_000:
+        if n % 10_000_000 == 0:
+            return f"₹{int(n / 10_000_000)} Cr"
+        return f"₹{n / 10_000_000:.1f} Cr"
+    else:
+        return f"₹{round(n, 2)}"
+
+company_list_cache = {
+    "data": None,
+    "last_fetched": 0
+}
+
+@app.get("/api/company/list")
+@limiter.limit("30/minute")
+def get_company_list(request: Request):
+    now = time.time()
+    if company_list_cache["data"] and now - company_list_cache["last_fetched"] < 300:
+        return company_list_cache["data"]
+
+    def fetch_company(key, data):
+        symbol = data.get("symbol", f"{key}.NS")
+        try:
+            ticker = yf.Ticker(symbol)
+            info = ticker.fast_info
+            price = round(info.last_price, 2) if hasattr(info, 'last_price') and info.last_price else None
+            prev_close = round(info.previous_close, 2) if hasattr(info, 'previous_close') and info.previous_close else price
+            if price is not None and prev_close is not None:
+                change = round(price - prev_close, 2)
+                change_pct = round((change / prev_close) * 100, 2) if prev_close else 0
+            else:
+                change, change_pct = 0, 0
+                
+            mcap = info.market_cap if hasattr(info, 'market_cap') else None
+            return {
+                "id": key,
+                "symbol": symbol,
+                "name": data["name"],
+                "sector": data["sector"],
+                "price": price,
+                "change": change,
+                "change_pct": change_pct,
+                "marketCap": mcap
+            }
+        except Exception as e:
+            return None
+
+    results = []
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = []
+        for k, v in NIFTY_50.items():
+            futures.append(executor.submit(fetch_company, k, v))
+        for f in futures:
+            res = f.result()
+            if res:
+                results.append(res)
+                
+    company_list_cache["data"] = results
+    company_list_cache["last_fetched"] = now
+    return results
+
+@app.get("/api/company/search")
+@limiter.limit("30/minute")
+def search_companies(q: str, request: Request):
+    try:
+        results = []
+        if supabase:
+            # Search across symbol and name in Supabase
+            res = supabase.table("companies") \
+                .select("symbol, name, sector") \
+                .or_(f"symbol.ilike.%{q}%,name.ilike.%{q}%") \
+                .limit(20) \
+                .execute()
+            results = res.data or []
+            
+        # Fallback to Yahoo Finance if empty
+        if not results:
+            import requests
+            headers = {'User-Agent': 'Mozilla/5.0'}
+            yf_url = f"https://query2.finance.yahoo.com/v1/finance/search?q={q}"
+            resp = requests.get(yf_url, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                quotes = data.get('quotes', [])
+                for idx, item in enumerate(quotes):
+                    if idx >= 10: break
+                    results.append({
+                        "symbol": item.get('symbol'),
+                        "name": item.get('shortname') or item.get('longname') or item.get('symbol'),
+                        "sector": item.get('sectorDisp', 'Unknown')
+                    })
+                    
+        return results
+    except Exception as e:
+        print(f"Search failed: {e}")
+        raise HTTPException(status_code=500, detail="Search failed")
+
+
+@app.get("/api/company/screen")
+@limiter.limit("30/minute")
+def screen_companies(
+    request: Request,
+    sector: str = None,
+    min_market_cap: float = None,
+    max_pe: float = None,
+    max_pb: float = None,
+    min_roe: float = None,
+    min_dividend_yield: float = None,
+    max_debt_to_equity: float = None,
+    sort_by: str = "market_cap",
+    sort_order: str = "desc"
+):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Database not connected")
+        
+    try:
+        # We need to join companies and company_metrics
+        query = supabase.table("company_metrics").select(
+            "*, companies(name, sector)"
+        )
+        
+        if sector:
+            query = query.eq("companies.sector", sector)
+            
+        # These fields are stored as JSON inside metrics. It's tricky to query deep JSON fields directly 
+        # in standard Supabase python client without raw SQL, so we might pull more data and filter in Python
+        # for a quick MVP. A better long term approach is extracting these to dedicated columns.
+        
+        # Let's pull top 500
+        res = query.limit(500).execute()
+        results = res.data
+        
+        # In-memory filtering
+        filtered = []
+        for row in results:
+            if not row.get('metrics'): continue
+            
+            # Extract values
+            mc = row['metrics'].get('marketCap', {}).get('value')
+            pe = row['metrics'].get('pe', {}).get('value')
+            pb = row['metrics'].get('pb', {}).get('value')
+            roe = row['metrics'].get('roe', {}).get('value')
+            div = row['metrics'].get('dividendYield', {}).get('value')
+            dte = row['metrics'].get('debtToEquity', {}).get('value')
+            
+            if min_market_cap and (mc is None or mc < min_market_cap): continue
+            if max_pe and (pe is None or pe > max_pe): continue
+            if max_pb and (pb is None or pb > max_pb): continue
+            if min_roe and (roe is None or roe < min_roe): continue
+            if min_dividend_yield and (div is None or div < min_dividend_yield): continue
+            if max_debt_to_equity and (dte is None or dte > max_debt_to_equity): continue
+            
+            filtered.append(row)
+            
+        # In-memory sorting
+        reverse = sort_order.lower() == "desc"
+        
+        def sort_key(x):
+            metrics = x.get('metrics', {})
+            # Handle potential None values safely by returning 0 or inf
+            if sort_by == 'market_cap':
+                return metrics.get('marketCap', {}).get('value') or 0
+            elif sort_by == 'pe':
+                return metrics.get('pe', {}).get('value') or float('inf')
+            elif sort_by == 'pb':
+                return metrics.get('pb', {}).get('value') or float('inf')
+            elif sort_by == 'roe':
+                return metrics.get('roe', {}).get('value') or -float('inf')
+            elif sort_by == 'dividend_yield':
+                return metrics.get('dividendYield', {}).get('value') or 0
+            return 0
+            
+        filtered.sort(key=sort_key, reverse=reverse)
+        
+        return filtered[:50] # return top 50 matches
+        
+    except Exception as e:
+        print(f"Screening failed: {e}")
+        raise HTTPException(status_code=500, detail="Screening failed")
+@app.get("/api/company/{symbol}")
+@limiter.limit("60/minute")
+def get_company_detail(symbol: str, request: Request):
+    try:
+        if symbol in NIFTY_50:
+            yf_symbol = NIFTY_50[symbol].get("symbol", f"{symbol}.NS")
+        else:
+            yf_symbol = symbol if symbol.endswith(".NS") or symbol.startswith("^") else f"{symbol}.NS"
+            
+        ticker = yf.Ticker(yf_symbol)
+        info = ticker.info
+        fast_info = ticker.fast_info
+        
+        price = round(fast_info.last_price, 2) if hasattr(fast_info, 'last_price') and fast_info.last_price else info.get('currentPrice', 0)
+        prev_close = round(fast_info.previous_close, 2) if hasattr(fast_info, 'previous_close') and fast_info.previous_close else info.get('previousClose', price)
+        change = round(price - prev_close, 2)
+        change_pct = round((change / prev_close) * 100, 2) if prev_close else 0
+        
+        market_cap = info.get('marketCap')
+        if not market_cap and hasattr(fast_info, 'market_cap'):
+             market_cap = fast_info.market_cap
+        
+        info_dict = {
+            "name": info.get('longName', NIFTY_50.get(symbol, {}).get("name", symbol)),
+            "sector": info.get('sector', NIFTY_50.get(symbol, {}).get("sector", "Unknown")),
+            "industry": info.get('industry', 'Unknown'),
+            "exchange": "NSE",
+            "marketCap": market_cap,
+            "marketCapFormatted": format_indian_number(market_cap) if market_cap else "N/A",
+            "fiftyTwoWeekHigh": info.get('fiftyTwoWeekHigh'),
+            "fiftyTwoWeekLow": info.get('fiftyTwoWeekLow'),
+            "price": price,
+            "change": change,
+            "changePct": change_pct
+        }
+        
+        metrics = {}
+        
+        if info.get('trailingPE'):
+            val = round(info['trailingPE'], 1)
+            exp = f"Very cheap — investors pay only ₹{val} for every ₹1 of earnings" if val < 15 else f"Investors pay ₹{val} for every ₹1 of annual earnings"
+            metrics['pe'] = {"value": val, "label": "P/E Ratio", "explanation": exp}
+            
+        if info.get('priceToBook'):
+            val = round(info['priceToBook'], 1)
+            metrics['pb'] = {"value": val, "label": "P/B Ratio", "explanation": f"Stock trades at {val}× its book value"}
+            
+        if info.get('trailingEps'):
+            val = round(info['trailingEps'], 1)
+            metrics['eps'] = {"value": val, "label": "Earnings Per Share", "explanation": f"Company earned ₹{val} per share last year"}
+            
+        if info.get('dividendYield'):
+            val = round(info['dividendYield'] * 100, 1) 
+            div = round(info['dividendYield'] * 10000)
+            metrics['dividendYield'] = {"value": val, "label": "Dividend Yield", "explanation": f"₹{div} annual dividend per ₹10,000 invested"}
+            
+        if info.get('returnOnEquity'):
+            val = round(info['returnOnEquity'] * 100, 1) 
+            if val > 20:
+                exp = f"Excellent — generates ₹{round(val)} profit for every ₹100 of equity"
+            elif val < 10:
+                exp = f"Modest — generates only ₹{round(val)} profit for every ₹100 of equity"
+            else:
+                exp = f"Generates ₹{round(val)} profit for every ₹100 of equity"
+            metrics['roe'] = {"value": val, "label": "Return on Equity", "explanation": exp}
+            
+        if info.get('debtToEquity'):
+            val = round(info['debtToEquity'], 1)
+            if val > 100:
+                exp = f"Highly leveraged — ₹{round(val)} debt for every ₹100 of equity"
+            elif val < 20:
+                exp = f"Almost debt-free — only ₹{round(val)} debt per ₹100 equity"
+            else:
+                exp = f"Low leverage — ₹{round(val)} debt per ₹100 equity"
+            metrics['debtToEquity'] = {"value": val, "label": "Debt to Equity", "explanation": exp}
+            
+        if info.get('totalRevenue'):
+            val = info['totalRevenue']
+            metrics['revenue'] = {"value": val, "formatted": format_indian_number(val), "label": "Revenue (TTM)", "explanation": "Total sales in the trailing 12 months"}
+            
+        if info.get('netIncomeToCommon'):
+            val = info['netIncomeToCommon']
+            metrics['netProfit'] = {"value": val, "formatted": format_indian_number(val), "label": "Net Profit (TTM)", "explanation": "Bottom line profit after all expenses"}
+            
+        return {"info": info_dict, "metrics": metrics}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch data for {symbol}: {str(e)}")
+
+@app.get("/api/company/{symbol}/history")
+@limiter.limit("120/minute")
+def get_company_history(symbol: str, request: Request, period: str = "1y"):
+    valid_periods = ["1mo", "3mo", "6mo", "1y", "5y"]
+    if period not in valid_periods:
+        raise HTTPException(status_code=400, detail=f"Period must be one of {valid_periods}")
+    
+    if symbol in NIFTY_50:
+        yf_symbol = NIFTY_50[symbol].get("symbol", f"{symbol}.NS")
+    else:
+        yf_symbol = symbol if symbol.endswith(".NS") or symbol.startswith("^") else f"{symbol}.NS"
+        
+    ticker = yf.Ticker(yf_symbol)
+    hist = ticker.history(period=period)
+    
+    if hist.empty:
+        raise HTTPException(status_code=502, detail="No historical data available")
+    
+    data = [
+        {
+            "date": str(index.date()),
+            "open": round(row["Open"], 2),
+            "high": round(row["High"], 2),
+            "low": round(row["Low"], 2),
+            "close": round(row["Close"], 2),
+            "volume": int(row["Volume"]),
+        }
+        for index, row in hist.iterrows()
+    ]
+    
+    return {"symbol": symbol, "period": period, "data": data}
+
+@app.get("/api/company/{symbol}/financials")
+@limiter.limit("60/minute")
+def get_company_financials(symbol: str, request: Request):
+    if supabase:
+        try:
+            db_symbol = symbol if not symbol.endswith(".NS") else symbol[:-3]
+            res = supabase.table("financial_statements").select("*").eq("symbol", db_symbol).execute()
+            if res.data and len(res.data) > 0:
+                return res.data
+        except Exception as e:
+            print("Supabase fetch failed for financials:", str(e))
+    return {"profit_loss": None, "balance_sheet": None, "cash_flow": None}
+
+@app.get("/api/company/{symbol}/quarterly")
+@limiter.limit("60/minute")
+def get_company_quarterly(symbol: str, request: Request):
+    if supabase:
+        try:
+            db_symbol = symbol if not symbol.endswith(".NS") else symbol[:-3]
+            res = supabase.table("quarterly_results").select("*").eq("symbol", db_symbol).execute()
+            if res.data and len(res.data) > 0:
+                return res.data[0]
+        except Exception as e:
+            print("Supabase fetch failed for quarterly:", str(e))
+    return {"results": None}
+
+@app.get("/api/company/{symbol}/peers")
+@limiter.limit("60/minute")
+def get_company_peers(symbol: str, request: Request):
+    if supabase:
+        try:
+            db_symbol = symbol if not symbol.endswith(".NS") else symbol[:-3]
+            res = supabase.table("peer_comparisons").select("*").eq("symbol", db_symbol).execute()
+            if res.data and len(res.data) > 0:
+                return res.data[0]
+        except Exception as e:
+            print("Supabase fetch failed for peers:", str(e))
+    return {"peers": None}
+

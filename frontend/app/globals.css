@@ -1,25 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050816;
-  --foreground: #dfe1f6;
-  --surface: #0f1321;
-  --surface-container: #1b1f2e;
-  --surface-container-high: #262939;
-  --surface-container-highest: #303444;
-  --primary: #57f1db;
-  --primary-dim: #3cddc7;
-  --secondary: #ddb7ff;
-  --secondary-container: #6f00be;
-  --on-surface: #dfe1f6;
-  --on-surface-variant: #bacac5;
-  --on-primary: #003731;
-  --outline: #859490;
-  --outline-variant: #3c4a46;
-  --error: #ffb4ab;
+  /* Shivalik Capital Warm Dark Palette */
+  --background: #0D0C0B;
+  --foreground: #F5F3EF;
+  --surface: #141311;
+  --surface-container: #1A1917;
+  --surface-container-high: #24221F;
+  --surface-container-highest: #2E2B27;
+  
+  --primary: #CCA550;
+  --primary-dim: #8A6F33;
+  --secondary: #6B655C;
+  --secondary-container: #3D3934;
+  
+  --on-surface: #F5F3EF;
+  --on-surface-variant: #A8A296;
+  --on-primary: #0D0C0B;
+  
+  --outline: #38352F;
+  --outline-variant: #292722;
+  
+  --error: #E74C3C;
+  --positive: #2ECC71;
+  --negative: #E74C3C;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
@@ -36,9 +43,16 @@
   --color-outline: var(--outline);
   --color-outline-variant: var(--outline-variant);
   --color-error: var(--error);
-  --color-positive: #34d399;
-  --color-negative: #f87171;
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "PT Serif", serif;
+  --font-mono-data: "JetBrains Mono", monospace;
+  
+  --spacing-gutter: 24px;
+  --spacing-margin: 32px;
+  --spacing-unit: 8px;
 }
 
 * {
@@ -47,13 +61,13 @@
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  color: var(--on-surface);
+  font-family: var(--font-sans);
   overflow-x: hidden;
 }
 
 ::selection {
-  background: rgba(87, 241, 219, 0.25);
+  background: rgba(204, 165, 80, 0.3);
   color: #fff;
 }
 
@@ -67,34 +81,33 @@ body {
 }
 
 .glass-card:hover {
-  border-color: rgba(87, 241, 219, 0.3);
-  background: rgba(255, 255, 255, 0.06);
-  transform: translateY(-4px);
-  box-shadow: 0 0 30px rgba(87, 241, 219, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
 }
 
-/* ─── Glow Effects ─── */
+/* ─── Removed Glow Effects for cleaner look ─── */
 .glow-text-teal {
-  text-shadow: 0 0 10px rgba(87, 241, 219, 0.5);
+  /* text-shadow: 0 0 10px rgba(10, 132, 255, 0.5); */
 }
 
 .glow-teal {
-  box-shadow: 0 0 20px rgba(87, 241, 219, 0.15);
+  /* box-shadow: 0 0 20px rgba(10, 132, 255, 0.15); */
 }
 
 .chart-glow {
-  filter: drop-shadow(0 0 4px rgba(87, 241, 219, 0.6));
+  /* filter: drop-shadow(0 0 4px rgba(10, 132, 255, 0.6)); */
 }
 
 .sparkline-glow {
-  filter: drop-shadow(0 0 4px currentColor);
+  filter: none;
 }
 
 /* ─── Pulse Animation ─── */
 @keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(87, 241, 219, 0.4); }
-  70% { box-shadow: 0 0 0 15px rgba(87, 241, 219, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(87, 241, 219, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(204, 165, 80, 0.2); }
+  70% { box-shadow: 0 0 0 10px rgba(204, 165, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(204, 165, 80, 0); }
 }
 
 .pulse-active {
@@ -103,9 +116,7 @@ body {
 
 /* ─── Background Mesh ─── */
 .bg-mesh {
-  background:
-    radial-gradient(circle at 20% 30%, rgba(87, 241, 219, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(111, 0, 190, 0.08) 0%, transparent 40%);
+  background: transparent;
 }
 
 /* ─── Momentum Gauge ─── */
@@ -134,3 +145,23 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* ─── Typography Utils ─── */
+.font-mono-data {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── Animations ─── */
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@keyframes fadeInCascade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-stagger-1 { animation: fadeInCascade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+.animate-stagger-2 { animation: fadeInCascade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
+.animate-stagger-3 { animation: fadeInCascade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
+.animate-stagger-4 { animation: fadeInCascade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }
