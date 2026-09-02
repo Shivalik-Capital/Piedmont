@@ -19,11 +19,15 @@ export default function TopBar() {
   const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
   
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     const updateTime = () => {
-      setTime(new Date().toLocaleTimeString('en-IN', {
-        timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-      }));
+      const now = new Date();
+      const options = { timeZone: 'Asia/Kolkata' };
+      const timeStr = now.toLocaleTimeString('en-US', { ...options, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      setTime(timeStr);
     };
     updateTime();
     const timer = setInterval(updateTime, 1000);
@@ -125,11 +129,9 @@ export default function TopBar() {
         )}
 
         <div className="flex items-center gap-gutter text-on-surface-variant">
-          {time && (
-            <span className="text-xs font-mono-data tabular-nums hidden md:inline">
-              {time} IST
-            </span>
-          )}
+          <span className="text-xs font-mono-data tabular-nums hidden md:inline w-[110px] text-right" suppressHydrationWarning>
+            {mounted ? `${time} IST` : ''}
+          </span>
           <LivePulse />
           <button className="hover:text-primary transition-colors flex items-center"><Icon name="account_circle" /></button>
         </div>
