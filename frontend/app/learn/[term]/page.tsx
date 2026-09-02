@@ -60,7 +60,114 @@ const dictionary: Record<string, { title: string; tldr: string; why: string; exa
     why: 'It is the "bottom line" and the ultimate measure of a company\'s financial success in a given period.',
     example: 'After starting with $10M in revenue and subtracting $8M in various costs and taxes, the net profit is $2M.',
     lookFor: 'Expanding net profit margins (net profit divided by revenue). This shows the company is becoming more efficient as it scales.'
+  },
+
+  "rbi-repo-rate": {
+    title: 'RBI Repo Rate',
+    tldr: 'The rate at which the Reserve Bank of India lends money to commercial banks in the event of any shortfall of funds.',
+    why: 'It is a primary tool for the RBI to control inflation and regulate liquidity in the economy. Changes in the repo rate affect all other interest rates, including your loan EMIs and fixed deposit rates.',
+    example: 'If inflation is high, the RBI increases the repo rate, making borrowing more expensive for banks and, consequently, for consumers, which slows down spending.',
+    lookFor: 'A rate cut typically boosts the stock market as borrowing becomes cheaper for companies, while a rate hike can cool the market.'
+  },
+  "reverse-repo": {
+    title: 'Reverse Repo Rate',
+    tldr: 'The rate at which the Reserve Bank of India borrows money from commercial banks.',
+    why: 'It is used to absorb liquidity from the market. When the RBI wants to reduce money supply, it increases the reverse repo rate, incentivizing banks to park their funds with the RBI instead of lending.',
+    example: 'A high reverse repo rate encourages banks to earn risk-free interest from the RBI rather than lending to businesses, reducing overall market liquidity.',
+    lookFor: 'The spread between the repo and reverse repo rate indicates the RBIs stance on liquidity management.'
+  },
+  "standing-deposit-facility": {
+    title: 'Standing Deposit Facility (SDF)',
+    tldr: 'A liquidity window through which the RBI absorbs excess liquidity from banks without providing government securities as collateral.',
+    why: 'It strengthens the RBIs monetary policy framework by allowing it to mop up excess funds even if it runs out of government bonds to offer as collateral.',
+    example: 'Introduced in 2022, the SDF replaced the fixed-rate reverse repo as the floor of the liquidity adjustment facility (LAF) corridor.',
+    lookFor: 'The SDF rate is usually set slightly below the repo rate, serving as the baseline for overnight interest rates in the banking system.'
+  },
+  "gdp-growth": {
+    title: 'GDP Growth',
+    tldr: 'The rate at which a countrys Gross Domestic Product (the total value of all goods and services produced) increases over time.',
+    why: 'It is the broadest indicator of a countrys economic health and performance.',
+    example: 'If India’s GDP is $3 Trillion and grows by 7%, the economy added $210 Billion in value over the year.',
+    lookFor: 'Consistent, robust growth (like 6-8% for an emerging market). Sharp drops indicate recession, which negatively impacts corporate earnings and stock prices.'
+  },
+  "cpi-inflation": {
+    title: 'CPI Inflation (Consumer Price Index)',
+    tldr: 'Measures the average change over time in the prices paid by urban and rural consumers for a market basket of consumer goods and services.',
+    why: 'It is the most widely watched measure of retail inflation. The RBI targets CPI inflation (currently 4% with a +/- 2% band) when setting interest rates.',
+    example: 'If CPI inflation is 5%, a basket of groceries that cost ₹1,000 last year now costs ₹1,050.',
+    lookFor: 'When CPI breaches the RBI tolerance band (>6%), expect interest rate hikes which can dampen stock market performance.'
+  },
+  "wpi-inflation": {
+    title: 'WPI Inflation (Wholesale Price Index)',
+    tldr: 'Measures the changes in the prices of goods sold and traded in bulk by wholesale businesses to other businesses.',
+    why: 'It acts as a leading indicator for retail inflation. If raw material and wholesale prices surge, companies eventually pass those costs to consumers (CPI).',
+    example: 'A spike in global crude oil or steel prices will immediately reflect in WPI before hitting CPI.',
+    lookFor: 'A widening gap between WPI and CPI. If WPI is much higher than CPI, companies are absorbing costs, which crushes their profit margins.'
+  },
+  "manufacturing-pmi": {
+    title: 'Manufacturing PMI (Purchasing Managers Index)',
+    tldr: 'An indicator of the economic health of the manufacturing sector, based on surveys of purchasing managers.',
+    why: 'A PMI reading above 50 represents expansion, while under 50 represents contraction. It is a highly sensitive leading economic indicator.',
+    example: 'A PMI jumping from 51 to 54 indicates new orders, production, and employment in factories are accelerating.',
+    lookFor: 'Sustained prints above 50. A sharp drop below 50 signals an impending industrial slowdown.'
+  },
+  "iip-growth": {
+    title: 'IIP Growth (Index of Industrial Production)',
+    tldr: 'Measures the growth rate in different industry groups of the economy over a specific time period.',
+    why: 'Unlike PMI which is survey-based (sentiment), IIP measures actual physical production volume in mining, manufacturing, and electricity.',
+    example: 'A high IIP growth indicates factories are churning out more cars, appliances, and cement, pointing to strong economic demand.',
+    lookFor: 'The manufacturing component, which holds the highest weight (~77%). Weak IIP often precedes poor corporate earnings for industrial stocks.'
+  },
+  "fiscal-deficit": {
+    title: 'Fiscal Deficit',
+    tldr: 'The shortfall in a governments income compared with its spending.',
+    why: 'A high deficit means the government is borrowing heavily to fund its operations, which can crowd out private borrowing and stoke inflation.',
+    example: 'If the Indian government earns ₹20 Lakh Crore in taxes but spends ₹25 Lakh Crore, the fiscal deficit is ₹5 Lakh Crore.',
+    lookFor: 'The deficit as a percentage of GDP. The government aims to bring it down steadily (fiscal consolidation) to maintain sovereign credit ratings.'
+  },
+  "forex-reserves": {
+    title: 'Forex Reserves',
+    tldr: 'Foreign currency assets held by the central bank (RBI), including foreign currencies, bonds, treasury bills, and gold.',
+    why: 'They act as a shock absorber against economic crises, ensuring the country can pay for its imports and defend the Rupee against extreme volatility.',
+    example: 'If global oil prices spike, India uses its forex reserves to pay for the expensive oil without collapsing the Rupee.',
+    lookFor: 'Reserves measured in "months of import cover". Higher reserves provide immense macroeconomic stability.'
+  },
+  "fii-flows-cash": {
+    title: 'FII Flows (Foreign Institutional Investors)',
+    tldr: 'The net amount of money foreign funds, banks, and institutions are investing into or pulling out of the Indian stock market.',
+    why: 'FIIs control massive amounts of capital. Their buying or selling can single-handedly dictate the short-term direction of the overall market.',
+    example: 'If FIIs buy ₹10,000 Cr of Indian stocks in a month, the Nifty is highly likely to trend upwards.',
+    lookFor: 'Continuous months of heavy FII selling, which usually indicates global risk aversion or better yields in the US market.'
+  },
+  "dii-flows-cash": {
+    title: 'DII Flows (Domestic Institutional Investors)',
+    tldr: 'The net amount of money domestic mutual funds, insurance companies, and pension funds are investing in the Indian market.',
+    why: 'DIIs act as a massive counterbalance to FIIs. They are largely fueled by retail investors SIPs (Systematic Investment Plans).',
+    example: 'Even if foreign investors sell heavily, strong DII buying (fueled by retail SIPs) can prevent the market from crashing.',
+    lookFor: 'Consistent DII inflows indicate strong domestic confidence and structural support for the stock market.'
+  },
+  "current-account": {
+    title: 'Current Account Balance',
+    tldr: 'A record of a countrys transactions with the rest of the world, specifically net trade in goods and services, net earnings on cross-border investments, and net transfer payments.',
+    why: 'A deficit means the country imports more than it exports, requiring foreign capital to bridge the gap. A surplus means it is a net lender to the world.',
+    example: 'India typically runs a current account deficit (CAD) because it imports massive amounts of crude oil.',
+    lookFor: 'CAD as a percentage of GDP. If it crosses 2.5 - 3.0%, it puts severe depreciation pressure on the Rupee.'
+  },
+  "govt-borrowing": {
+    title: 'Government Borrowing',
+    tldr: 'The amount of money the government borrows from the market (by issuing bonds/G-Secs) to fund its fiscal deficit.',
+    why: 'High government borrowing increases the supply of bonds, pushing yields up. This increases interest rates across the entire economy.',
+    example: 'If the government announces a massive borrowing calendar, bond yields spike, causing banks to raise loan rates for consumers.',
+    lookFor: 'The gross and net borrowing figures in the Union Budget. Lower-than-expected borrowing is highly bullish for bond markets and stocks.'
+  },
+  "next-rbi-mpc": {
+    title: 'Next RBI MPC Meeting',
+    tldr: 'The upcoming meeting of the Monetary Policy Committee (MPC) of the Reserve Bank of India.',
+    why: 'The MPC meets every two months to set the benchmark interest rates (repo rate) and define the monetary policy stance.',
+    example: 'The market will wait anxiously for the MPCs decision. A surprise rate cut causes a massive rally, while a surprise hike causes a selloff.',
+    lookFor: 'The "stance" of the committee (e.g., "Withdrawal of accommodation" vs "Neutral"). The stance often signals what they plan to do in future meetings.'
   }
+
 };
 
 export default function LearnPage() {
