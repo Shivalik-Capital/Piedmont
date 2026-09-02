@@ -36,29 +36,40 @@ interface MacroData {
   };
 }
 
+import Link from 'next/link';
+
 const MetricCard = ({ indicator, size = 'default' }: { indicator: Indicator; size?: 'large' | 'default' }) => {
   const isUp = indicator.trend === 'Up';
   const isDown = indicator.trend === 'Down';
   const isStable = indicator.trend === 'Stable';
   
   const valueClass = size === 'large' ? 'text-3xl' : 'text-2xl';
+  const slug = indicator.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   
   return (
-    <motion.div 
-      variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-      className="bg-surface-container-high border border-outline-variant rounded-xl p-6 flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200"
-    >
-      <div className="flex justify-between items-start mb-4">
-        <span className="text-on-surface-variant font-medium">{indicator.name}</span>
-        {isUp && <Icon name="arrow_drop_up" className="text-positive text-3xl" />}
-        {isDown && <Icon name="arrow_drop_down" className="text-negative text-3xl" />}
-        {isStable && <Icon name="remove" className="text-primary text-xl" />}
-      </div>
-      <div>
-        <div className={`font-mono-data ${valueClass} text-on-surface mb-1`}>{indicator.value}</div>
-        <div className="text-on-surface-variant text-sm">{indicator.date}</div>
-      </div>
-    </motion.div>
+    <Link href={`/learn/${slug}`} className="block h-full">
+      <motion.div 
+        variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+        className="bg-surface-container-high border border-outline-variant rounded-xl p-6 flex flex-col justify-between hover:border-primary/50 transition-all duration-200 h-full group relative"
+      >
+        <div>
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-on-surface-variant font-medium">{indicator.name}</span>
+            {isUp && <Icon name="arrow_drop_up" className="text-positive text-3xl" />}
+            {isDown && <Icon name="arrow_drop_down" className="text-negative text-3xl" />}
+            {isStable && <Icon name="remove" className="text-primary text-xl" />}
+          </div>
+          <div>
+            <div className={`font-mono-data ${valueClass} text-on-surface mb-1`}>{indicator.value}</div>
+            <div className="text-on-surface-variant text-sm">{indicator.date}</div>
+          </div>
+        </div>
+        <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">
+          <span className="uppercase tracking-widest">Click to understand</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </div>
+      </motion.div>
+    </Link>
   );
 };
 

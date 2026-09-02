@@ -189,9 +189,9 @@ export default function LearnPage() {
   return (
     <div className="min-h-screen bg-[#111110] text-white p-8">
       <div className="max-w-3xl mx-auto mt-12">
-        <Link href="/screener" className="inline-flex items-center gap-2 text-[#D4AF37]/70 hover:text-[#D4AF37] transition-colors mb-8 text-sm">
-          <ArrowLeft size={16} /> Back to Screener
-        </Link>
+        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'} className="inline-flex items-center gap-2 text-[#D4AF37]/70 hover:text-[#D4AF37] transition-colors mb-8 text-sm">
+          <ArrowLeft size={16} /> Go Back
+        </button>
         
         <article className="bg-[#1A1917] p-8 md:p-12 rounded-2xl border border-[#D4AF37]/20 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-5">
