@@ -263,11 +263,21 @@ export default function Home() {
 
       {/* Price Chart Modal */}
       {selected && (
-        <PriceChart
-          symbol={selected.symbol}
-          name={selected.name}
-          onClose={() => setSelected(null)}
-        />
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setSelected(null)}
+        >
+          <div 
+            className="w-full max-w-[1200px] max-h-[90vh] bg-surface-container border border-outline-variant shadow-2xl rounded-2xl p-6 relative overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <PriceChart
+              symbol={selected.symbol}
+              name={selected.name}
+              onClose={() => setSelected(null)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
