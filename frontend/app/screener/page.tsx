@@ -46,7 +46,7 @@ export default function ScreenerPage() {
 
         const res = await fetch(`${API}/api/company/screen?${params.toString()}`);
         const data = await res.json();
-        setCompanies(data.companies || []);
+        setCompanies(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
       } finally {
