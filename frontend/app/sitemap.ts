@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://piedmont.in'; // Replace with actual production URL
+  const baseUrl = 'https://piedmont-two.vercel.app'; // Replace with actual production URL
 
   // Define core static routes
   const routes = [

@@ -4,7 +4,7 @@ import PWARegister from "./components/PWARegister";
 import LayoutWrapper from "./components/layout/LayoutWrapper";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://piedmont.in'),
+  metadataBase: new URL('https://piedmont-two.vercel.app'),
   title: "PIEDMONT | Institutional Financial Intelligence",
   description: "Institutional-grade macroeconomic intelligence for the Indian markets. Real-time indices, RBI policy rates, GDP, CPI, and company financials.",
   keywords: ["Indian stock market", "Nifty 50", "Macroeconomics India", "RBI Repo Rate", "FII DII data", "Indian equities", "Financial dashboard"],
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PIEDMONT | Institutional Financial Intelligence",
     description: "Institutional-grade macroeconomic intelligence for the Indian markets. Real-time indices, RBI policy rates, GDP, CPI, and company financials.",
-    url: 'https://piedmont.in',
+    url: 'https://piedmont-two.vercel.app',
     siteName: 'Piedmont Terminal',
     images: [
       {
@@ -86,14 +86,14 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               "name": "Piedmont Terminal",
-              "url": "https://piedmont.in",
+              "url": "https://piedmont-two.vercel.app",
               "description": "Institutional-grade macroeconomic intelligence for the Indian markets.",
               "publisher": {
                 "@type": "Organization",
                 "name": "Piedmont Intelligence",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://piedmont.in/icon.svg"
+                  "url": "https://piedmont-two.vercel.app/icon.svg"
                 }
               },
               "inLanguage": "en-IN"
