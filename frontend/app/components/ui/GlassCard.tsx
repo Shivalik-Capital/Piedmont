@@ -11,7 +11,7 @@ export default function GlassCard({ children, className = '', onClick }: GlassCa
   return (
     <Component
       onClick={onClick}
-      className={`glass-card rounded-2xl p-6 ${onClick ? 'cursor-pointer text-left w-full' : ''} ${className}`}
+      className={`bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant rounded-2xl p-6 ${onClick ? 'cursor-pointer text-left w-full' : ''} ${className}`}
     >
       {children}
     </Component>

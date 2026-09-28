@@ -2,7 +2,7 @@ import React from 'react';
 
 export function ShimmerCard() {
   return (
-    <div className="glass-card rounded-2xl h-[180px] p-6 flex flex-col justify-between overflow-hidden relative">
+    <div className="bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant rounded-2xl h-[180px] p-6 flex flex-col justify-between overflow-hidden relative">
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
       <div className="flex justify-between items-start">
         <div className="space-y-2">
@@ -24,7 +24,7 @@ export function ShimmerCard() {
 
 export function ShimmerRow() {
   return (
-    <div className="glass-card rounded-xl h-[60px] p-4 flex items-center justify-between overflow-hidden relative">
+    <div className="bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant rounded-xl h-[60px] p-4 flex items-center justify-between overflow-hidden relative">
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
       <div className="space-y-1.5">
         <div className="h-4 w-24 bg-white/5 rounded" />

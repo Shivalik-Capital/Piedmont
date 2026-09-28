@@ -6,7 +6,7 @@ import { getMarketStatus, IndexData } from '../../lib/market-helpers';
 export default function SectorCard({ data, onClick }: { data: IndexData; onClick?: () => void }) {
   const isPositive = data.change >= 0;
   return (
-    <div onClick={onClick} className={`glass-card p-4 rounded-xl flex items-center justify-between group ${onClick ? 'cursor-pointer hover:border-primary/40' : ''}`}>
+    <div onClick={onClick} className={`bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant p-4 rounded-xl flex items-center justify-between group ${onClick ? 'cursor-pointer hover:border-primary/40' : ''}`}>
       <div>
         <p className="text-on-surface font-semibold text-sm flex items-center">
           {data.name} <ActiveDot active={getMarketStatus(data.exchange)} />

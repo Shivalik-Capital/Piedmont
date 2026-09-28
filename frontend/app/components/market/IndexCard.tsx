@@ -25,7 +25,7 @@ export default function IndexCard({ data, onClick }: { data: IndexData; onClick:
   return (
     <div
       onClick={onClick}
-      className="glass-card p-6 rounded-3xl flex flex-col justify-between cursor-pointer group min-h-[180px]"
+      className="bg-surface-container rounded-2xl p-6 shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant flex flex-col justify-between cursor-pointer group min-h-[180px]"
     >
       <div className="flex justify-between items-start mb-6">
         <div>

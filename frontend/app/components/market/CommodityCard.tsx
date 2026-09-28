@@ -5,7 +5,7 @@ import { getMarketStatus, IndexData } from '../../lib/market-helpers';
 export default function CommodityCard({ data, onClick }: { data: IndexData; onClick?: () => void }) {
   const isPositive = data.change >= 0;
   return (
-    <div onClick={onClick} className={`glass-card p-5 rounded-2xl ${onClick ? 'cursor-pointer hover:border-primary/40' : ''}`}>
+    <div onClick={onClick} className={`bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant p-5 rounded-2xl ${onClick ? 'cursor-pointer hover:border-primary/40' : ''}`}>
       <div className="flex items-center text-on-surface-variant text-xs uppercase tracking-widest font-semibold mb-2">
         {data.name} <ActiveDot active={getMarketStatus(data.exchange)} />
       </div>

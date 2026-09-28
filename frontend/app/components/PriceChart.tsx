@@ -123,7 +123,7 @@ export default function PriceChart({ symbol, name, onClose }: PriceChartProps) {
         chart = create(chartContainerRef.current, {
           layout: {
             background: { type: ColorType.Solid, color: 'transparent' },
-            textColor: '#A8A296',
+            textColor: '#868f97',
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 12,
           },
@@ -137,13 +137,13 @@ export default function PriceChart({ symbol, name, onClose }: PriceChartProps) {
               color: 'rgba(255, 255, 255, 0.2)',
               width: 1,
               style: LineStyle.Solid,
-              labelBackgroundColor: '#1A1917',
+              labelBackgroundColor: '#131313',
             },
             horzLine: {
               color: 'rgba(255, 255, 255, 0.2)',
               width: 1,
               style: LineStyle.Solid,
-              labelBackgroundColor: '#1A1917',
+              labelBackgroundColor: '#131313',
             },
           },
           width: chartContainerRef.current.clientWidth,
@@ -202,15 +202,15 @@ export default function PriceChart({ symbol, name, onClose }: PriceChartProps) {
       const firstClose = data[0]?.close ?? 0;
       const lastClose = data[data.length - 1]?.close ?? 0;
       const isPositive = lastClose >= firstClose;
-      const upColor = '#32D74B';
-      const downColor = '#FF453A';
+      const upColor = '#4ebe96';
+      const downColor = '#d85e5e';
       const lineColor = isPositive ? upColor : downColor;
 
       // Add main series
       if (chartType === 'Area') {
         const series = chart.addAreaSeries({
           lineColor,
-          topColor: isPositive ? 'rgba(50, 215, 75, 0.2)' : 'rgba(255, 69, 58, 0.2)',
+          topColor: isPositive ? 'rgba(78, 190, 150, 0.2)' : 'rgba(216, 94, 94, 0.2)',
           bottomColor: 'rgba(0, 0, 0, 0)',
           lineWidth: 2,
         });

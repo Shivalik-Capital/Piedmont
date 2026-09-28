@@ -15,7 +15,7 @@ export default function MetricCard({ label, value, explanation, trend = 'neutral
   const trendColor = trend === 'up' ? 'text-positive' : trend === 'down' ? 'text-negative' : 'text-on-surface-variant';
   
   const CardContent = (
-    <div className="glass-card p-5 rounded-2xl group flex flex-col justify-between h-full hover:border-primary/50 transition-colors cursor-pointer relative">
+    <div className="bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant p-5 rounded-2xl group flex flex-col justify-between h-full hover:border-primary/50 transition-colors cursor-pointer relative">
       <div>
         <p className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-3">{label}</p>
         <div className="overflow-hidden">

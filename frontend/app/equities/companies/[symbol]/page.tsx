@@ -279,23 +279,23 @@ export default function CompanyDetailPage() {
             >
               {financials && Array.isArray(financials) ? (
                 <>
-                  <div className="glass-card rounded-3xl p-6 border border-white/10 overflow-hidden">
+                  <div className="bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant rounded-3xl p-6 border border-white/10 overflow-hidden">
                     <h3 className="text-xl font-bold mb-6 text-white flex items-center gap-2"><Activity size={20} className="text-primary" /> Profit & Loss</h3>
                     <FinancialTable data={financials.filter((f: any) => f.statement_type === 'income_statement')} type="income" />
                   </div>
                   
-                  <div className="glass-card rounded-3xl p-6 border border-white/10 overflow-hidden">
+                  <div className="bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant rounded-3xl p-6 border border-white/10 overflow-hidden">
                     <h3 className="text-xl font-bold mb-6 text-white flex items-center gap-2"><FileText size={20} className="text-primary" /> Balance Sheet</h3>
                     <FinancialTable data={financials.filter((f: any) => f.statement_type === 'balance_sheet')} type="balance" />
                   </div>
                   
-                  <div className="glass-card rounded-3xl p-6 border border-white/10 overflow-hidden">
+                  <div className="bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant rounded-3xl p-6 border border-white/10 overflow-hidden">
                     <h3 className="text-xl font-bold mb-6 text-white flex items-center gap-2"><FileText size={20} className="text-primary" /> Cash Flow</h3>
                     <FinancialTable data={financials.filter((f: any) => f.statement_type === 'cash_flow')} type="cash" />
                   </div>
                 </>
               ) : (
-                <div className="text-center py-24 glass-card rounded-3xl">
+                <div className="text-center py-24 bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant rounded-3xl">
                   <FileText className="mx-auto text-on-surface-variant mb-4" size={48} />
                   <h3 className="text-xl font-bold text-white mb-2">No Financial Data Available</h3>
                   <p className="text-on-surface-variant">Detailed statements are not available for this company yet.</p>

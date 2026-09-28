@@ -12,7 +12,7 @@ export default function MacroCard({ data, accent = 'primary' }: { data: MacroInd
 
   return (
     <Link href={`/macro`} className="block h-full">
-      <div className="glass-card p-5 rounded-2xl group flex flex-col justify-between h-full hover:border-primary/50 transition-colors relative">
+      <div className="bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant p-5 rounded-2xl group flex flex-col justify-between h-full hover:border-primary/50 transition-colors relative">
         <div>
           <div className="flex items-center justify-between mb-3">
             <p className="text-on-surface-variant text-xs uppercase tracking-widest font-semibold">{data.name}</p>

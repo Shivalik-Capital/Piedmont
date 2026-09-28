@@ -80,7 +80,7 @@ export default function TopBar() {
   return (
     <nav className="fixed top-0 right-0 left-20 z-40 flex justify-between items-center h-16 px-gutter bg-surface/80 backdrop-blur-md border-b border-outline-variant transition-all duration-300">
       <div className="flex items-center gap-gutter">
-        <div className="font-serif font-bold text-2xl tracking-tight text-on-surface hidden sm:block">Piedmont Terminal</div>
+        <div className="font-bold text-lg tracking-wide text-on-surface hidden sm:block">Piedmont Terminal</div>
         <div className="flex items-center gap-unit text-primary font-bold border-b-2 border-primary h-16">
           <Icon name={pathname === '/' ? 'dashboard' : pathname.startsWith('/macro') ? 'language' : pathname.startsWith('/commodities') ? 'oil_barrel' : 'show_chart'} className="text-sm" />
           <span className="text-sm">{pathname === '/' ? 'Dashboard' : pathname.startsWith('/equities') ? 'Equities' : pathname.startsWith('/macro') ? 'Macro' : pathname.startsWith('/commodities') ? 'Commodities' : 'Dashboard'}</span>

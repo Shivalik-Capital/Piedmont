@@ -1,29 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  /* Shivalik Capital Warm Dark Palette */
-  --background: #0D0C0B;
-  --foreground: #F5F3EF;
-  --surface: #141311;
-  --surface-container: #1A1917;
-  --surface-container-high: #24221F;
-  --surface-container-highest: #2E2B27;
+  /* Fey Aesthetic Dark Palette */
+  --background: #0b0b0b;
+  --foreground: #ffffff;
+  --surface: #0b0b0b;
+  --surface-container: #191919;
+  --surface-container-high: #131313;
+  --surface-container-highest: #262626;
   
-  --primary: #CCA550;
-  --primary-dim: #8A6F33;
-  --secondary: #6B655C;
-  --secondary-container: #3D3934;
+  --primary: #ffffff;
+  --primary-dim: #cccccc;
+  --secondary: #868f97;
+  --secondary-container: #131313;
   
-  --on-surface: #F5F3EF;
-  --on-surface-variant: #A8A296;
-  --on-primary: #0D0C0B;
+  --on-surface: #ffffff;
+  --on-surface-variant: #868f97;
+  --on-primary: #0b0b0b;
   
-  --outline: #38352F;
-  --outline-variant: #292722;
+  --outline: #525252;
+  --outline-variant: #333333;
   
-  --error: #E74C3C;
-  --positive: #2ECC71;
-  --negative: #E74C3C;
+  --error: #d85e5e;
+  --positive: #4ebe96;
+  --negative: #d85e5e;
+  --signal: #479ffa;
+  --ember: #ffa16c;
 }
 
 @theme {
@@ -42,126 +44,46 @@
   --color-on-primary: var(--on-primary);
   --color-outline: var(--outline);
   --color-outline-variant: var(--outline-variant);
-  --color-error: var(--error);
+  
   --color-positive: var(--positive);
   --color-negative: var(--negative);
-  
-  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --color-error: var(--error);
+  --color-signal: var(--signal);
+  --color-ember: var(--ember);
+
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-serif: "PT Serif", serif;
   --font-mono-data: "JetBrains Mono", monospace;
-  
-  --spacing-gutter: 24px;
-  --spacing-margin: 32px;
+
+  /* Fey Shadows */
+  --shadow-fey-base: 0 0 44px rgba(0, 0, 0, 0.8);
+  --shadow-fey-btn: 0 1px 0 rgba(0, 0, 0, 0.85), 0 0 14px rgba(255, 255, 255, 0.25);
+
   --spacing-unit: 8px;
+  --spacing-gutter: 16px;
+  --spacing-margin: 24px;
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
 }
 
-body {
-  background: var(--background);
-  color: var(--on-surface);
-  font-family: var(--font-sans);
-  overflow-x: hidden;
-}
-
-::selection {
-  background: rgba(204, 165, 80, 0.3);
-  color: #fff;
-}
-
-/* ─── Glassmorphism Cards ─── */
-.glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateY(-2px);
-}
-
-/* ─── Removed Glow Effects for cleaner look ─── */
-.glow-text-teal {
-  /* text-shadow: 0 0 10px rgba(10, 132, 255, 0.5); */
-}
-
-.glow-teal {
-  /* box-shadow: 0 0 20px rgba(10, 132, 255, 0.15); */
-}
-
-.chart-glow {
-  /* filter: drop-shadow(0 0 4px rgba(10, 132, 255, 0.6)); */
-}
-
-.sparkline-glow {
-  filter: none;
-}
-
-/* ─── Pulse Animation ─── */
-@keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(204, 165, 80, 0.2); }
-  70% { box-shadow: 0 0 0 10px rgba(204, 165, 80, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(204, 165, 80, 0); }
-}
-
-.pulse-active {
-  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* ─── Background Mesh ─── */
-.bg-mesh {
-  background: transparent;
-}
-
-/* ─── Momentum Gauge ─── */
-.momentum-gauge {
-  stroke-dasharray: 251.2;
-  stroke-dashoffset: 75;
-  transition: stroke-dashoffset 1s ease-out;
-}
-
-/* ─── Tabular Numbers ─── */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-}
-
-/* ─── Custom Scrollbar ─── */
+/* Custom scrollbar matching Fey */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: var(--outline-variant);
+  border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--outline);
 }
-
-/* ─── Typography Utils ─── */
-.font-mono-data {
-  font-family: 'JetBrains Mono', monospace;
-}
-
-/* ─── Animations ─── */
-@keyframes shimmer {
-  100% { transform: translateX(100%); }
-}
-
-@keyframes fadeInCascade {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-stagger-1 { animation: fadeInCascade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
-.animate-stagger-2 { animation: fadeInCascade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
-.animate-stagger-3 { animation: fadeInCascade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
-.animate-stagger-4 { animation: fadeInCascade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }

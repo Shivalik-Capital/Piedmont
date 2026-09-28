@@ -92,7 +92,7 @@ export default function Home() {
               </div>
             </div>
             <div className="lg:col-span-5">
-              <div className="glass-card rounded-3xl p-8 flex flex-col justify-between min-h-[400px]">
+              <div className="bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant rounded-3xl p-8 flex flex-col justify-between min-h-[400px]">
                 <ShimmerText width="w-1/3" />
                 <div className="space-y-4 flex-1 flex flex-col justify-center mt-6">
                   <ShimmerRow />
