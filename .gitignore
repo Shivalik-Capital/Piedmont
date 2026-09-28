@@ -31,3 +31,19 @@ Thumbs.db
 # IDE
 .vscode/settings.json
 .idea/
+
+# Agent & Temp files
+.agents/
+.codex/
+.gemini/
+.impeccable/
+*.html
+update_*.py
+fix_*.py
+test_*.py
+backend/backend.log
+backend/mock_*.py
+backend/slow_scraper.py
+backend/scraper.py
+backend/screener_scraper.py
+backend/*.sql

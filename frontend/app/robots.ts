@@ -1,14 +1,12 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://piedmont-two.vercel.app';
-  
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: '/private/',
+      disallow: '/api/',
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: 'https://piedmont.in/sitemap.xml',
   };
 }

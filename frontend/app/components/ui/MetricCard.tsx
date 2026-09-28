@@ -8,9 +8,10 @@ interface MetricCardProps {
   trend?: 'up' | 'down' | 'neutral';
   prefix?: string;
   metricKey?: string;
+  symbol?: string;
 }
 
-export default function MetricCard({ label, value, explanation, trend = 'neutral', prefix = '', metricKey }: MetricCardProps) {
+export default function MetricCard({ label, value, explanation, trend = 'neutral', prefix = '', metricKey, symbol }: MetricCardProps) {
   const trendColor = trend === 'up' ? 'text-positive' : trend === 'down' ? 'text-negative' : 'text-on-surface-variant';
   
   const CardContent = (
@@ -34,7 +35,8 @@ export default function MetricCard({ label, value, explanation, trend = 'neutral
   );
 
   if (metricKey) {
-    return <Link href={`/learn/${metricKey}`} className="block h-full">{CardContent}</Link>;
+    const href = symbol ? `/learn/${metricKey}?symbol=${symbol}` : `/learn/${metricKey}`;
+    return <Link href={href} className="block h-full">{CardContent}</Link>;
   }
   
   return CardContent;

@@ -32,29 +32,33 @@ export default function ScreenerPage() {
   const [maxDebtEquity, setMaxDebtEquity] = useState('5');
 
   useEffect(() => {
-    async function fetchScreen() {
-      setLoading(true);
-      try {
-        const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-        const params = new URLSearchParams();
-        if (sector) params.append('sector', sector);
-        if (maxPe) params.append('max_pe', maxPe);
-        if (maxPb) params.append('max_pb', maxPb);
-        if (minRoe) params.append('min_roe', minRoe);
-        if (minDivYield) params.append('min_dividend_yield', minDivYield);
-        if (maxDebtEquity) params.append('max_debt_to_equity', maxDebtEquity);
+    const timer = setTimeout(() => {
+      async function fetchScreen() {
+        setLoading(true);
+        try {
+          const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+          const params = new URLSearchParams();
+          if (sector) params.append('sector', sector);
+          if (maxPe) params.append('max_pe', maxPe);
+          if (maxPb) params.append('max_pb', maxPb);
+          if (minRoe) params.append('min_roe', minRoe);
+          if (minDivYield) params.append('min_dividend_yield', minDivYield);
+          if (maxDebtEquity) params.append('max_debt_to_equity', maxDebtEquity);
 
-        params.append('t', Date.now().toString());
-        const res = await fetch(`${API}/api/company/screen?${params.toString()}`);
-        const data = await res.json();
-        setCompanies(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+          params.append('t', Date.now().toString());
+          const res = await fetch(`${API}/api/company/screen?${params.toString()}`);
+          const data = await res.json();
+          setCompanies(Array.isArray(data) ? data : []);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
       }
-    }
-    fetchScreen();
+      fetchScreen();
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [sector, maxPe, maxPb, minRoe, minDivYield, maxDebtEquity]);
 
   return (

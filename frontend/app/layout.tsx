@@ -1,17 +1,73 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Sidebar from "./components/layout/Sidebar";
-import TopBar from "./components/layout/TopBar";
-import MobileNav from "./components/layout/MobileNav";
-import ShaderBg from "./components/layout/ShaderBg";
 import PWARegister from "./components/PWARegister";
+import LayoutWrapper from "./components/layout/LayoutWrapper";
 
 export const metadata: Metadata = {
-  title: "PIEDMONT | Indian Financial Intelligence",
-  description: "Institutional-grade macroeconomic intelligence for the Indian markets. Real-time indices, RBI policy rates, GDP, CPI, and more.",
+  metadataBase: new URL('https://piedmont.in'),
+  title: "PIEDMONT | Institutional Financial Intelligence",
+  description: "Institutional-grade macroeconomic intelligence for the Indian markets. Real-time indices, RBI policy rates, GDP, CPI, and company financials.",
+  keywords: ["Indian stock market", "Nifty 50", "Macroeconomics India", "RBI Repo Rate", "FII DII data", "Indian equities", "Financial dashboard"],
+  authors: [{ name: "Piedmont Intelligence" }],
+  creator: "Piedmont",
+  publisher: "Piedmont",
+  alternates: {
+    canonical: '/',
+    languages: {
+      'en-IN': '/',
+      'en': '/',
+    }
+  },
+  openGraph: {
+    title: "PIEDMONT | Institutional Financial Intelligence",
+    description: "Institutional-grade macroeconomic intelligence for the Indian markets. Real-time indices, RBI policy rates, GDP, CPI, and company financials.",
+    url: 'https://piedmont.in',
+    siteName: 'Piedmont Terminal',
+    images: [
+      {
+        url: '/icon.svg',
+        width: 512,
+        height: 512,
+        alt: 'Piedmont Logo',
+      }
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "PIEDMONT | Institutional Financial Intelligence",
+    description: "Institutional-grade macroeconomic intelligence for the Indian markets.",
+    images: ['/icon.svg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' }
+    ],
+    apple: [
+      { url: '/icon.svg' }
+    ]
+  },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "google-site-verification=placeholder",
   },
+  other: {
+    "geo.region": "IN",
+    "geo.placename": "India",
+    "geo.position": "20.5937;78.9629",
+    "ICBM": "20.5937, 78.9629"
+  }
 };
 
 export default function RootLayout({
@@ -20,8 +76,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark h-full antialiased">
+    <html lang="en-IN" className="dark h-full antialiased">
+      
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Piedmont Terminal",
+              "url": "https://piedmont.in",
+              "description": "Institutional-grade macroeconomic intelligence for the Indian markets.",
+              "publisher": {
+                "@type": "Organization",
+                "name": "Piedmont Intelligence",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://piedmont.in/icon.svg"
+                }
+              },
+              "inLanguage": "en-IN"
+            })
+          }}
+        />
+
         <link
           href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap"
           rel="stylesheet"
@@ -38,19 +117,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <PWARegister />
-        <ShaderBg />
-        <div className="flex min-h-screen">
-          <div className="hidden md:block">
-            <Sidebar />
-          </div>
-          <div className="flex-1 flex flex-col md:pl-20">
-            <TopBar />
-            <main className="flex-1 pt-24 pb-20 md:pb-8 px-4 md:px-8">
-              {children}
-            </main>
-          </div>
-        </div>
-        <MobileNav />
+                <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );

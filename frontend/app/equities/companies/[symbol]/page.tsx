@@ -263,6 +263,7 @@ export default function CompanyDetailPage() {
                           explanation={val ? item?.explanation ?? 'No explanation available' : 'Data not available for this company'}
                           prefix={typeof val === 'number' && pre ? pre : ''}
                           metricKey={metric.key}
+                          symbol={symbol}
                         />
                       </motion.div>
                     );

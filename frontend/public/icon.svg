@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="128" fill="#0A0A0A"/>
+  <!-- Stylized Mountain / Chart / Foothill logo -->
+  <path d="M120 360 L200 240 L260 280 L380 140 L410 170 L260 350 L200 310 Z" fill="#D4AF37"/>
+  <path d="M260 280 L320 210 L350 240 L260 350 Z" fill="#AA8C2C" opacity="0.8"/>
+  <rect x="120" y="380" width="280" height="24" rx="12" fill="#D4AF37" opacity="0.3"/>
+</svg>

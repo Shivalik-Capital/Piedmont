@@ -19,8 +19,8 @@ export default function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-full z-50 flex flex-col py-margin bg-surface w-20 hover:w-64 transition-all duration-300 border-r border-outline-variant group overflow-x-hidden">
       <div className="flex flex-col items-center justify-center mb-margin px-gutter overflow-hidden whitespace-nowrap">
-        <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center mb-unit shrink-0">
-          <span className="font-semibold text-lg text-on-surface">P</span>
+        <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center mb-unit shrink-0 overflow-hidden border border-white/5">
+          <img src="/icon.svg" className="w-10 h-10 object-cover" alt="Piedmont Logo" />
         </div>
         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center h-0 group-hover:h-auto overflow-hidden">
           <span className="font-semibold text-on-surface">Piedmont</span>

@@ -326,6 +326,7 @@ def get_history(symbol: str, request: Request, period: str = "1mo"):
     
     ticker = yf.Ticker(symbol_map[symbol])
     hist = ticker.history(period=period)
+    hist = hist.dropna(subset=['Open', 'High', 'Low', 'Close'])
     
     if hist.empty:
         raise HTTPException(status_code=502, detail="No historical data available")
@@ -499,7 +500,6 @@ def search_companies(q: str, request: Request):
 
 
 @app.get("/api/company/screen")
-@limiter.limit("30/minute")
 def screen_companies(
     request: Request,
     sector: str = None,
@@ -528,51 +528,53 @@ def screen_companies(
         results = res.data
         
         filtered = []
+        found_symbols = set()
+        
         for row in results:
             comp = row.get('companies') or {}
+            symbol = row.get('symbol')
+            found_symbols.add(symbol)
             mc = comp.get('market_cap')
-            pe = row.get('pe_value')
-            pb = row.get('pb_value')
-            roe = row.get('roe_value')
-            div = row.get('dividend_yield_value')
-            dte = row.get('debt_to_equity_value')
+            if not mc: mc = row.get('market_cap')
+            pe = row.get('pe_ratio') or row.get('pe_value')
+            pb = row.get('pb_ratio') or row.get('pb_value')
+            roe = row.get('roe') or row.get('roe_value')
+            div = row.get('dividend_yield') or row.get('dividend_yield_value')
+            dte = row.get('debt_to_equity') or row.get('debt_to_equity_value')
             
+            # Apply filters
             if min_market_cap and (mc is None or mc < min_market_cap): continue
             if max_pe and (pe is None or pe > max_pe): continue
             if max_pb and (pb is None or pb > max_pb): continue
             if min_roe and (roe is None or roe < min_roe): continue
             if min_dividend_yield and (div is None or div < min_dividend_yield): continue
             if max_debt_to_equity and (dte is None or dte > max_debt_to_equity): continue
-            formatted_row = {
-                "symbol": row.get('symbol'),
-                "name": comp.get('name', 'Unknown'),
-                "sector": comp.get('sector', 'Unknown'),
+            
+            filtered.append({
+                "symbol": symbol,
+                "name": comp.get("name") or symbol,
+                "sector": comp.get("sector") or "Unknown",
                 "market_cap": mc,
                 "pe_ratio": pe,
                 "pb_ratio": pb,
                 "roe": roe,
                 "dividend_yield": div,
                 "debt_to_equity": dte
-            }
+            })
+
+
             
-            filtered.append(formatted_row)
-            
-        reverse = sort_order.lower() == "desc"
-        
         def sort_key(x):
-            if sort_by == 'market_cap':
-                return x.get('market_cap') or 0
-            elif sort_by == 'pe':
-                return x.get('pe_ratio') or float('inf')
-            elif sort_by == 'pb':
-                return x.get('pb_ratio') or float('inf')
-            elif sort_by == 'roe':
-                return x.get('roe') or -float('inf')
-            elif sort_by == 'dividend_yield':
-                return x.get('dividend_yield') or 0
-            return 0
-            
-        filtered.sort(key=sort_key, reverse=reverse)
+            if sort_by == 'market_cap': return x.get('market_cap') or 0
+            if sort_by == 'pe': return x.get('pe_ratio') or float('inf')
+            if sort_by == 'pb': return x.get('pb_ratio') or float('inf')
+            if sort_by == 'roe': return x.get('roe') or -float('inf')
+            if sort_by == 'dividend_yield': return x.get('dividend_yield') or 0
+            if sort_by == 'debt_to_equity': return x.get('debt_to_equity') or float('inf')
+            return x.get('market_cap') or 0
+
+        rev = (sort_order == "desc")
+        filtered.sort(key=sort_key, reverse=rev)
         
         return filtered[:50]
         
@@ -699,6 +701,7 @@ def get_company_history(symbol: str, request: Request, period: str = "1y"):
         
     ticker = yf.Ticker(yf_symbol)
     hist = ticker.history(period=period)
+    hist = hist.dropna(subset=['Open', 'High', 'Low', 'Close'])
     
     if hist.empty:
         raise HTTPException(status_code=502, detail="No historical data available")
@@ -720,15 +723,102 @@ def get_company_history(symbol: str, request: Request, period: str = "1y"):
 @app.get("/api/company/{symbol}/financials")
 @limiter.limit("60/minute")
 def get_company_financials(symbol: str, request: Request):
+    # Try Supabase first
     if supabase:
         try:
             db_symbol = symbol if not symbol.endswith(".NS") else symbol[:-3]
             res = supabase.table("financial_statements").select("*").eq("symbol", db_symbol).execute()
             if res.data and len(res.data) > 0:
-                return res.data
+                raw_data = res.data[0]
+                flat_data = []
+                type_map = {
+                    'profit_loss': 'income_statement',
+                    'balance_sheet': 'balance_sheet',
+                    'cash_flow': 'cash_flow'
+                }
+                for s_key, s_name in type_map.items():
+                    if s_key in raw_data and raw_data[s_key] and 'rows' in raw_data[s_key]:
+                        for item in raw_data[s_key]['rows']:
+                            metric = str(item.get('metric', '')).replace('\xa0+', '').replace('+', '').strip()
+                            if not metric: continue
+                            for k, v in item.items():
+                                if k not in ['metric', 'TTM'] and 'Mar ' in k:
+                                    period = k.replace('Mar ', '')
+                                    try:
+                                        if isinstance(v, str) and '%' in v:
+                                            v = float(v.replace('%', '').strip())
+                                        elif isinstance(v, str):
+                                            v = float(v.replace(',', '').strip())
+                                        else:
+                                            v = float(v)
+                                            
+                                        flat_data.append({
+                                            'statement_type': s_name,
+                                            'period': period,
+                                            'line_item': metric,
+                                            'value': v
+                                        })
+                                    except Exception as e:
+                                        pass
+                if flat_data:
+                    return flat_data
         except Exception as e:
             print("Supabase fetch failed for financials:", str(e))
-    return {"profit_loss": None, "balance_sheet": None, "cash_flow": None}
+            
+    # Fallback to yfinance if Supabase returns nothing or fails
+    try:
+        yf_symbol = symbol if symbol.endswith(".NS") else f"{symbol}.NS"
+        ticker = yf.Ticker(yf_symbol)
+        
+        # Get yearly financials
+        income_stmt = ticker.financials
+        balance_sheet = ticker.balance_sheet
+        cashflow = ticker.cashflow
+        
+        def safe_extract(df, is_balance=False, statement_type='income_statement'):
+            if df is None or df.empty:
+                return []
+            
+            # Get last 4 years
+            cols = df.columns[:4]
+            results = []
+            
+            for col in cols:
+                date_str = str(col)[:4] # just the year
+                try:
+                    if not is_balance:
+                        # Income / Cashflow
+                        if 'Total Revenue' in df.index:
+                            results.append({"statement_type": statement_type, "period": date_str, "line_item": "Total Revenue", "value": float(df.loc['Total Revenue', col]) / 10000000})
+                        if 'Operating Income' in df.index:
+                            results.append({"statement_type": statement_type, "period": date_str, "line_item": "Operating Income", "value": float(df.loc['Operating Income', col]) / 10000000})
+                        if 'Net Income' in df.index:
+                            results.append({"statement_type": statement_type, "period": date_str, "line_item": "Net Income", "value": float(df.loc['Net Income', col]) / 10000000})
+                        if 'Operating Cash Flow' in df.index:
+                            results.append({"statement_type": statement_type, "period": date_str, "line_item": "Operating Cash Flow", "value": float(df.loc['Operating Cash Flow', col]) / 10000000})
+                        if 'Free Cash Flow' in df.index:
+                            results.append({"statement_type": statement_type, "period": date_str, "line_item": "Free Cash Flow", "value": float(df.loc['Free Cash Flow', col]) / 10000000})
+                    else:
+                        # Balance sheet
+                        if 'Total Assets' in df.index:
+                            results.append({"statement_type": statement_type, "period": date_str, "line_item": "Total Assets", "value": float(df.loc['Total Assets', col]) / 10000000})
+                        if 'Total Liabilities Net Minority Interest' in df.index:
+                            results.append({"statement_type": statement_type, "period": date_str, "line_item": "Total Liabilities", "value": float(df.loc['Total Liabilities Net Minority Interest', col]) / 10000000})
+                        if 'Stockholders Equity' in df.index:
+                            results.append({"statement_type": statement_type, "period": date_str, "line_item": "Stockholders Equity", "value": float(df.loc['Stockholders Equity', col]) / 10000000})
+                except Exception as e:
+                    pass
+            return results
+            
+        flat_list = []
+        flat_list.extend(safe_extract(income_stmt, False, 'income_statement'))
+        flat_list.extend(safe_extract(balance_sheet, True, 'balance_sheet'))
+        flat_list.extend(safe_extract(cashflow, False, 'cash_flow'))
+        return flat_list
+    except Exception as e:
+        print(f"YFinance fallback failed for {symbol}:", e)
+        
+    return []
 
 @app.get("/api/company/{symbol}/quarterly")
 @limiter.limit("60/minute")
