@@ -1,0 +1,94 @@
+{
+  "rbi_rates": {
+    "repo_rate": {
+      "name": "RBI Repo Rate",
+      "value": "5.25%",
+      "trend": "Down",
+      "date": "Aug 2026"
+    },
+    "reverse_repo": {
+      "name": "Reverse Repo",
+      "value": "3.35%",
+      "trend": "Stable",
+      "date": "Current"
+    },
+    "sdf": {
+      "name": "Standing Deposit Facility",
+      "value": "5.00%",
+      "trend": "Down",
+      "date": "Aug 2026"
+    }
+  },
+  "domestic_macro": {
+    "cpi": {
+      "name": "CPI Inflation",
+      "value": "4.45%",
+      "trend": "Up",
+      "date": "July 2026"
+    },
+    "wpi": {
+      "name": "WPI Inflation",
+      "value": "9.78%",
+      "trend": "Down",
+      "date": "July 2026"
+    },
+    "pmi": {
+      "name": "Manufacturing PMI",
+      "value": "53.5",
+      "trend": "Down",
+      "date": "July 2026"
+    },
+    "iip": {
+      "name": "IIP Growth",
+      "value": "7.3%",
+      "trend": "Up",
+      "date": "June 2026"
+    },
+    "fiscal_deficit": {
+      "name": "Fiscal Deficit",
+      "value": "₹3.08L Cr",
+      "trend": "Stable",
+      "date": "Q1 FY27"
+    }
+  },
+  "external_sector": {
+    "forex_reserves": {
+      "name": "Forex Reserves",
+      "value": "$682.4B",
+      "trend": "Up",
+      "date": "Jul 24, 2026"
+    }
+  },
+  "market_liquidity": {
+    "fii_flows": {
+      "name": "FII Flows (MTD)",
+      "value": "₹12,450 Cr",
+      "trend": "Up",
+      "date": "MTD"
+    },
+    "dii_flows": {
+      "name": "DII Flows (MTD)",
+      "value": "₹21,100 Cr",
+      "trend": "Up",
+      "date": "MTD"
+    },
+    "borrowing_cal": {
+      "name": "Govt Borrowing",
+      "value": "₹8.20L Cr",
+      "trend": "Stable",
+      "date": "H1 FY27"
+    },
+    "current_account": {
+      "name": "Current Account",
+      "value": "+$2.8B",
+      "trend": "Up",
+      "date": "Apr-May 2026"
+    },
+    "econ_cal": {
+      "name": "Next Event",
+      "value": "RBI MPC",
+      "trend": "Stable",
+      "date": "Aug 4-6"
+    }
+  }
+}
