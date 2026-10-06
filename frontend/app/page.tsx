@@ -1,10 +1,28 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Icon from "./components/ui/Icon";
 
 export default function LandingPage() {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('piedmont_visited');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    
+    if (hasVisited || isStandalone) {
+      router.replace('/dashboard');
+    } else {
+      localStorage.setItem('piedmont_visited', 'true');
+      setMounted(true);
+    }
+  }, [router]);
+
+  
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white overflow-hidden font-sans selection:bg-[#479ffa]/30 selection:text-white">
       

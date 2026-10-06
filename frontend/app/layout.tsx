@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import PWARegister from "./components/PWARegister";
 import LayoutWrapper from "./components/layout/LayoutWrapper";
@@ -70,6 +70,16 @@ export const metadata: Metadata = {
   }
 };
 
+
+export const viewport: Viewport = {
+  themeColor: "#0b0b0b",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -79,6 +89,11 @@ export default function RootLayout({
     <html lang="en-IN" className="dark h-full antialiased">
       
       <head>
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Piedmont" />
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
