@@ -22,27 +22,27 @@
   "domestic_macro": {
     "cpi": {
       "name": "CPI Inflation",
-      "value": "4.45%",
+      "value": "5.54%",
       "trend": "Up",
-      "date": "July 2026"
+      "date": "Sep 2026"
     },
     "wpi": {
       "name": "WPI Inflation",
-      "value": "9.78%",
-      "trend": "Down",
-      "date": "July 2026"
+      "value": "11.39%",
+      "trend": "Up",
+      "date": "Sep 2026"
     },
     "pmi": {
       "name": "Manufacturing PMI",
-      "value": "53.5",
-      "trend": "Down",
-      "date": "July 2026"
+      "value": "55.1",
+      "trend": "Up",
+      "date": "Sep 2026"
     },
     "iip": {
       "name": "IIP Growth",
-      "value": "7.3%",
+      "value": "8.0%",
       "trend": "Up",
-      "date": "June 2026"
+      "date": "Aug 2026"
     },
     "fiscal_deficit": {
       "name": "Fiscal Deficit",
@@ -88,7 +88,7 @@
       "name": "Next Event",
       "value": "RBI MPC",
       "trend": "Stable",
-      "date": "Aug 4-6"
+      "date": "Oct 5-7"
     }
   }
 }
