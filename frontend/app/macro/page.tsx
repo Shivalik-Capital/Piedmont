@@ -47,7 +47,10 @@ const MetricCard = ({ indicator, size = 'default' }: { indicator: Indicator; siz
   const slug = indicator.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   
   return (
-    <Link href={`/learn/${slug}`} className="block h-full">
+    <Link 
+      href={`/learn/${slug}?val=${encodeURIComponent(indicator.value)}&date=${encodeURIComponent(indicator.date || '')}&trend=${encodeURIComponent(indicator.trend || '')}`} 
+      className="block h-full"
+    >
       <motion.div 
         variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
         className="bg-surface-container-high border border-outline-variant rounded-xl p-6 flex flex-col justify-between hover:border-primary/50 transition-all duration-200 h-full group relative"

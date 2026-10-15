@@ -3,7 +3,7 @@
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, BarChart3, Landmark, Banknote, PiggyBank, Scale, Coins, Receipt, Wallet, Building2, Factory, ShieldCheck, Info, Lightbulb, Target, Zap } from 'lucide-react';
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 
 // ─── Company context map ─────────────────────────────────────────────
 const COMPANIES: Record<string, { name: string; sector: string; desc: string }> = {
@@ -746,6 +746,28 @@ function Section({ icon: Icon, title, children, accent = false }: { icon?: any; 
   );
 }
 
+const SLUG_TO_MACRO_KEY: Record<string, string> = {
+  'rbi-repo-rate': 'rbi_repo',
+  'interest-rate': 'rbi_repo',
+  'reverse-repo': 'reverse_repo',
+  'standing-deposit-facility': 'sdf',
+  'gdp-growth': 'gdp',
+  'cpi-inflation': 'inflation',
+  'wpi-inflation': 'wpi',
+  'manufacturing-pmi': 'pmi',
+  'iip-growth': 'iip',
+  'fiscal-deficit': 'fiscal_deficit',
+  'forex-reserves': 'forex',
+  'fii-flows-mtd': 'fii_flows',
+  'fii-flows-cash': 'fii_flows',
+  'dii-flows-mtd': 'dii_flows',
+  'dii-flows-cash': 'dii_flows',
+  'govt-borrowing': 'borrowing_cal',
+  'current-account': 'current_account',
+  'next-rbi-mpc': 'econ_cal',
+  'next-event': 'econ_cal',
+};
+
 // ─── Main Page ───────────────────────────────────────────────────────
 function LearnPageInner() {
   const params = useParams();
@@ -757,6 +779,46 @@ function LearnPageInner() {
   const metric = METRICS[term];
   const macro = MACRO[term];
   const content = metric || macro;
+
+  const paramVal = searchParams.get('val');
+  const paramDate = searchParams.get('date');
+  const paramTrend = searchParams.get('trend');
+
+  const [liveData, setLiveData] = useState<{
+    value: string;
+    date?: string;
+    trend?: string;
+    source?: string;
+  } | null>(paramVal ? { value: paramVal, date: paramDate || undefined, trend: paramTrend || undefined } : null);
+
+  useEffect(() => {
+    async function fetchLiveMacro() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/market/macro`);
+        if (res.ok) {
+          const json = await res.json();
+          const macroKey = SLUG_TO_MACRO_KEY[term];
+          if (macroKey && json.indicators && json.indicators[macroKey]) {
+            const ind = json.indicators[macroKey];
+            setLiveData({
+              value: ind.value,
+              date: ind.date,
+              trend: ind.trend,
+              source: json.meta?.source || 'World Bank, RBI, NSE',
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch live macro data', err);
+      }
+    }
+
+    if (macro) {
+      fetchLiveMacro();
+      const interval = setInterval(fetchLiveMacro, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [term, macro]);
 
   if (!content) {
     return (
@@ -782,7 +844,7 @@ function LearnPageInner() {
         </button>
 
         {/* Hero Header */}
-        <div className="relative mb-12">
+        <div className="relative mb-8">
           <div className="absolute -top-8 -right-4 opacity-[0.03]">
             <IconComp size={200} />
           </div>
@@ -796,6 +858,56 @@ function LearnPageInner() {
             <p className="text-lg md:text-xl text-white/70 leading-relaxed max-w-3xl">{content.intro}</p>
           </div>
         </div>
+
+        {/* Live Indicator Pulse / Dynamic Value Banner */}
+        {liveData && (
+          <div className="bg-[#1A1917] border border-[#D4AF37]/30 rounded-2xl p-6 md:p-7 mb-8 shadow-[0_0_35px_rgba(212,175,55,0.06)] relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-[#D4AF37]" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-xs uppercase tracking-widest text-[#D4AF37] font-bold">
+                    {company ? `Reported for ${company.name}` : 'Current Live Reading'}
+                  </span>
+                  {liveData.date && (
+                    <span className="text-xs text-white/60 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full font-mono">
+                      {liveData.date}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-baseline gap-3 mt-2">
+                  <span className="text-3xl md:text-5xl font-extrabold font-mono text-white tracking-tight">
+                    {liveData.value}
+                  </span>
+                  {liveData.trend && (
+                    <span className={`text-xs md:text-sm font-sans font-semibold flex items-center px-2.5 py-1 rounded-full ${
+                      liveData.trend === 'Up' 
+                        ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' 
+                        : liveData.trend === 'Down' 
+                        ? 'bg-rose-500/10 border border-rose-500/20 text-rose-400' 
+                        : 'bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-[#D4AF37]'
+                    }`}>
+                      {liveData.trend === 'Up' && <TrendingUp size={14} className="mr-1" />}
+                      {liveData.trend === 'Down' && <TrendingDown size={14} className="mr-1" />}
+                      {liveData.trend}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="sm:text-right border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0">
+                <div className="text-xs uppercase tracking-wider text-white/40 mb-1">Source & Frequency</div>
+                <div className="text-sm text-white/80 font-medium">
+                  {liveData.source || (company ? 'Company Quarterly Filings / BSE / NSE' : 'MoSPI · RBI · NSE Daily Feeds')}
+                </div>
+                <div className="text-[11px] text-emerald-400/80 font-mono mt-1 flex items-center sm:justify-end gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Synced with live terminal
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Content Sections */}
         <div className="space-y-6">

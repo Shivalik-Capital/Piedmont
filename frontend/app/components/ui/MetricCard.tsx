@@ -35,7 +35,10 @@ export default function MetricCard({ label, value, explanation, trend = 'neutral
   );
 
   if (metricKey) {
-    const href = symbol ? `/learn/${metricKey}?symbol=${symbol}` : `/learn/${metricKey}`;
+    const query = new URLSearchParams();
+    if (symbol) query.set('symbol', symbol);
+    if (value != null && value !== '') query.set('val', `${prefix}${value}`);
+    const href = `/learn/${metricKey}?${query.toString()}`;
     return <Link href={href} className="block h-full">{CardContent}</Link>;
   }
   
