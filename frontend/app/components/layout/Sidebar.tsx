@@ -4,18 +4,23 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Icon from '../ui/Icon';
 
-export default function Sidebar() {
+interface SidebarProps {
+  onOpenCopilot?: () => void;
+}
+
+export default function Sidebar({ onOpenCopilot }: SidebarProps) {
   const pathname = usePathname();
   
   const navItems = [
-    { href: '/', label: 'Dashboard', icon: 'dashboard' },
-    { href: '/screener', label: 'Screener', icon: 'filter_list' },
-    { href: '/watchlist', label: 'Watchlist & P&L', icon: 'star' },
-    { href: '/calendar', label: 'Calendar', icon: 'calendar' },
-    { href: '/equities', label: 'Equities', icon: 'show_chart' },
+    { href: '/', label: 'Dashboard (F9)', icon: 'dashboard' },
+    { href: '/screener', label: 'Screener (F3)', icon: 'filter_list' },
+    { href: '/watchlist', label: 'Watchlist & P&L (F7)', icon: 'star' },
+    { href: '/calendar', label: 'Calendar (F5)', icon: 'calendar' },
+    { href: '/replay', label: 'Replay Simulator (F8)', icon: 'history' },
+    { href: '/equities', label: 'Equities (F2)', icon: 'show_chart' },
     { href: '/equities/companies', label: 'Companies', icon: 'business' },
-    { href: '/macro', label: 'Macro', icon: 'language' },
-    { href: '/commodities', label: 'Commodities', icon: 'oil_barrel' },
+    { href: '/macro', label: 'Macro (F4)', icon: 'language' },
+    { href: '/commodities', label: 'Commodities (F6)', icon: 'oil_barrel' },
   ];
 
   return (
@@ -29,6 +34,24 @@ export default function Sidebar() {
           <span className="font-mono-data text-xs text-on-surface-variant uppercase tracking-widest">Terminal</span>
         </div>
       </div>
+
+      {/* AI Copilot Quick Launch Button */}
+      {onOpenCopilot && (
+        <div className="px-unit mb-3 w-full">
+          <button
+            onClick={onOpenCopilot}
+            className="flex items-center gap-gutter p-2 rounded-full transition-all duration-200 w-full bg-[#3b82f6]/10 hover:bg-[#3b82f6]/20 border border-[#3b82f6]/30 text-[#3b82f6] hover:text-white"
+            title="Launch AI Copilot (F1 or Cmd+K)"
+          >
+            <div className="w-10 flex items-center justify-center shrink-0">
+              <Icon name="bot" className="text-[#3b82f6]" />
+            </div>
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-bold text-xs uppercase tracking-wide">
+              Copilot (F1)
+            </span>
+          </button>
+        </div>
+      )}
       
       <nav className="flex flex-col gap-unit px-unit w-full">
         {navItems.map((item) => {

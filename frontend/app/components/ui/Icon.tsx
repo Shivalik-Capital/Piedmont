@@ -21,7 +21,11 @@ import {
   CheckCircle,
   AlertCircle,
   Calendar,
-  Star
+  Star,
+  History,
+  Bot,
+  X,
+  User
 } from 'lucide-react';
 
 interface IconProps {
@@ -79,11 +83,26 @@ export default function Icon({ name, className = '', size = 16 }: IconProps) {
       return <Search {...iconProps} />;
     case 'check':
       return <CheckCircle {...iconProps} />;
+    case 'alert':
+      return <AlertCircle {...iconProps} />;
     case 'star':
       return <Star {...iconProps} />;
     case 'calendar':
     case 'event':
       return <Calendar {...iconProps} />;
+    case 'history':
+    case 'replay':
+      return <History {...iconProps} />;
+    case 'bot':
+    case 'ai':
+    case 'copilot':
+      return <Bot {...iconProps} />;
+    case 'close':
+    case 'x':
+      return <X {...iconProps} />;
+    case 'account_circle':
+    case 'user':
+      return <User {...iconProps} />;
     default:
       return <Activity {...iconProps} />;
   }

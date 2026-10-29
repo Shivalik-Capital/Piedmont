@@ -8,7 +8,11 @@ import { useRouter, usePathname } from 'next/navigation';
 import LivePulse from '../ui/LivePulse';
 import Icon from '../ui/Icon';
 
-export default function TopBar() {
+interface TopBarProps {
+  onOpenCopilot?: () => void;
+}
+
+export default function TopBar({ onOpenCopilot }: TopBarProps) {
   const [time, setTime] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
@@ -77,20 +81,69 @@ export default function TopBar() {
     router.push(`/equities/companies/${symbol}`);
   };
 
+  const pageTitle = pathname === '/' 
+    ? 'Dashboard' 
+    : pathname.startsWith('/replay')
+    ? 'Replay Time Machine'
+    : pathname.startsWith('/calendar')
+    ? 'Calendar'
+    : pathname.startsWith('/watchlist')
+    ? 'Watchlist'
+    : pathname.startsWith('/equities') 
+    ? 'Equities' 
+    : pathname.startsWith('/macro') 
+    ? 'Macro' 
+    : pathname.startsWith('/commodities') 
+    ? 'Commodities' 
+    : pathname.startsWith('/screener') 
+    ? 'Screener' 
+    : 'Dashboard';
+
+  const pageIcon = pathname === '/' 
+    ? 'dashboard' 
+    : pathname.startsWith('/replay')
+    ? 'history'
+    : pathname.startsWith('/calendar')
+    ? 'calendar'
+    : pathname.startsWith('/watchlist')
+    ? 'star'
+    : pathname.startsWith('/macro') 
+    ? 'language' 
+    : pathname.startsWith('/commodities') 
+    ? 'oil_barrel' 
+    : pathname.startsWith('/screener') 
+    ? 'filter_list' 
+    : 'show_chart';
+
   return (
-    <nav className="fixed top-0 right-0 left-0 md:left-20 z-40 flex justify-between items-center h-16 px-3 sm:px-gutter bg-surface/80 backdrop-blur-md border-b border-outline-variant transition-all duration-300">
+    <nav className="fixed top-7 right-0 left-0 md:left-20 z-40 flex justify-between items-center h-16 px-3 sm:px-gutter bg-surface/90 backdrop-blur-md border-b border-outline-variant transition-all duration-300">
       <div className="flex items-center gap-2 sm:gap-gutter">
         <div className="font-bold text-base sm:text-lg tracking-wide text-on-surface flex items-center gap-2">
           <img src="/icon.svg" className="w-5 h-5 sm:hidden" alt="Piedmont" />
           <span className="hidden sm:inline">Piedmont Terminal</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-unit text-primary font-bold border-b-2 border-primary h-16">
-          <Icon name={pathname === '/' ? 'dashboard' : pathname.startsWith('/macro') ? 'language' : pathname.startsWith('/commodities') ? 'oil_barrel' : pathname.startsWith('/screener') ? 'filter_list' : 'show_chart'} className="text-sm" />
-          <span className="text-xs sm:text-sm">{pathname === '/' ? 'Dashboard' : pathname.startsWith('/equities') ? 'Equities' : pathname.startsWith('/macro') ? 'Macro' : pathname.startsWith('/commodities') ? 'Commodities' : pathname.startsWith('/screener') ? 'Screener' : 'Dashboard'}</span>
+          <Icon name={pageIcon} className="text-sm" />
+          <span className="text-xs sm:text-sm">{pageTitle}</span>
         </div>
       </div>
       
       <div className="flex items-center gap-2 sm:gap-margin relative" ref={dropdownRef}>
+        
+        {/* Copilot Action Pill */}
+        {onOpenCopilot && (
+          <button
+            onClick={onOpenCopilot}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#3b82f6]/10 hover:bg-[#3b82f6]/20 border border-[#3b82f6]/40 text-[#3b82f6] text-xs font-semibold uppercase tracking-wider transition-all"
+            title="Launch Piedmont Copilot (F1 or Cmd+K)"
+          >
+            <Icon name="bot" className="w-3.5 h-3.5 text-[#3b82f6]" />
+            <span className="hidden sm:inline">Copilot</span>
+            <span className="hidden md:inline font-mono-data text-[9px] bg-[#3b82f6]/20 px-1 rounded text-white">F1</span>
+          </button>
+        )}
+
+        {/* Search Bar */}
         <div className="flex items-center gap-unit relative">
           <Icon name="search" className="absolute left-2 text-on-surface-variant text-sm" />
           <input 
@@ -99,7 +152,7 @@ export default function TopBar() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => { if (results.length > 0) setShowDropdown(true); }}
-            className="bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 font-mono-data text-xs sm:text-sm text-on-surface w-24 sm:w-44 md:w-64 pl-7 sm:pl-8 py-1 transition-all outline-none"
+            className="bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 font-mono-data text-xs sm:text-sm text-on-surface w-24 sm:w-40 md:w-56 pl-7 sm:pl-8 py-1 transition-all outline-none"
           />
           {isSearching && (
              <div className="absolute right-1 top-2 w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -136,7 +189,6 @@ export default function TopBar() {
             {mounted ? `${time} IST` : ''}
           </span>
           <LivePulse />
-          <button className="hover:text-primary transition-colors flex items-center"><Icon name="account_circle" /></button>
         </div>
       </div>
     </nav>
