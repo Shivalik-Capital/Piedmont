@@ -184,15 +184,15 @@ export default function EquitiesOverviewPage() {
     <div className="p-margin flex flex-col gap-margin max-w-7xl mx-auto">
       {/* HEADER */}
       <header className="flex flex-col gap-2">
-        <h1 className="font-serif font-bold text-4xl text-on-surface">Equities</h1>
-        <p className="text-on-surface-variant text-lg">
+        <h1 className="font-sans font-bold tracking-tight text-3xl sm:text-4xl text-white">Equities</h1>
+        <p className="text-on-surface-variant text-sm sm:text-base">
           Indian equity markets — sectoral indices and the Nifty 50 universe
         </p>
       </header>
 
       {/* SECTOR HEATMAP */}
       <section>
-        <h2 className="text-on-surface font-serif text-2xl font-semibold mb-6 flex items-center gap-2">
+        <h2 className="text-white font-sans text-xl sm:text-2xl font-bold tracking-tight mb-6 flex items-center gap-2">
           <Icon name="monitoring" className="text-primary" />
           Sectoral Indices
         </h2>
@@ -201,18 +201,18 @@ export default function EquitiesOverviewPage() {
 
       {/* TOP MOVERS */}
       <section>
-        <h2 className="text-on-surface font-serif text-2xl font-semibold mb-2">Today&apos;s Movers</h2>
+        <h2 className="text-white font-sans text-xl sm:text-2xl font-bold tracking-tight mb-2">Today&apos;s Movers</h2>
         {renderMovers()}
       </section>
 
       {/* CTA BANNER */}
       <section className="mt-4">
         <Link
-          href="/equities/companies"
+          href="/screener"
           className="block w-full bg-primary/10 border border-primary/30 rounded-xl p-6 transition-colors hover:bg-primary/20 flex items-center justify-between group"
         >
           <div>
-            <h3 className="text-primary font-bold text-xl mb-1 group-hover:underline">Explore the Screener Engine</h3>
+            <h3 className="text-primary font-bold text-xl mb-1 group-hover:underline">Explore the Institutional Screener</h3>
             <p className="text-primary-dim text-sm">
               Filter and analyze the Nifty 500 universe with advanced metrics and technical indicators.
             </p>

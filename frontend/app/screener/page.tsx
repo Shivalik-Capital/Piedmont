@@ -83,13 +83,13 @@ const INSTITUTIONAL_UNIVERSE: Company[] = [
 
 type FactorPreset = 'all' | 'high_roic' | 'cash_fortress' | 'capex_cycle' | 'garp' | 'financials';
 
-const PRESET_CONFIGS: Record<FactorPreset, { label: string; icon: string; desc: string }> = {
-  all: { label: 'All Nifty 50', icon: '🏛️', desc: 'Full benchmark institutional universe' },
-  high_roic: { label: 'High-ROIC Moats', icon: '💎', desc: 'ROCE/ROE > 18%, Low Debt (< 0.5x)' },
-  cash_fortress: { label: 'Cash Fortress', icon: '🛡️', desc: 'Debt-free balance sheets & solid yields' },
-  capex_cycle: { label: 'Capex & Infra', icon: '🏭', desc: 'Infrastructure, energy, materials & power' },
-  garp: { label: 'GARP Compounders', icon: '📈', desc: 'Balanced valuation (P/E < 35) & ROE > 15%' },
-  financials: { label: 'Financial Quality', icon: '🏦', desc: 'Leading private & public banking franchises' },
+const PRESET_CONFIGS: Record<FactorPreset, { label: string; desc: string }> = {
+  all: { label: 'All Nifty 50', desc: 'Full benchmark institutional universe' },
+  high_roic: { label: 'High-ROIC Moats', desc: 'ROCE/ROE > 18%, Low Debt (< 0.5x)' },
+  cash_fortress: { label: 'Cash Fortress', desc: 'Debt-free balance sheets & solid yields' },
+  capex_cycle: { label: 'Capex & Infra', desc: 'Infrastructure, energy, materials & power' },
+  garp: { label: 'GARP Compounders', desc: 'Balanced valuation (P/E < 35) & ROE > 15%' },
+  financials: { label: 'Financial Quality', desc: 'Leading private & public banking franchises' },
 };
 
 function formatMarketCap(mcap: number): string {
@@ -317,7 +317,6 @@ export default function ScreenerPage() {
                 }`}
                 title={item.desc}
               >
-                <span>{item.icon}</span>
                 <span>{item.label}</span>
               </button>
             );

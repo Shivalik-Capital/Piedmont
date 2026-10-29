@@ -9,10 +9,10 @@ export default function MobileNav() {
   
   const navItems = [
     { href: '/dashboard', label: 'Pulse', icon: 'dashboard' },
-    { href: '/screener', label: 'Screener', icon: 'tune' },
-    { href: '/equities', label: 'Equities', icon: 'show_chart' },
+    { href: '/screener', label: 'Screen', icon: 'tune' },
+    { href: '/watchlist', label: 'Watch', icon: 'star' },
+    { href: '/calendar', label: 'Events', icon: 'calendar' },
     { href: '/macro', label: 'Macro', icon: 'language' },
-    { href: '/commodities', label: 'Commd', icon: 'oil_barrel' },
   ];
 
   return (

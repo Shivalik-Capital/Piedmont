@@ -10,6 +10,8 @@ export default function Sidebar() {
   const navItems = [
     { href: '/', label: 'Dashboard', icon: 'dashboard' },
     { href: '/screener', label: 'Screener', icon: 'filter_list' },
+    { href: '/watchlist', label: 'Watchlist & P&L', icon: 'star' },
+    { href: '/calendar', label: 'Calendar', icon: 'calendar' },
     { href: '/equities', label: 'Equities', icon: 'show_chart' },
     { href: '/equities/companies', label: 'Companies', icon: 'business' },
     { href: '/macro', label: 'Macro', icon: 'language' },

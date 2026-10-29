@@ -773,8 +773,12 @@ function LearnPageInner() {
   const params = useParams();
   const searchParams = useSearchParams();
   const term = params.term as string;
-  const symbol = searchParams.get('symbol')?.toUpperCase() || null;
-  const company = symbol ? COMPANIES[symbol] : null;
+  const symbol = (searchParams.get('symbol') || searchParams.get('company'))?.toUpperCase() || null;
+  const company = symbol ? (COMPANIES[symbol] || { 
+    name: symbol, 
+    sector: 'Equity', 
+    desc: `${symbol} is a publicly traded constituent of the Indian equity market.` 
+  }) : null;
 
   const metric = METRICS[term];
   const macro = MACRO[term];

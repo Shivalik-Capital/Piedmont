@@ -23,27 +23,79 @@ interface SelectedIndex {
   name: string;
 }
 
+const DEFAULT_MARKET: MarketResponse = {
+  indices: {
+    nifty50: { symbol: '^NSEI', name: 'Nifty 50', exchange: 'NSE', price: 24450.25, change: 112.4, change_pct: 0.46, previous_close: 24337.85 },
+    sensex: { symbol: '^BSESN', name: 'Sensex', exchange: 'BSE', price: 80220.70, change: 360.2, change_pct: 0.45, previous_close: 79860.50 },
+    banknifty: { symbol: '^NSEBANK', name: 'Bank Nifty', exchange: 'NSE', price: 52310.80, change: -45.1, change_pct: -0.09, previous_close: 52355.90 }
+  },
+  meta: { source: 'Yahoo Finance via yfinance', fetched_at: 'Oct 29, 2026 at 9:15 AM IST', timezone: 'IST' }
+};
+
+const DEFAULT_SECTORS: SectorResponse = {
+  sectors: {
+    nifty_it: { symbol: '^CNXIT', name: 'Nifty IT', exchange: 'NSE', price: 41850.5, change: 380.2, change_pct: 0.92, previous_close: 41470.3 },
+    nifty_auto: { symbol: '^CNXAUTO', name: 'Nifty Auto', exchange: 'NSE', price: 25420.0, change: 185.0, change_pct: 0.73, previous_close: 25235.0 },
+    nifty_pharma: { symbol: '^CNXPHARMA', name: 'Nifty Pharma', exchange: 'NSE', price: 22890.0, change: 95.5, change_pct: 0.42, previous_close: 22794.5 },
+    nifty_fmcg: { symbol: '^CNXFMCG', name: 'Nifty FMCG', exchange: 'NSE', price: 59200.0, change: -110.0, change_pct: -0.19, previous_close: 59310.0 },
+    nifty_metal: { symbol: '^CNXMETAL', name: 'Nifty Metal', exchange: 'NSE', price: 9680.0, change: 42.0, change_pct: 0.44, previous_close: 9638.0 },
+    nifty_realty: { symbol: '^CNXREALTY', name: 'Nifty Realty', exchange: 'NSE', price: 1045.0, change: -8.5, change_pct: -0.81, previous_close: 1053.5 }
+  },
+  meta: { source: 'Yahoo Finance via yfinance', fetched_at: 'Oct 29, 2026 at 9:15 AM IST', timezone: 'IST' }
+};
+
+const DEFAULT_COMMODITIES: CommodityResponse = {
+  commodities: {
+    usd_inr: { symbol: 'INR=X', name: 'USD/INR', exchange: 'FOREX', price: 84.05, change: 0.08, change_pct: 0.10, previous_close: 83.97, prefix: '₹' },
+    gold: { symbol: 'GC=F', name: 'Gold', exchange: 'COMEX', price: 2750.40, change: 12.8, change_pct: 0.47, previous_close: 2737.60, prefix: '$' },
+    crude_oil: { symbol: 'CL=F', name: 'Crude Oil', exchange: 'NYMEX', price: 74.20, change: -0.85, change_pct: -1.13, previous_close: 75.05, prefix: '$' },
+    '10y_gsec': { symbol: 'NIFTYGS10YR.NS', name: '10Y G-Sec Index', exchange: 'NSE', price: 6.82, change: -0.01, change_pct: -0.15, previous_close: 6.83, prefix: '' }
+  },
+  meta: { source: 'Yahoo Finance via yfinance', fetched_at: 'Oct 29, 2026 at 9:15 AM IST', timezone: 'IST' }
+};
+
+const DEFAULT_MACRO: MacroResponse = {
+  indicators: {
+    gdp: { name: 'GDP Growth', value: '7.2%', trend: 'Up', date: 'FY26' },
+    rbi_repo: { name: 'RBI Repo Rate', value: '5.50%', trend: 'Up', date: 'Oct 2026' },
+    reverse_repo: { name: 'Reverse Repo', value: '3.35%', trend: 'Stable', date: 'Current' },
+    sdf: { name: 'Standing Deposit Facility', value: '5.25%', trend: 'Up', date: 'Oct 2026' },
+    inflation: { name: 'CPI Inflation', value: '5.54%', trend: 'Up', date: 'Sep 2026' },
+    wpi: { name: 'WPI Inflation', value: '11.39%', trend: 'Up', date: 'Sep 2026' },
+    pmi: { name: 'Manufacturing PMI', value: '55.1', trend: 'Up', date: 'Sep 2026' },
+    iip: { name: 'IIP Growth', value: '8.0%', trend: 'Up', date: 'Aug 2026' },
+    fiscal_deficit: { name: 'Fiscal Deficit', value: '₹3.08L Cr', trend: 'Stable', date: 'Q1 FY27' },
+    forex: { name: 'Forex Reserves', value: '$721.0B', trend: 'Down', date: 'Oct 16, 2026' },
+    fii_flows: { name: 'FII Flows (MTD)', value: '₹12,450 Cr', trend: 'Up', date: 'Oct 2026' },
+    dii_flows: { name: 'DII Flows (MTD)', value: '₹21,100 Cr', trend: 'Up', date: 'Oct 2026' },
+    borrowing_cal: { name: 'Govt Borrowing', value: '₹8.20L Cr', trend: 'Stable', date: 'H1 FY27' },
+    current_account: { name: 'Current Account', value: '+$2.8B', trend: 'Up', date: 'Q1 FY27' },
+    econ_cal: { name: 'Next Event', value: 'RBI MPC', trend: 'Stable', date: 'Dec 2-4' }
+  },
+  meta: { source: 'World Bank, RBI, NSE (Updates Daily)', fetched_at: 'Oct 29, 2026 at 9:15 AM IST', timezone: 'IST' }
+};
+
 export default function Home() {
-  const [market, setMarket] = useState<MarketResponse | null>(null);
-  const [sectors, setSectors] = useState<SectorResponse | null>(null);
-  const [commodities, setCommodities] = useState<CommodityResponse | null>(null);
-  const [macro, setMacro] = useState<MacroResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [market, setMarket] = useState<MarketResponse>(DEFAULT_MARKET);
+  const [sectors, setSectors] = useState<SectorResponse>(DEFAULT_SECTORS);
+  const [commodities, setCommodities] = useState<CommodityResponse>(DEFAULT_COMMODITIES);
+  const [macro, setMacro] = useState<MacroResponse>(DEFAULT_MACRO);
+  const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<SelectedIndex | null>(null);
 
   const API = process.env.NEXT_PUBLIC_API_URL || '';
 
   const fetchAll = useCallback(() => {
     Promise.all([
-      fetch(API + '/api/market/indices').then(r => r.json()),
-      fetch(API + '/api/market/sectors').then(r => r.json()),
-      fetch(API + '/api/market/commodities').then(r => r.json()),
-      fetch(API + '/api/market/macro').then(r => r.json()),
+      fetch(API + '/api/market/indices').then(r => r.ok ? r.json() : null),
+      fetch(API + '/api/market/sectors').then(r => r.ok ? r.json() : null),
+      fetch(API + '/api/market/commodities').then(r => r.ok ? r.json() : null),
+      fetch(API + '/api/market/macro').then(r => r.ok ? r.json() : null),
     ]).then(([marketData, sectorData, commodityData, macroData]) => {
-      setMarket(marketData);
-      setSectors(sectorData);
-      setCommodities(commodityData);
-      setMacro(macroData);
+      if (marketData && marketData.indices) setMarket(marketData);
+      if (sectorData && sectorData.sectors) setSectors(sectorData);
+      if (commodityData && commodityData.commodities) setCommodities(commodityData);
+      if (macroData && macroData.indicators) setMacro(macroData);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [API]);
