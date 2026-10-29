@@ -10,7 +10,7 @@ web / progressive web app (mobile and desktop)
 Finance professionals, equity research analysts, retail investors, economists, students, and academic researchers focused on the Indian market.
 
 ## Product Purpose
-A dense, institutional-grade macroeconomic and financial intelligence terminal combining real-time Indian capital market data, corporate fundamentals, conversational financial AI, and historical market crisis simulation.
+A dense, institutional-grade macroeconomic and financial intelligence terminal combining real-time Indian capital market data, corporate fundamentals, conversational financial AI, and historical point-in-time research simulation.
 
 ## Positioning
 The most authoritative, data-dense, and accessible financial intelligence terminal tailored exclusively for the Indian economy.
@@ -26,6 +26,7 @@ Rejects generic SaaS fluff, bloated whitespace, excessive border radii, decorati
 - Expert confidence: Assume users require rigorous financial metrics; avoid condescending simplifications while providing clear mathematical definitions.
 - Immediate clarity: Critical macroeconomic indicators and market breadth must be instantly readable at a glance.
 - Zero-cost accessibility: Deliver institutional-grade analysis without requiring expensive monthly terminal subscriptions or costly per-query API fees.
+- Point-in-time purity: Strictly eliminate lookahead bias in historical research by distinguishing data periods from official availability dates.
 
 ## Core Capabilities
 1. Real-time Equity & Macro Terminal: NSE/BSE indices, RBI policy rates, CPI, WPI, IIP, Manufacturing PMI, Forex reserves, and sovereign yields.
@@ -33,4 +34,5 @@ Rejects generic SaaS fluff, bloated whitespace, excessive border radii, decorati
 3. Watchlist & Portfolio Tracking: Local portfolio valuation, profit/loss computation, and asset allocation breakdown.
 4. Corporate & Macro Calendar: Earnings schedule, economic releases, IPO pipeline, and RBI MPC meetings.
 5. AI Terminal Copilot: Zero-cost hybrid financial intelligence engine answering asset condition, earnings expectations, and cross-asset macroeconomic transmissions.
-6. Historical Time Machine (Piedmont Replay): Point-in-time market state machine rewinding terminal macro and equity data to historical crises (2000, 2008, 2016, 2020, 2024).
+6. Historical Research Engine ("What Did They Know?"): Reconstructs point-in-time information environments without lookahead bias, tracking availability lag, historical news narrative, and thesis backtesting.
+7. Bloomberg Function Key Navigation: Institutional desktop keyboard shortcuts (F1-F9) for sub-second terminal navigation.

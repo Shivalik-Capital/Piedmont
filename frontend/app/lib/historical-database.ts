@@ -1,3 +1,39 @@
+export interface PointInTimeIndicator {
+  metric: string;
+  value: string;
+  periodCovered: string;
+  releaseDate: string;
+  reportingLag: string;
+  lookaheadTrap: string;
+}
+
+export interface PointInTimeFiling {
+  symbol: string;
+  name: string;
+  latestAvailableFiling: string;
+  filingDate: string;
+  revenue: string;
+  netProfit: string;
+  peAsOfDate: string;
+  upcomingFiling: string;
+  whatWasKnown: string;
+}
+
+export interface SimulationStep {
+  horizon: '+1W' | '+1M' | '+3M' | '+6M' | '+1Y';
+  futureDate: string;
+  niftyLevel: number;
+  niftyChange: string;
+  macroReleasesUnlocked: string[];
+  corporateEarningsUnlocked: string[];
+  marketNarrative: string;
+  thesisGrading: {
+    bullishOutcome: string;
+    bearishOutcome: string;
+    winningPlay: string;
+  };
+}
+
 export interface HistoricalEpoch {
   id: string;
   name: string;
@@ -23,6 +59,14 @@ export interface HistoricalEpoch {
     usdInr: string;
     crudeOil: string;
   };
+  pointInTimeMacro: PointInTimeIndicator[];
+  pointInTimeFilings: PointInTimeFiling[];
+  newsAndConsensus: {
+    headlineQuotes: string[];
+    analystConsensus: string;
+    centralBankStance: string;
+    marketPsychology: string;
+  };
   analysis: {
     catalysts: string[];
     transmissionMechanism: string[];
@@ -31,6 +75,7 @@ export interface HistoricalEpoch {
     institutionalLessons: string[];
     recoveryTimeline: string;
   };
+  simulationSteps: SimulationStep[];
   notableStocks: {
     symbol: string;
     name: string;
@@ -43,302 +88,580 @@ export interface HistoricalEpoch {
 
 export const HISTORICAL_EPOCHS: HistoricalEpoch[] = [
   {
-    id: 'dot-com-2000',
-    name: 'Dot-Com Tech Mania & Bust',
-    date: 'March 10, 2000',
-    headline: 'Nifty IT reaches peak euphoria before 80% collapse in speculative software listings',
-    regimeType: 'bubble',
-    summary: 'The millennium tech mania saw Indian IT majors and speculative small-caps trade at astronomical valuation multiples above 100x P/E, completely decoupled from cash flow fundamentals. When the Nasdaq bubble burst, global tech capital retreated, triggering a severe multi-year tech winter.',
-    indices: {
-      nifty50: { level: 1658, pe: 28.5, pb: 4.8, divYield: 0.9, change1D: -1.2, change1M: -6.4 },
-      sensex: { level: 5001, pe: 29.1, pb: 5.1, change1D: -1.4, change1M: -7.1 },
-      bankNifty: { level: 1120, pe: 14.2, pb: 1.8, change1D: -0.5, change1M: -2.3 },
-    },
-    macro: {
-      rbiRepo: '8.00% (Bank Rate)',
-      reverseRepo: '6.00%',
-      cpi: '3.80%',
-      wpi: '6.45%',
-      pmi: '51.2',
-      iip: '6.5%',
-      gdpGrowth: '4.0%',
-      forexReserves: '$38.0B',
-      gsecYield10Y: '10.85%',
-      usdInr: '43.60',
-      crudeOil: '$31.50',
-    },
-    analysis: {
-      catalysts: [
-        'Massive global speculative flows into any company with .com or software branding.',
-        'US Federal Reserve monetary tightening cycle raising rates to cool over-investment.',
-        'Extreme valuation divergence where loss-making tech companies surpassed old-economy market caps.'
-      ],
-      transmissionMechanism: [
-        'Nasdaq top-out in March 2000 triggered immediate institutional selling in Indian technology ADRs (Infosys, Satyam).',
-        'Venture and institutional liquidity dried up, halting enterprise IT spend contracts in the US.',
-        'Earnings downgrades sparked multiple compression from 100x P/E down to sub-20x.'
-      ],
-      winningSectors: [
-        { name: 'Old Economy & FMCG', performance: '+8.4%', rationale: 'Investors rotated into defensive cash-generating consumer staples like HUL and ITC.' },
-        { name: 'Pharmaceuticals', performance: '+5.2%', rationale: 'Generic export players like Cipla and Ranbaxy provided non-cyclical defensive earnings.' }
-      ],
-      losingSectors: [
-        { name: 'Information Technology', performance: '-78.5%', rationale: 'Severe multiple contraction across software services and speculative dot-com startups.' },
-        { name: 'Media & Telecom', performance: '-64.0%', rationale: 'Convergence plays collapsed as advertising budgets and capital expenditure dried up.' }
-      ],
-      institutionalLessons: [
-        'Never confuse top-line narrative growth with sustainable free cash flow generation.',
-        'Extreme valuation multiples require flawless execution; any revenue deceleration triggers exponential price drawdowns.',
-        'Sovereign bond yields at 10.85% provided a high hurdle rate that speculative equities failed to clear.'
-      ],
-      recoveryTimeline: '3.5 years for Nifty 50 to reclaim its 2000 high; 6+ years for pure tech multiples to normalize.'
-    },
-    notableStocks: [
-      { symbol: 'INFY', name: 'Infosys Technologies', price: '₹9,800', change: '-5.2%', pe: '115.0x', note: 'Trading at triple-digit multiple despite pristine balance sheet.' },
-      { symbol: 'WIPRO', name: 'Wipro Limited', price: '₹2,450', change: '-6.8%', pe: '140.0x', note: 'Extreme valuation multiple made founder Azim Premji briefly one of the worlds richest men.' },
-      { symbol: 'HINDUNILVR', name: 'Hindustan Unilever', price: '₹265', change: '+1.4%', pe: '32.0x', note: 'Served as an institutional safe haven during the tech rout.' },
-      { symbol: 'SBIN', name: 'State Bank of India', price: '₹195', change: '-0.8%', pe: '7.8x', note: 'Ignored by retail during tech frenzy; traded at deep single-digit P/E.' }
-    ]
-  },
-  {
-    id: 'gfc-2008',
-    name: 'Global Financial Crisis & Lehman Collapse',
-    date: 'October 24, 2008',
-    headline: 'Sensex plunges under 8,500 as global credit freezes and FIIs dump Indian equities',
+    id: 'gfc-oct-2008',
+    name: 'Global Financial Crisis & Lehman Freeze',
+    date: 'October 15, 2008',
+    headline: 'Interbank credit freezes; Sensex and Nifty crash as foreign institutional funds liquidate',
     regimeType: 'crisis',
-    summary: 'Following the bankruptcy of Lehman Brothers in September 2008, a systemic dollar shortage seized global interbank lending. Foreign Institutional Investors (FIIs) repatriated over ₹50,000 Crore from Indian equities, causing a 60% peak-to-trough collapse in Nifty 50 and severe liquidity tightness in domestic real estate and NBFCs.',
+    summary: 'One month after Lehman Brothers filed for bankruptcy, global dollar funding markets completely froze. On October 15, 2008, Indian markets were in the grip of unprecedented panic. Foreign institutional investors liquidated over ₹12,000 Crore in a single fortnight to cover Western margin calls.',
     indices: {
-      nifty50: { level: 2584, pe: 10.5, pb: 1.9, divYield: 2.4, change1D: -7.2, change1M: -32.8 },
-      sensex: { level: 8701, pe: 10.8, pb: 2.1, change1D: -8.1, change1M: -34.5 },
-      bankNifty: { level: 4180, pe: 7.2, pb: 1.1, change1D: -9.8, change1M: -41.2 },
+      nifty50: { level: 3122, pe: 12.8, pb: 2.3, divYield: 2.1, change1D: -5.8, change1M: -28.4 },
+      sensex: { level: 10581, pe: 13.1, pb: 2.4, change1D: -5.7, change1M: -29.2 },
+      bankNifty: { level: 5120, pe: 8.8, pb: 1.3, change1D: -7.4, change1M: -36.5 },
     },
     macro: {
-      rbiRepo: '7.50% (Emergency Cut from 9.0%)',
+      rbiRepo: '9.00% (Emergency 100 bps cut happened Oct 20)',
       reverseRepo: '6.00%',
       cpi: '10.45%',
-      wpi: '11.06%',
-      pmi: '44.8',
-      iip: '1.2%',
-      gdpGrowth: '3.1%',
-      forexReserves: '$252.0B',
-      gsecYield10Y: '7.55%',
-      usdInr: '49.85',
-      crudeOil: '$64.50',
+      wpi: '11.44%',
+      pmi: '46.2',
+      iip: '1.7%',
+      gdpGrowth: '7.9% (Q1 FY09 reported Aug 29)',
+      forexReserves: '$274.0B',
+      gsecYield10Y: '7.85%',
+      usdInr: '48.65',
+      crudeOil: '$78.50',
+    },
+    pointInTimeMacro: [
+      {
+        metric: 'Gross Domestic Product (GDP)',
+        value: '7.9% (Q1 FY09)',
+        periodCovered: 'April 1 – June 30, 2008',
+        releaseDate: 'August 29, 2008',
+        reportingLag: '60 days lag',
+        lookaheadTrap: 'CRITICAL LOOKAHEAD TRAP: On October 15, researchers often assume the market knew growth was slowing to 5.8%. In reality, Q2 FY09 GDP was not published until November 28, 2008! Investors on Oct 15 only knew 7.9%.'
+      },
+      {
+        metric: 'Wholesale Inflation (WPI)',
+        value: '11.44% (Sep 2008)',
+        periodCovered: 'September 2008',
+        releaseDate: 'October 10, 2008',
+        reportingLag: '10 days lag',
+        lookaheadTrap: 'Double-digit inflation was actively restraining the RBI from immediate aggressive rate cuts, creating a stagflation fear among bond managers.'
+      },
+      {
+        metric: 'RBI Repo Rate Policy',
+        value: '9.00%',
+        periodCovered: 'Active as of Oct 15, 2008',
+        releaseDate: 'July 29, 2008 MPC',
+        reportingLag: 'Active policy rate',
+        lookaheadTrap: 'The famous emergency 100 bps repo cut to 8.00% did NOT occur until October 20, 2008. On Oct 15, the repo rate was still at a restrictive 9.00%.'
+      },
+      {
+        metric: 'Cash Reserve Ratio (CRR)',
+        value: '7.50%',
+        periodCovered: 'Emergency reduction',
+        releaseDate: 'October 10, 2008',
+        reportingLag: 'Immediate implementation',
+        lookaheadTrap: 'RBI had just slashed CRR by 150 bps to release ₹60,000 Crore into the interbank system, yet commercial paper rates remained stressed above 14%.'
+      }
+    ],
+    pointInTimeFilings: [
+      {
+        symbol: 'RELIANCE',
+        name: 'Reliance Industries',
+        latestAvailableFiling: 'Q1 FY09 (ended June 30, 2008)',
+        filingDate: 'July 24, 2008',
+        revenue: '₹41,024 Cr',
+        netProfit: '₹4,110 Cr',
+        peAsOfDate: '13.4x',
+        upcomingFiling: 'Q2 FY09 expected October 23, 2008 (8 days away - not yet available)',
+        whatWasKnown: 'Reliance had delivered record Q1 profits driven by gross refining margins (GRMs) of $15.7/barrel. The market did not yet know how severely petrochemical demand would contract in Q2.'
+      },
+      {
+        symbol: 'ICICIBANK',
+        name: 'ICICI Bank',
+        latestAvailableFiling: 'Q1 FY09 (ended June 30, 2008)',
+        filingDate: 'July 26, 2008',
+        revenue: '₹9,840 Cr',
+        netProfit: '₹728 Cr',
+        peAsOfDate: '8.2x',
+        upcomingFiling: 'Q2 FY09 expected October 25, 2008 (10 days away - not yet available)',
+        whatWasKnown: 'Subject to intense retail branch run rumors regarding UK subsidiary exposure to Lehman Brothers. RBI issued a statement on Oct 1 affirming ICICI had sufficient liquidity.'
+      },
+      {
+        symbol: 'TCS',
+        name: 'Tata Consultancy Services',
+        latestAvailableFiling: 'Q1 FY09 (ended June 30, 2008)',
+        filingDate: 'July 17, 2008',
+        revenue: '₹6,410 Cr',
+        netProfit: '₹1,290 Cr',
+        peAsOfDate: '11.8x',
+        upcomingFiling: 'Q2 FY09 expected October 21, 2008 (6 days away - not yet available)',
+        whatWasKnown: 'TCS maintained 24% operating margins in Q1, but investors feared widespread project cancellations by Wall Street banking clients.'
+      }
+    ],
+    newsAndConsensus: {
+      headlineQuotes: [
+        '"Indian financial system is safe and well-capitalized, but global contagion cannot be ruled out." — RBI Governor D. Subbarao (Oct 13, 2008)',
+        '"FIIs are selling liquid emerging market blue-chips not because India is broken, but because they need cash to survive Western redemptions." — Dalal Street Institutional Note (Oct 14, 2008)',
+        '"Commercial paper yields hit 14.5% as mutual funds face redemptions from corporate treasuries." — Financial Express (Oct 15, 2008)'
+      ],
+      analystConsensus: 'Consensus was split: Foreign brokers urged extreme cash preservation predicting Nifty could test 2,500; domestic value managers argued Nifty P/E at 12.8x represented a historic multi-year accumulation zone.',
+      centralBankStance: 'Transitioning rapidly from fighting domestic inflation (WPI 11.4%) to emergency liquidity provision via CRR cuts and dollar-rupee swap facilities.',
+      marketPsychology: 'Peak panic and liquidity paralysis. Leveraged real estate and infrastructure firms faced acute refinancing barriers.'
     },
     analysis: {
       catalysts: [
-        'Insolvency of Lehman Brothers triggered immediate counterparty freeze in US/European credit markets.',
-        'Global hedge funds faced redemption cascades, forcing liquidation of liquid emerging market assets (India, Brazil).',
-        'Double-digit domestic inflation (WPI 11%) initially restricted the RBIs ability to aggressively ease rates.'
+        'Lehman Brothers bankruptcy triggered interbank trust collapse across London and New York.',
+        'Western hedge funds faced massive redemption cascades, forcing wholesale liquidation of liquid Indian equity holdings.',
+        'High domestic inflation restricted RBI from aggressive early easing, exacerbating the funding squeeze.'
       ],
       transmissionMechanism: [
-        'FII dollar outflows placed massive downward pressure on INR, forcing RBI to defend the currency by burning forex reserves.',
-        'Indian corporate external commercial borrowings (ECB) froze overnight, leaving leveraged infrastructure firms in liquidity stress.',
-        'Mutual funds faced runs on liquid debt funds as NBFC paper encountered liquidity deficits.'
+        'Massive FII outflows led to rapid rupee depreciation (40 to 49 per USD), forcing RBI to intervene.',
+        'Domestic mutual funds experienced severe redemptions in liquid debt funds, choking off NBFC commercial paper funding.',
+        'High real borrowing costs compressed corporate capital expenditure plans.'
       ],
       winningSectors: [
-        { name: 'Fast Moving Consumer Goods', performance: '-14.2%', rationale: 'Relatively preserved capital due to inelastic demand for essential staples.' },
-        { name: 'Information Technology', performance: '-22.0%', rationale: 'Rupee depreciation from 40 to 50 provided currency cushion against US demand drop.' }
+        { name: 'Fast Moving Consumer Goods', performance: '-8.2%', rationale: 'Massive relative outperformance as consumer staples demand remained insulated from global banking chaos.' },
+        { name: 'Pharmaceuticals', performance: '-12.0%', rationale: 'Generic export earnings cushioned by rupee depreciation.' }
       ],
       losingSectors: [
-        { name: 'Real Estate & Infrastructure', performance: '-84.5%', rationale: 'Massive leverage, freeze in commercial paper markets, and halt in land purchases.' },
-        { name: 'Banking & Financial Services', performance: '-62.0%', rationale: 'Severe asset-liability mismatch fears and sharp mark-to-market bond portfolio hits.' }
+        { name: 'Real Estate & Construction', performance: '-74.0%', rationale: 'Refinancing dried up completely; debt servicing became impossible without emergency restructuring.' },
+        { name: 'Private Sector Banking', performance: '-52.0%', rationale: 'Asset-liability mismatch concerns and systemic mark-to-market bond losses.' }
       ],
       institutionalLessons: [
-        'P/E ratios below 11x on Nifty 50 marked the buying opportunity of a generation.',
-        'Balance sheet leverage kills companies during liquidity freezes regardless of asset value.',
-        'Central bank liquidity backstops (CRR cuts, special repo windows) mark the true capitulation bottom.'
+        'Balance sheet leverage kills companies during liquidity freezes regardless of operating profitability.',
+        'Lookahead bias causes analysts to forget that central banks initially fought inflation before slashing rates.',
+        'Buying blue-chips at single-digit P/E multiples during liquidity panics generates extraordinary 5-year compounding.'
       ],
-      recoveryTimeline: '18 months for Nifty to double from 2,584 to 5,200 by mid-2010.'
+      recoveryTimeline: '5 months to reach ultimate bottom (March 2009 at 2,584); 12 months to reclaim 5,000.'
     },
+    simulationSteps: [
+      {
+        horizon: '+1W',
+        futureDate: 'October 22, 2008',
+        niftyLevel: 2850,
+        niftyChange: '-8.7%',
+        macroReleasesUnlocked: [
+          'RBI Emergency 100 bps Repo Cut announced Oct 20 (Repo dropped from 9.00% to 8.00%).',
+          'Interbank overnight call rates dropped from 18% to 8% following repo window easing.'
+        ],
+        corporateEarningsUnlocked: [
+          'TCS Q2 FY09 reported: Revenue ₹6,950 Cr (+8.4% QoQ), EBIT margin 23.8% resilient.',
+          'Reliance Q2 FY09 preview shows initial softening in refining margins.'
+        ],
+        marketNarrative: 'The emergency repo cut confirms the depth of the crisis. Relief rally was brief; global hedge fund forced liquidations continued.',
+        thesisGrading: {
+          bullishOutcome: 'Early buyers suffered another 8-10% drawdown as forced selling peaked.',
+          bearishOutcome: 'Shorting high-beta banks or holding cash generated significant alpha.',
+          winningPlay: 'Buying deep out-of-the-money puts or accumulating defensive cash equivalents.'
+        }
+      },
+      {
+        horizon: '+1M',
+        futureDate: 'November 15, 2008',
+        niftyLevel: 2810,
+        niftyChange: '-10.0%',
+        macroReleasesUnlocked: [
+          'G20 Leaders Summit in Washington pledges coordinated fiscal and monetary stimulus.',
+          'October WPI inflation drops to 10.72%, opening the door for larger rate cuts.'
+        ],
+        corporateEarningsUnlocked: [
+          'Reliance Q2 FY09 net profit ₹4,120 Cr; petrochemical division reports inventory write-downs.',
+          'ICICI Bank Q2 results show asset quality held, dispelling bankruptcy rumors.'
+        ],
+        marketNarrative: 'Markets begin carving out a trading range between 2,700 and 3,100 as systemic insolvency fears recede.',
+        thesisGrading: {
+          bullishOutcome: 'Drawdown slowed; portfolio value stabilized.',
+          bearishOutcome: 'Short positions started facing violent two-way volatility.',
+          winningPlay: 'Accumulating FMCG (HUL, ITC) and top-tier private banks (HDFC Bank).'
+        }
+      },
+      {
+        horizon: '+3M',
+        futureDate: 'January 15, 2009',
+        niftyLevel: 2735,
+        niftyChange: '-12.4%',
+        macroReleasesUnlocked: [
+          'Q2 FY09 GDP released on Nov 28 at 5.8% (confirming sharp economic slowdown).',
+          'RBI Repo Rate slashed further to 5.50%; Reverse Repo at 4.00%.'
+        ],
+        corporateEarningsUnlocked: [
+          'Satyam Computer Services fraud confession by B. Ramalinga Raju on Jan 7, 2009 shocks corporate India.',
+          'IT index crashes 25% in a week as investors doubt reported balance sheets.'
+        ],
+        marketNarrative: 'Satyam scandal creates a secondary crisis of confidence in Indian corporate governance just as global markets attempted to stabilize.',
+        thesisGrading: {
+          bullishOutcome: 'Severe test of conviction; Satyam scandal tested even long-term bulls.',
+          bearishOutcome: 'Shorting IT and mid-cap real estate paid off handsomely.',
+          winningPlay: 'Pristine balance sheets (Tata Group, HDFC Group, Reliance) with transparent audits.'
+        }
+      },
+      {
+        horizon: '+6M',
+        futureDate: 'April 15, 2009',
+        niftyLevel: 3380,
+        niftyChange: '+8.3%',
+        macroReleasesUnlocked: [
+          'March 2009 absolute bottom reached at 2,584; aggressive global QE takes hold.',
+          'WPI inflation plunges below 1.5%; RBI Repo at historic low 4.75%.'
+        ],
+        corporateEarningsUnlocked: [
+          'Q3 FY09 corporate earnings confirm Indian banking system suffered zero systemic insolvencies.',
+          'Tech Mahindra acquires Satyam, restoring institutional confidence in the sector.'
+        ],
+        marketNarrative: 'Massive pre-election liquidity rally begins. Domestic mutual funds and value investors begin driving the market upward.',
+        thesisGrading: {
+          bullishOutcome: 'Patient value accumulators are now comfortably in the green.',
+          bearishOutcome: 'Bears caught off guard by the ferocious 30% rally off the March 2,584 low.',
+          winningPlay: 'High-beta cyclicals (L&T, ICICI Bank, Tata Motors) beginning multi-bagger runs.'
+        }
+      },
+      {
+        horizon: '+1Y',
+        futureDate: 'October 15, 2009',
+        niftyLevel: 5120,
+        niftyChange: '+64.0%',
+        macroReleasesUnlocked: [
+          'UPA coalition wins decisive 2009 election victory triggering two upper circuits (May 18, 2009).',
+          'GDP growth rebounds back toward 8.0%; foreign institutional flows turn positive with ₹85,000 Cr.'
+        ],
+        corporateEarningsUnlocked: [
+          'Full-year FY09 audited numbers demonstrate Indian corporate resilience.',
+          'Automobile and banking earnings break out to fresh historical highs.'
+        ],
+        marketNarrative: 'The greatest financial crisis of a generation evolved into one of the most explosive bull market rallies in Indian history.',
+        thesisGrading: {
+          bullishOutcome: 'Generational returns (+64% index return; individual leaders +150% to +300%).',
+          bearishOutcome: 'Catastrophic losses for persistent bears who waited for previous lows.',
+          winningPlay: 'Equities as the ultimate asset class when purchased at single-digit earnings multiples.'
+        }
+      }
+    ],
     notableStocks: [
-      { symbol: 'RELIANCE', name: 'Reliance Industries', price: '₹1,050', change: '-8.5%', pe: '11.2x', note: 'Down 60% from peak despite massive cash generation from refining.' },
-      { symbol: 'ICICIBANK', name: 'ICICI Bank', price: '₹320', change: '-12.4%', pe: '6.8x', note: 'Subjected to intense liquidity panic and retail branch rumors; survived and rebounded 5x.' },
-      { symbol: 'TCS', name: 'Tata Consultancy Services', price: '₹220', change: '-4.1%', pe: '10.1x', note: 'Traded at decade-low valuation; operating margins remained above 24%.' },
-      { symbol: 'LT', name: 'Larsen & Toubro', price: '₹680', change: '-9.2%', pe: '12.0x', note: 'Severe hit on order book execution concerns before infrastructure rebound.' }
+      { symbol: 'RELIANCE', name: 'Reliance Industries', price: '₹1,240', change: '-5.2%', pe: '13.4x', note: 'Down 50% from ₹2,600 peak; refining GRMs remained strong at $15/bbl.' },
+      { symbol: 'ICICIBANK', name: 'ICICI Bank', price: '₹410', change: '-11.2%', pe: '8.2x', note: 'Subject to intense retail branch run rumors; survived and went on to 5x over subsequent cycle.' },
+      { symbol: 'TCS', name: 'Tata Consultancy Services', price: '₹280', change: '-3.8%', pe: '11.8x', note: 'Traded at decade-low P/E; operating margins remained rock-solid at 24%.' },
+      { symbol: 'LT', name: 'Larsen & Toubro', price: '₹840', change: '-8.5%', pe: '14.5x', note: 'Severe hit on order execution concerns before infrastructure rebound.' }
     ]
   },
   {
-    id: 'demonetization-2016',
-    name: 'Demonetization Policy Shock',
-    date: 'November 9, 2016',
-    headline: 'Prime Minister invalidates ₹500 and ₹1,000 banknotes; cash-dependent sectors freeze',
-    regimeType: 'policy_shock',
-    summary: 'On the evening of November 8, 2016, the Government of India demonetized 86% of the nations currency in circulation to combat counterfeit money and unaccounted cash. The immediate cash crunch halted rural commerce, unorganized retail, real estate transactions, and consumer discretionary spending.',
+    id: 'covid-mar-2020',
+    name: 'COVID-19 The Gathering Storm (Pre-Lockdown)',
+    date: 'March 1, 2020',
+    headline: 'Novel coronavirus spreads across Italy and Iran; Indian markets consolidate near highs',
+    regimeType: 'crisis',
+    summary: 'On March 1, 2020, India had reported only 3 confirmed COVID-19 cases in Kerala (all students returned from Wuhan). The Nifty 50 stood at 11,201, down just 9% from its all-time high of 12,430. Brokerages maintained Nifty year-end targets above 13,000. Nationwide lockdown was completely unimagined by the consensus.',
     indices: {
-      nifty50: { level: 8200, pe: 21.4, pb: 3.1, divYield: 1.4, change1D: -1.3, change1M: -5.8 },
-      sensex: { level: 26500, pe: 21.8, pb: 3.2, change1D: -1.2, change1M: -5.5 },
-      bankNifty: { level: 18800, pe: 18.5, pb: 2.2, change1D: +0.2, change1M: -4.1 },
+      nifty50: { level: 11201, pe: 24.2, pb: 2.8, divYield: 1.3, change1D: -0.8, change1M: -6.4 },
+      sensex: { level: 38297, pe: 24.8, pb: 2.9, change1D: -0.9, change1M: -6.1 },
+      bankNifty: { level: 29147, pe: 16.5, pb: 2.1, change1D: -1.2, change1M: -7.5 },
+    },
+    macro: {
+      rbiRepo: '5.15%',
+      reverseRepo: '4.90%',
+      cpi: '7.59% (Jan 2020 print released Feb 12)',
+      wpi: '3.10%',
+      pmi: '54.5',
+      iip: '2.0%',
+      gdpGrowth: '4.7% (Q3 FY20 released Feb 28)',
+      forexReserves: '$476.0B',
+      gsecYield10Y: '6.37%',
+      usdInr: '72.20',
+      crudeOil: '$50.50',
+    },
+    pointInTimeMacro: [
+      {
+        metric: 'Gross Domestic Product (GDP)',
+        value: '4.7% (Q3 FY20)',
+        periodCovered: 'October 1 – December 31, 2019',
+        releaseDate: 'February 28, 2020 (2 days prior)',
+        reportingLag: '60 days lag',
+        lookaheadTrap: 'CRITICAL LOOKAHEAD TRAP: On March 1, markets were discussing sluggish 4.7% GDP growth from late 2019. Nobody foresaw the -23.9% GDP contraction that would strike in Q1 FY21!'
+      },
+      {
+        metric: 'Headline CPI Inflation',
+        value: '7.59% (Jan 2020)',
+        periodCovered: 'January 2020',
+        releaseDate: 'February 12, 2020',
+        reportingLag: '12 days lag',
+        lookaheadTrap: 'Driven by an onion price spike above ₹100/kg, CPI was above the RBIs 6% tolerance band, leading consensus to believe rate cuts were off the table.'
+      },
+      {
+        metric: 'RBI Policy Stance',
+        value: '5.15% (Accommodative)',
+        periodCovered: 'February 6, 2020 MPC',
+        releaseDate: 'February 6, 2020',
+        reportingLag: 'Active policy rate',
+        lookaheadTrap: 'The emergency 75 bps repo cut, 3-month loan moratorium, and TLTRO injections were completely unannounced on March 1.'
+      }
+    ],
+    pointInTimeFilings: [
+      {
+        symbol: 'RELIANCE',
+        name: 'Reliance Industries',
+        latestAvailableFiling: 'Q3 FY20 (ended Dec 31, 2019)',
+        filingDate: 'January 17, 2020',
+        revenue: '₹1,52,939 Cr',
+        netProfit: '₹11,640 Cr',
+        peAsOfDate: '23.8x',
+        upcomingFiling: 'Q4 FY20 expected April 30, 2020',
+        whatWasKnown: 'Jio was adding 10 million subscribers monthly; retail division EBITDA had doubled. Net debt was ₹1.53L Cr; target was zero net debt by 2021.'
+      },
+      {
+        symbol: 'TCS',
+        name: 'Tata Consultancy Services',
+        latestAvailableFiling: 'Q3 FY20 (ended Dec 31, 2019)',
+        filingDate: 'January 10, 2020',
+        revenue: '₹39,854 Cr',
+        netProfit: '₹8,118 Cr',
+        peAsOfDate: '24.1x',
+        upcomingFiling: 'Q4 FY20 expected April 16, 2020',
+        whatWasKnown: 'Pristine balance sheet with zero debt. European and North American enterprise IT pipelines were expanding steadily.'
+      }
+    ],
+    newsAndConsensus: {
+      headlineQuotes: [
+        '"India is geographically isolated from novel coronavirus epicenter in Wuhan; supply chain disruption remains minimal." — Brokerage Strategy Note (Feb 28, 2020)',
+        '"WHO raises global risk assessment to Very High, but travel restrictions are expected to be localized." — Reuters (Feb 29, 2020)',
+        '"Yes Bank restructuring plan under active RBI consideration." — Economic Times (March 1, 2020)'
+      ],
+      analystConsensus: 'Consensus viewed COVID-19 as a brief supply-chain friction for China-dependent chemical and electronics importers, not a systemic threat to domestic services or consumer mobility.',
+      centralBankStance: 'RBI maintained watchfulness over onion inflation while monitoring Yes Bank capital adequacy.',
+      marketPsychology: 'Complacent optimism. Buy-the-dip mentality prevailed among domestic retail SIP investors.'
+    },
+    analysis: {
+      catalysts: [
+        'Outbreak accelerated exponentially in Northern Italy and Iran in late February 2020.',
+        'Initial international supply chain halts in automotive components and pharmaceutical APIs.',
+        'Domestic banking stress centered on Yes Bank capital depletion.'
+      ],
+      transmissionMechanism: [
+        'Global hedge funds executed cross-asset risk-parity selloffs as western lockdowns commenced.',
+        'Panic margin calls triggered simultaneous selling in equities, commodities, and corporate debt for USD cash.'
+      ],
+      winningSectors: [
+        { name: 'Pharmaceuticals & APIs', performance: '+35.0% (over next 6M)', rationale: 'Global scramble for hydroxychloroquine, paracetamol, and active pharmaceutical ingredients.' },
+        { name: 'IT & Cloud Services', performance: '+48.0% (over next 6M)', rationale: 'Work-from-home mandate catalyzed multi-year enterprise cloud migration.' }
+      ],
+      losingSectors: [
+        { name: 'Aviation & Multiplexes', performance: '-65.0%', rationale: 'Total domestic and international ground stop; zero ticket sales for months.' },
+        { name: 'Non-Banking Financials', performance: '-48.0%', rationale: 'Asset quality panic on fears of widespread borrower defaults during lockdown.' }
+      ],
+      institutionalLessons: [
+        'Black swan events strike when consensus is complacent and valuations are elevated (24x P/E).',
+        'Lookahead bias hides the fact that on March 1, virtually no Wall Street analyst predicted global lockdowns.'
+      ],
+      recoveryTimeline: '23 days of precipitous drop (March 1 to March 23 lower circuit); 7 months to fully reclaim pre-COVID highs.'
+    },
+    simulationSteps: [
+      {
+        horizon: '+1W',
+        futureDate: 'March 8, 2020',
+        niftyLevel: 10989,
+        niftyChange: '-1.9%',
+        macroReleasesUnlocked: [
+          'RBI places Yes Bank under 30-day moratorium on March 5; SBI-led bailout announced.',
+          'Italy announces quarantine of Lombardy and 14 northern provinces.'
+        ],
+        corporateEarningsUnlocked: [
+          'Yes Bank depositors face ₹50,000 withdrawal cap; systemic liquidity panic in private banks.'
+        ],
+        marketNarrative: 'Domestic banking stress combines with accelerating European coronavirus cases; volatility index (India VIX) spikes above 25.',
+        thesisGrading: {
+          bullishOutcome: 'Initial dip buyers trapped as global liquidity begins tightening.',
+          bearishOutcome: 'Shorting private banks or buying protective index puts generated large gains.',
+          winningPlay: 'Liquidating vulnerable travel/leisure names and moving to cash.'
+        }
+      },
+      {
+        horizon: '+1M',
+        futureDate: 'April 1, 2020',
+        niftyLevel: 8250,
+        niftyChange: '-26.3%',
+        macroReleasesUnlocked: [
+          'March 23 historic crash: 10% lower circuit triggered within 15 minutes of open; Nifty hits 7,511.',
+          'Prime Minister announces 21-day nationwide lockdown on March 24.',
+          'RBI delivers emergency 75 bps repo rate cut to 4.40% and announces 3-month loan moratorium on March 27.'
+        ],
+        corporateEarningsUnlocked: [
+          'Automakers report zero domestic sales for late March as showrooms and factories shut.'
+        ],
+        marketNarrative: 'Unprecedented market capitulation; India VIX hits 83.6. FIIs dump ₹65,000 Cr in a single month.',
+        thesisGrading: {
+          bullishOutcome: 'Devastating 26% drawdown for anyone who failed to hedge on March 1.',
+          bearishOutcome: 'Spectacular short gains, but short sellers faced extreme squeeze risk off the March 23 bottom.',
+          winningPlay: 'Stepping in to buy quality blue-chips (Reliance, TCS, HDFC Bank) on March 23-25.'
+        }
+      },
+      {
+        horizon: '+3M',
+        futureDate: 'June 1, 2020',
+        niftyLevel: 9825,
+        niftyChange: '-12.3%',
+        macroReleasesUnlocked: [
+          'Federal Reserve unlimited QE and RBI Targeted Long-Term Repo Operations (TLTRO) flood the system with liquidity.',
+          'RBI cuts repo rate again by 40 bps to historic low 4.00% on May 22.'
+        ],
+        corporateEarningsUnlocked: [
+          'Reliance Industries announces ₹1.52L Cr fundraising across Jio Platforms (Facebook, Silver Lake, Google).',
+          'Pharmaceutical majors report record export margins.'
+        ],
+        marketNarrative: 'The great liquidity reflation begins. Retail demat accounts explode as millions of locked-down citizens begin trading equities.',
+        thesisGrading: {
+          bullishOutcome: 'V-shaped recovery well underway; Nifty already up 30% from 7,511 low.',
+          bearishOutcome: 'Bears waiting for a second crash to 6,000 missed the entire recovery.',
+          winningPlay: 'Buying Reliance and IT/Pharma leaders for the secular bull run.'
+        }
+      },
+      {
+        horizon: '+1Y',
+        futureDate: 'March 1, 2021',
+        niftyLevel: 14929,
+        niftyChange: '+33.3%',
+        macroReleasesUnlocked: [
+          'Vaccine rollout commences across India and globally.',
+          'Q3 FY21 GDP rebounds into positive territory (+0.4%), ending the technical recession.'
+        ],
+        corporateEarningsUnlocked: [
+          'IT services report highest deal total contract values in history.',
+          'Corporate balance sheets show aggressive deleveraging.'
+        ],
+        marketNarrative: 'The onset of a historic multi-year bull market that pushed Nifty from 7,511 to 18,600.',
+        thesisGrading: {
+          bullishOutcome: '+33.3% return from March 1, 2020 (and +98% from the March 23 bottom).',
+          bearishOutcome: 'Bears completely washed out as corporate profitability reached record levels.',
+          winningPlay: 'Holding through black swan volatility and accumulating during peak panic.'
+        }
+      }
+    ],
+    notableStocks: [
+      { symbol: 'RELIANCE', name: 'Reliance Industries', price: '₹1,325', change: '-1.4%', pe: '23.8x', note: 'Dropped to ₹875 on March 23 before announcing landmark tech monetization.' },
+      { symbol: 'TCS', name: 'Tata Consultancy Services', price: '₹2,020', change: '-0.8%', pe: '24.1x', note: 'Bottomed at ₹1,630; benefited from accelerated global enterprise cloud migration.' },
+      { symbol: 'HDFCBANK', name: 'HDFC Bank', price: '₹1,180', change: '-1.5%', pe: '22.0x', note: 'Dipped to ₹760 during lower circuit panic; pristine loan underwriting preserved equity.' },
+      { symbol: 'SUNPHARMA', name: 'Sun Pharma', price: '₹375', change: '+1.2%', pe: '19.5x', note: 'Became an institutional safe haven during the healthcare crisis.' }
+    ]
+  },
+  {
+    id: 'demonetization-nov-2016',
+    name: 'Demonetization Cash Shock',
+    date: 'November 9, 2016',
+    headline: 'Overnight invalidation of 86% of currency notes; cash-dependent sectors freeze',
+    regimeType: 'policy_shock',
+    summary: 'On the evening of November 8, 2016, the Government of India declared all ₹500 and ₹1,000 banknotes illegal tender. On November 9, Indian markets woke up to a severe transaction liquidity shock, compounded by Donald Trumps unexpected US presidential election victory.',
+    indices: {
+      nifty50: { level: 8432, pe: 21.8, pb: 3.2, divYield: 1.4, change1D: -1.3, change1M: -3.2 },
+      sensex: { level: 27252, pe: 22.1, pb: 3.3, change1D: -1.2, change1M: -3.0 },
+      bankNifty: { level: 19445, pe: 18.8, pb: 2.3, change1D: +0.1, change1M: -2.1 },
     },
     macro: {
       rbiRepo: '6.25%',
       reverseRepo: '5.75%',
-      cpi: '3.63%',
-      wpi: '3.15%',
-      pmi: '52.3 (dropped to 49.6 in Dec)',
-      iip: '2.8%',
-      gdpGrowth: '7.1%',
-      forexReserves: '$365.0B',
-      gsecYield10Y: '6.52% (dropped from 6.85%)',
-      usdInr: '66.85',
-      crudeOil: '$46.20',
+      cpi: '4.20% (Oct 2016 print)',
+      wpi: '3.39%',
+      pmi: '54.5 (dropped to 49.6 in Dec)',
+      iip: '1.2%',
+      gdpGrowth: '7.5%',
+      forexReserves: '$368.0B',
+      gsecYield10Y: '6.85% (plunged to 6.20% within weeks)',
+      usdInr: '66.45',
+      crudeOil: '$45.30',
+    },
+    pointInTimeMacro: [
+      {
+        metric: 'Currency in Circulation',
+        value: '₹17.97 Lakh Crore (86% invalidated)',
+        periodCovered: 'November 8, 2016',
+        releaseDate: 'November 8, 2016 Address to Nation',
+        reportingLag: 'Immediate shock',
+        lookaheadTrap: 'Markets did not know the remonetization would take over 5 months. Initial government estimates suggested normalcy within 50 days.'
+      },
+      {
+        metric: 'Banking System Deposit Surge',
+        value: 'Surplus Liquidity',
+        periodCovered: 'Nov-Dec 2016',
+        releaseDate: 'Weekly RBI Statistical Bulletin',
+        reportingLag: 'Weekly reporting',
+        lookaheadTrap: 'Banks received over ₹15 Lakh Crore in low-cost deposits, driving 10Y sovereign yields from 6.85% down to 6.20% as banks parked cash in G-Secs.'
+      }
+    ],
+    pointInTimeFilings: [
+      {
+        symbol: 'TITAN',
+        name: 'Titan Company',
+        latestAvailableFiling: 'Q2 FY17 (ended Sep 30, 2016)',
+        filingDate: 'November 3, 2016',
+        revenue: '₹2,680 Cr',
+        netProfit: '₹180 Cr',
+        peAsOfDate: '38.5x',
+        upcomingFiling: 'Q3 FY17 expected February 2017',
+        whatWasKnown: 'Titan had strong festive jewellery sales in Q2. Demonetization halted jewellery transactions overnight, but long-term catalyzed massive formalization.'
+      }
+    ],
+    newsAndConsensus: {
+      headlineQuotes: [
+        '"₹500 and ₹1,000 currency notes will cease to be legal tender from midnight tonight." — Prime Minister Narendra Modi (Nov 8, 2016)',
+        '"Cash-intensive sectors like real estate, jewellers, and luxury discretionary will face immediate demand destruction." — Kotak Institutional Equities (Nov 9, 2016)'
+      ],
+      analystConsensus: 'Short-term panic in domestic consumption, but bullish for banking CASA ratios and digital payment infrastructure.',
+      centralBankStance: 'RBI focused on managing bank branch logistics and currency replacement queues.',
+      marketPsychology: 'Disruption fear followed by formalization optimism.'
     },
     analysis: {
       catalysts: [
-        'Sudden invalidation of high-denomination currency notes constituting 86% of cash supply.',
-        'Severe transaction friction as banks focused exclusively on currency exchange over 50 days.',
-        'Concurrent uncertainty from Donald Trumps election victory in the United States.'
+        'Invalidation of high-denomination currency notes constituting 86% of cash supply.',
+        'Simultaneous global market shock from Donald Trumps US election victory.'
       ],
       transmissionMechanism: [
-        'Rural agricultural and wholesale supply chains halted due to lack of physical currency.',
-        'Trillions in physical cash deposited into the banking system, causing CASA ratios and bank liquidity to surge.',
-        'Sovereign bond yields plunged 35 bps as banks were forced to park surplus deposits in government securities.'
+        'Cash wholesale supply chains froze; unorganized retail suffered heavy volume drop.',
+        'Trillions in cash flooded commercial bank deposits, crashing borrowing rates and sovereign yields.'
       ],
       winningSectors: [
-        { name: 'Banking Sector (Temporary)', performance: '+2.5%', rationale: 'Massive deposit inflows lowered cost of funds; CASA ratios expanded rapidly.' },
-        { name: 'Digital Payments & Formalization', performance: '+15.0%', rationale: 'Beginning of the UPI and digital wallet revolution; organized retail took market share.' }
+        { name: 'Commercial Banking', performance: '+4.5%', rationale: 'Massive surge in low-cost current and savings account (CASA) deposits.' },
+        { name: 'Organized Retail & Digital Platforms', performance: '+18.0%', rationale: 'Formalization tailwind; launch of the UPI digital payments era.' }
       ],
       losingSectors: [
-        { name: 'Real Estate & Construction', performance: '-18.5%', rationale: 'High historical reliance on cash transactions caused immediate transaction volume freeze.' },
-        { name: 'Jewellery & Consumer Discretionary', performance: '-14.0%', rationale: 'Footfalls collapsed as consumer discretionary purchases were postponed.' }
+        { name: 'Real Estate & Land Developers', performance: '-24.0%', rationale: 'High cash component in historical land deals caused complete transaction freeze.' },
+        { name: 'Microfinance & Rural NBFCs', performance: '-22.0%', rationale: 'Rural collection efficiency plummeted due to physical cash shortages.' }
       ],
       institutionalLessons: [
-        'Cash shocks create sharp transient demand contraction but catalyze long-term formalization of the economy.',
-        'Sovereign bond yields plunge when central banks or systemic policies force artificial banking liquidity.',
-        'Organized market leaders (Titan, Asian Paints) emerged stronger by capturing unorganized market share.'
+        'Structural policy shocks create transient demand destruction but permanent market share shifts toward organized leaders.'
       ],
-      recoveryTimeline: '3 months for domestic consumption to re-monetize; Nifty broke to fresh all-time highs by March 2017.'
+      recoveryTimeline: '3 months for cash velocity to normalize; Nifty broke to fresh all-time highs above 9,000 by March 2017.'
     },
+    simulationSteps: [
+      {
+        horizon: '+1M',
+        futureDate: 'December 9, 2016',
+        niftyLevel: 8260,
+        niftyChange: '-2.0%',
+        macroReleasesUnlocked: [
+          'November PMI collapses from 54.5 to 46.7; wholesale supply chains contract.',
+          '10Y G-Sec yield drops to 6.20% as banks park surplus cash in government bonds.'
+        ],
+        corporateEarningsUnlocked: [
+          'Consumer discretionary companies announce 20-30% volume drops in wholesale channels.'
+        ],
+        marketNarrative: 'Market experiences persistent consolidation; foreign investors pull ₹18,000 Cr on US rate hike expectations.',
+        thesisGrading: {
+          bullishOutcome: 'Subdued index return, but high-quality banking stocks held ground.',
+          bearishOutcome: 'Shorting real estate was the dominant winning trade.',
+          winningPlay: 'Accumulating top-tier private banks (HDFC Bank, Kotak Bank).'
+        }
+      },
+      {
+        horizon: '+6M',
+        futureDate: 'May 9, 2017',
+        niftyLevel: 9400,
+        niftyChange: '+11.5%',
+        macroReleasesUnlocked: [
+          'Re-monetization completes; currency in circulation recovers to 80% of pre-shock levels.',
+          'Goods and Services Tax (GST) rollout announced for July 1, 2017.'
+        ],
+        corporateEarningsUnlocked: [
+          'Organized sector leaders (Titan, Asian Paints, Marico) report massive market share gains from unorganized competitors.'
+        ],
+        marketNarrative: 'Nifty breaks 9,000 for the first time in history, led by formalization and domestic mutual fund inflows.',
+        thesisGrading: {
+          bullishOutcome: '+11.5% index return and major outperformance in organized leaders.',
+          bearishOutcome: 'Bears trapped waiting for protracted cash depression.',
+          winningPlay: 'Buying market leaders who capitalized on unorganized sector weakness.'
+        }
+      }
+    ],
     notableStocks: [
-      { symbol: 'TITAN', name: 'Titan Company', price: '₹315', change: '-8.5%', pe: '38.0x', note: 'Immediate slump on jewellery cash buying halt; later gained massive organized share.' },
-      { symbol: 'SBIN', name: 'State Bank of India', price: '₹260', change: '+3.1%', pe: '11.5x', note: 'Received tens of thousands of crores in low-cost savings deposits.' },
-      { symbol: 'BAJFINANCE', name: 'Bajaj Finance', price: '₹840', change: '-9.4%', pe: '26.0x', note: 'Short-term consumer durable financing dip; proved to be an elite multi-bagger entry.' },
-      { symbol: 'ASIANPAINT', name: 'Asian Paints', price: '₹920', change: '-7.2%', pe: '42.0x', note: 'Home renovation delays hurt Q3 volumes before swift V-shaped recovery.' }
+      { symbol: 'TITAN', name: 'Titan Company', price: '₹340', change: '-7.5%', pe: '38.5x', note: 'Bottomed during cash panic; went on to become one of the greatest compounders of the decade.' },
+      { symbol: 'SBIN', name: 'State Bank of India', price: '₹280', change: '+2.8%', pe: '12.0x', note: 'Massive deposit inflows lowered cost of funds; NIM expanded.' }
     ]
   },
   {
-    id: 'covid-crash-2020',
-    name: 'COVID-19 Global Pandemic Circuit Breaker',
-    date: 'March 23, 2020',
-    headline: '10% lower circuit halted trading; Nifty crashes to 7,511 on nationwide lockdown panic',
-    regimeType: 'crisis',
-    summary: 'The escalation of COVID-19 to a global pandemic and the announcement of a complete nationwide lockdown triggered systemic liquidation across global financial markets. India VIX spiked to 83.6, crude oil crashed below $25, and foreign investors dumped over ₹65,000 Crore in equities in a single month.',
-    indices: {
-      nifty50: { level: 7610, pe: 14.2, pb: 1.9, divYield: 2.1, change1D: -12.98, change1M: -35.2 },
-      sensex: { level: 25981, pe: 14.8, pb: 2.0, change1D: -13.15, change1M: -36.1 },
-      bankNifty: { level: 16917, pe: 9.8, pb: 1.2, change1D: -16.20, change1M: -45.0 },
-    },
-    macro: {
-      rbiRepo: '4.40% (Emergency 75 bps cut)',
-      reverseRepo: '4.00% (later cut to 3.35%)',
-      cpi: '5.91%',
-      wpi: '0.42%',
-      pmi: '51.8 (collapsed to 27.4 in April)',
-      iip: '-18.7%',
-      gdpGrowth: '-23.9% (Q1 FY21)',
-      forexReserves: '$470.0B',
-      gsecYield10Y: '6.20%',
-      usdInr: '76.30',
-      crudeOil: '$24.80',
-    },
-    analysis: {
-      catalysts: [
-        'Systemic risk of novel coronavirus forcing global economic shutdown and travel bans.',
-        'Prime Minister announced total 21-day nationwide lockdown on March 24, 2020.',
-        'Crude oil price war between Saudi Arabia and Russia triggering liquidation in commodities.'
-      ],
-      transmissionMechanism: [
-        'Global hedge funds executed cross-asset risk-parity selloffs; gold, bonds, and equities sold together for USD cash.',
-        'Fears of massive corporate bankruptcies in aviation, hotels, retail, and unhedged NBFCs.',
-        'RBI initiated historic emergency monetary intervention: 75 bps repo cut, Targeted Long-Term Repo Operations (TLTRO), and debt moratorium.'
-      ],
-      winningSectors: [
-        { name: 'Pharmaceuticals & Healthcare', performance: '+28.0% (over next 6M)', rationale: 'Unprecedented demand for active pharmaceutical ingredients (APIs), vaccines, and hospital care.' },
-        { name: 'IT Services & Digital Transformation', performance: '+45.0% (over next 6M)', rationale: 'Global enterprise scramble for cloud infrastructure and work-from-home software enablement.' }
-      ],
-      losingSectors: [
-        { name: 'Aviation & Hospitality', performance: '-65.0%', rationale: 'Total ground stop of domestic and international flights; zero revenue for quarter.' },
-        { name: 'Banking & Financials', performance: '-48.0%', rationale: 'Expectations of 15%+ Non-Performing Assets (NPAs) due to nationwide moratorium.' }
-      ],
-      institutionalLessons: [
-        'VIX above 80 and widespread lower circuits signal generational capitulation troughs.',
-        'When central banks inject unlimited liquidity (Federal Reserve QE infinity + RBI TLTRO), asset prices re-inflate rapidly.',
-        'Companies with zero debt and essential business models survive and compound post-crisis.'
-      ],
-      recoveryTimeline: '7 months to reclaim pre-COVID highs (12,400); 18 months to achieve 18,600.'
-    },
-    notableStocks: [
-      { symbol: 'RELIANCE', name: 'Reliance Industries', price: '₹875', change: '-12.5%', pe: '12.8x', note: 'Bottomed on March 23 before announcing ₹1.5L Cr rights issue and tech stake sales.' },
-      { symbol: 'TCS', name: 'Tata Consultancy Services', price: '₹1,630', change: '-6.2%', pe: '17.4x', note: 'Showcased pristine balance sheet and cash flows; kickstarted tech supercycle.' },
-      { symbol: 'HDFCBANK', name: 'HDFC Bank', price: '₹760', change: '-14.0%', pe: '15.2x', note: 'Rarely trades below 2.5x book value; represented once-in-a-decade valuation window.' },
-      { symbol: 'SUNPHARMA', name: 'Sun Pharma', price: '₹340', change: '+2.1%', pe: '18.0x', note: 'Defensive outperformance as healthcare took center stage.' }
-    ]
-  },
-  {
-    id: 'retail-boom-2021',
-    name: 'Post-Pandemic Retail Boom & Tech IPO Mania',
-    date: 'October 18, 2021',
-    headline: 'Nifty reaches historic 18,604 milestone fueled by retail demat surge and zero-rate liquidity',
-    regimeType: 'bubble',
-    summary: 'A combination of record-low interest rates (RBI Repo 4.00%), aggressive global quantitative easing, and millions of new first-time retail demat accounts propelled Indian equities into an unprecedented bull market. Unprofitable consumer internet platforms listed at 20x-40x price-to-sales multiples.',
-    indices: {
-      nifty50: { level: 18604, pe: 26.8, pb: 4.4, divYield: 1.1, change1D: +0.8, change1M: +5.2 },
-      sensex: { level: 61765, pe: 28.0, pb: 4.6, change1D: +0.7, change1M: +5.4 },
-      bankNifty: { level: 39684, pe: 22.4, pb: 2.8, change1D: +1.4, change1M: +8.2 },
-    },
-    macro: {
-      rbiRepo: '4.00% (All-time low)',
-      reverseRepo: '3.35%',
-      cpi: '4.48%',
-      wpi: '12.87%',
-      pmi: '55.9',
-      iip: '3.1%',
-      gdpGrowth: '8.4%',
-      forexReserves: '$641.0B',
-      gsecYield10Y: '6.37%',
-      usdInr: '75.10',
-      crudeOil: '$84.50',
-    },
-    analysis: {
-      catalysts: [
-        'Global central bank zero-interest rate policies and trillions in stimulus expanding liquidity.',
-        'Explosion in retail demat accounts (surpassing 70 million), driving massive domestic SIP inflows.',
-        'FOMO-driven subscription frenzies in new-age technology IPOs (Zomato, Nykaa, Policybazaar, Paytm).'
-      ],
-      transmissionMechanism: [
-        'DII systematic investment plans (SIPs) surpassed ₹10,000 Crore/month, creating an institutional bid that absorbed FII profit-taking.',
-        'Corporates executed balance sheet deleveraging, taking advantage of equity bull market to raise primary capital.',
-        'Commodity and input inflation (WPI 12.87%) began quietly eroding manufacturing gross margins.'
-      ],
-      winningSectors: [
-        { name: 'Specialty Chemicals & Metals', performance: '+95.0%', rationale: 'China+1 narrative combined with multi-year commodity upcycle.' },
-        { name: 'Information Technology', performance: '+68.0%', rationale: 'Massive enterprise cloud migration contracts led to double-digit revenue growth.' }
-      ],
-      losingSectors: [
-        { name: 'Automobiles', performance: '-4.2%', rationale: 'Global semiconductor chip shortage throttled vehicle assembly lines despite high waiting lists.' },
-        { name: 'FMCG', performance: '+6.1% (severe lag)', rationale: 'Raw material inflation (palm oil, packaging) compressed gross margins by 200-400 bps.' }
-      ],
-      institutionalLessons: [
-        'When unprofitable IPOs trade on adjusted EBITDA and future gross merchandise value (GMV), the liquidity regime is near its peak.',
-        'Record low interest rates distort discount rates, making distant cash flows appear artificially valuable.',
-        'Watch the divergence between WPI (12.87%) and CPI (4.48%); corporate gross margins inevitably suffer.'
-      ],
-      recoveryTimeline: 'Nifty consolidated for 18 months in a sideways range (15,200 - 18,500) before resuming secular advance.'
-    },
-    notableStocks: [
-      { symbol: 'TATASTEEL', name: 'Tata Steel', price: '₹140', change: '+3.8%', pe: '4.8x', note: 'Generated record cash flows; used proceeds to pay down billions in European debt.' },
-      { symbol: 'BAJFINANCE', name: 'Bajaj Finance', price: '₹7,800', change: '+1.8%', pe: '85.0x', note: 'Achieved peak valuation multiple as consumer credit appetite fully normalized.' },
-      { symbol: 'INFY', name: 'Infosys', price: '₹1,780', change: '+1.2%', pe: '34.0x', note: 'Traded at decade-high valuation multiple with attrition peaking at 27%.' },
-      { symbol: 'ITC', name: 'ITC Limited', price: '₹240', change: '-0.5%', pe: '17.0x', note: 'Out of favor during high-growth rally; later became the ultimate defensive compounder.' }
-    ]
-  },
-  {
-    id: 'election-shock-2024',
-    name: 'Lok Sabha Election Volatility Crash',
+    id: 'election-jun-2024',
+    name: 'Lok Sabha Election Verdict Flash Crash',
     date: 'June 4, 2024',
-    headline: 'Nifty crashes 5.93% intraday on surprise election coalition results; PSU index plunges 16%',
+    headline: 'Exit polls fail; Nifty crashes 5.93% intraday on surprise coalition election results',
     regimeType: 'political_event',
-    summary: 'Following exit polls predicting an overwhelming 370+ seat majority for the ruling coalition, actual vote counting on June 4 revealed a narrow verdict requiring coalition support. Shocked institutional and retail investors liquidated leveraged positions, causing the sharpest single-day crash in four years before a historic V-shaped recovery within 72 hours.',
+    summary: 'Following exit polls predicting an unassailable 370+ seat landslide, vote counting on June 4, 2024 revealed the ruling party won 240 seats, necessitating coalition allies. Shocked institutional investors liquidated leveraged positions, causing the sharpest single-day crash in four years before a historic V-shaped recovery within 72 hours.',
     indices: {
       nifty50: { level: 21884, pe: 21.2, pb: 3.7, divYield: 1.3, change1D: -5.93, change1M: -2.4 },
       sensex: { level: 72079, pe: 21.8, pb: 3.8, change1D: -5.74, change1M: -2.1 },
@@ -347,47 +670,111 @@ export const HISTORICAL_EPOCHS: HistoricalEpoch[] = [
     macro: {
       rbiRepo: '6.50%',
       reverseRepo: '3.35%',
-      cpi: '4.75%',
+      cpi: '4.75% (April 2024 print)',
       wpi: '2.61%',
       pmi: '58.3',
       iip: '5.0%',
-      gdpGrowth: '7.8%',
+      gdpGrowth: '7.8% (FY24 GDP reported May 31 at 8.2%)',
       forexReserves: '$651.5B',
       gsecYield10Y: '7.04%',
       usdInr: '83.52',
       crudeOil: '$77.20',
     },
+    pointInTimeMacro: [
+      {
+        metric: 'Full-Year FY24 GDP Growth',
+        value: '8.2% (Released May 31, 2024)',
+        periodCovered: 'FY 2023-24',
+        releaseDate: 'May 31, 2024 (4 days prior)',
+        reportingLag: '60 days lag',
+        lookaheadTrap: 'Underlying macroeconomic fundamentals were among the strongest in the world (8.2% GDP growth, forex reserves at record $651B). The crash was 100% political sentiment repricing, not economic impairment.'
+      }
+    ],
+    pointInTimeFilings: [
+      {
+        symbol: 'SBIN',
+        name: 'State Bank of India',
+        latestAvailableFiling: 'Q4 FY24 (ended March 31, 2024)',
+        filingDate: 'May 9, 2024',
+        revenue: '₹1,28,400 Cr',
+        netProfit: '₹20,698 Cr',
+        peAsOfDate: '9.2x',
+        upcomingFiling: 'Q1 FY25 expected August 2024',
+        whatWasKnown: 'State Bank of India reported record quarterly profits of ₹20,698 Cr with gross NPAs at a decade-low of 2.24%. The stock crashed 14.2% on June 4 purely on PSU sentiment.'
+      }
+    ],
+    newsAndConsensus: {
+      headlineQuotes: [
+        '"Election results necessitate NDA coalition government; Modi to form government with TDP and JD(U)." — National Media (June 4, 2024)',
+        '"Foreign institutional investors net sold ₹12,436 Crore; Domestic institutional investors net bought ₹21,118 Crore." — NSE Trade Report (June 4, 2024)'
+      ],
+      analystConsensus: 'Fears that coalition politics would slow infrastructure capex and public sector privatization.',
+      centralBankStance: 'RBI maintained status quo on 6.50% repo rate with robust foreign exchange reserves.',
+      marketPsychology: 'Extreme intraday panic selling by retail traders on margin.'
+    },
     analysis: {
       catalysts: [
         'Exit polls had heavily priced in an unassailable single-party majority.',
-        'Actual election results showed the ruling BJP winning 240 seats, necessitating coalition allies (TDP, JDU).',
-        'Fears that coalition politics would slow infrastructure capex and public sector privatization.'
+        'High-beta PSU stocks, defence companies, and capital goods experienced severe retail margin calls.'
       ],
       transmissionMechanism: [
-        'High-beta PSU stocks, defence companies, and capital goods that ran up 200%+ experienced massive retail margin calls.',
-        'Foreign portfolio investors dumped ₹12,436 Crore in cash equity during the day.',
-        'Domestic Institutional Investors (DIIs) stepped in with counter-cyclical buying of ₹21,118 Crore, halting the panic.'
+        'Foreign institutional liquidation absorbed by counter-cyclical domestic institutional liquidity (SIPs, insurance funds).'
       ],
       winningSectors: [
-        { name: 'Fast Moving Consumer Goods', performance: '+1.5%', rationale: 'Expectations that a coalition government would tilt budget allocations toward rural consumption.' },
-        { name: 'Information Technology', performance: '-1.8% (outperformed)', rationale: 'Defensive dollar-earning business models unaffected by domestic political composition.' }
+        { name: 'Fast Moving Consumer Goods', performance: '+1.5%', rationale: 'Expectations that a coalition government would tilt budget allocations toward rural consumption.' }
       ],
       losingSectors: [
         { name: 'Public Sector Undertakings (PSU)', performance: '-16.4%', rationale: 'Severe multiple de-rating on fears of policy interference and capex slowdown.' },
         { name: 'Infrastructure & Capital Goods', performance: '-12.8%', rationale: 'Unwinding of high-conviction election capex momentum trades.' }
       ],
       institutionalLessons: [
-        'Single-day political flash crashes in fundamentally growing economies present premier liquidity buying windows.',
-        'Domestic institutional liquidity (SIPs, insurance funds) now has sufficient depth to absorb even record FII liquidation.',
-        'Underlying macroeconomic trajectory (7.8% GDP growth) remains the ultimate anchor of equity prices.'
+        'Single-day political flash crashes in fundamentally growing economies present premier liquidity buying windows.'
       ],
       recoveryTimeline: 'Just 3 trading sessions for Nifty to completely erase the 1,300-point drop and hit fresh all-time highs above 23,000.'
     },
+    simulationSteps: [
+      {
+        horizon: '+1W',
+        futureDate: 'June 11, 2024',
+        niftyLevel: 23265,
+        niftyChange: '+6.3%',
+        macroReleasesUnlocked: [
+          'NDA coalition cabinet sworn in; key economic ministers (Finance, Commerce, Railways) retain portfolios.',
+          'RBI holds repo rate at 6.50% on June 7, raising FY25 GDP forecast to 7.2%.'
+        ],
+        corporateEarningsUnlocked: [
+          'PSU bank fundamentals reaffirmed; management confirms zero disruption to infrastructure lending.'
+        ],
+        marketNarrative: 'Nifty completely recovers the entire 1,300-point crash in 3 sessions; bears caught in historic short squeeze.',
+        thesisGrading: {
+          bullishOutcome: '+6.3% index gain in 7 days; PSU stocks rallied 12-18% off June 4 lows.',
+          bearishOutcome: 'Catastrophic losses for panic sellers on June 4.',
+          winningPlay: 'Aggressively buying State Bank of India, L&T, and Nifty index on June 4 close.'
+        }
+      },
+      {
+        horizon: '+3M',
+        futureDate: 'September 4, 2024',
+        niftyLevel: 25250,
+        niftyChange: '+15.4%',
+        macroReleasesUnlocked: [
+          'Union Budget FY25 maintains ₹11.11 Lakh Crore infrastructure capital expenditure target.',
+          'Foreign exchange reserves reach new all-time high of $683 Billion.'
+        ],
+        corporateEarningsUnlocked: [
+          'Q1 FY25 corporate earnings confirm steady double-digit profit compounding.'
+        ],
+        marketNarrative: 'Nifty breaks 25,000 for the first time in history; June 4 crash remembered as a generational false breakout.',
+        thesisGrading: {
+          bullishOutcome: '+15.4% return in 90 days; political discount fully erased.',
+          bearishOutcome: 'Underperformed by staying in cash.',
+          winningPlay: 'Remaining invested in structural India growth proxies.'
+        }
+      }
+    ],
     notableStocks: [
-      { symbol: 'SBIN', name: 'State Bank of India', price: '₹750', change: '-14.2%', pe: '9.2x', note: 'Massive intraday crash from ₹900; completely recovered within two weeks.' },
-      { symbol: 'HINDUNILVR', name: 'Hindustan Unilever', price: '₹2,500', change: '+6.1%', pe: '54.0x', note: 'Prime beneficiary of rotation into defensive rural consumption.' },
-      { symbol: 'LT', name: 'Larsen & Toubro', price: '₹3,400', change: '-12.5%', pe: '31.0x', note: 'Order book remained pristine at ₹4.7L Cr despite market political overreaction.' },
-      { symbol: 'RELIANCE', name: 'Reliance Industries', price: '₹2,780', change: '-7.1%', pe: '24.0x', note: 'Absorbed institutional selling before spearheading the V-shaped recovery.' }
+      { symbol: 'SBIN', name: 'State Bank of India', price: '₹750', change: '-14.2%', pe: '9.2x', note: 'Crashed to ₹750 intraday; rebounded back above ₹850 within two weeks.' },
+      { symbol: 'HINDUNILVR', name: 'Hindustan Unilever', price: '₹2,500', change: '+6.1%', pe: '54.0x', note: 'Sole large-cap gainer on June 4 as investors rotated into defensive consumption.' }
     ]
   },
   {
@@ -415,36 +802,68 @@ export const HISTORICAL_EPOCHS: HistoricalEpoch[] = [
       usdInr: '84.15',
       crudeOil: '$74.20',
     },
+    pointInTimeMacro: [
+      {
+        metric: 'CPI Inflation (Headline)',
+        value: '5.54% (October 2026)',
+        periodCovered: 'October 2026',
+        releaseDate: 'October 2026 Official Release',
+        reportingLag: 'Current reporting period',
+        lookaheadTrap: 'Current live baseline; metrics reflect active verified values without lag.'
+      },
+      {
+        metric: 'RBI Policy Stance',
+        value: '5.50% Repo Rate',
+        periodCovered: 'October 2026 MPC',
+        releaseDate: 'Active policy stance',
+        reportingLag: 'Next MPC Dec 2-4, 2026',
+        lookaheadTrap: 'Active monetary baseline.'
+      }
+    ],
+    pointInTimeFilings: [
+      {
+        symbol: 'RELIANCE',
+        name: 'Reliance Industries',
+        latestAvailableFiling: 'Q1 FY27',
+        filingDate: 'July 2026',
+        revenue: '₹9,80,000 Cr (TTM)',
+        netProfit: '₹79,000 Cr (TTM)',
+        peAsOfDate: '28.4x',
+        upcomingFiling: 'Q2 FY27 in pipeline',
+        whatWasKnown: 'Market capitalization ₹19.2 Lakh Crore; telecom and retail expansion steady.'
+      }
+    ],
+    newsAndConsensus: {
+      headlineQuotes: [
+        '"Indian macro fundamentals demonstrate remarkable resilience; domestic SIP inflows exceed ₹24,000 Crore monthly." — Piedmont Terminal Dispatch (Oct 2026)'
+      ],
+      analystConsensus: 'Steady compounder thesis with premium valuation multiples.',
+      centralBankStance: 'Prudent inflation monitoring with focus on core CPI convergence.',
+      marketPsychology: 'Stable institutional confidence.'
+    },
     analysis: {
       catalysts: [
         'Sustained corporate earnings compounding across banking, automotive, and infrastructure.',
-        'High domestic retail participation via mutual fund SIPs exceeding ₹24,000 Crore monthly.',
-        'Prudent RBI inflation targeting and steady government capex execution.'
+        'High domestic retail participation via mutual fund SIPs.'
       ],
       transmissionMechanism: [
-        'Domestic institutional liquidity acts as a structural stabilizer against global geopolitical shocks.',
-        'Bank balance sheets boast decade-low gross NPAs (<3%) driving healthy private sector credit expansion.',
-        'Manufacturing expansion supported by domestic consumer demand and export competitiveness.'
+        'Domestic institutional liquidity acts as a structural stabilizer against global geopolitical shocks.'
       ],
       winningSectors: [
-        { name: 'Capital Goods & Power', performance: '+28.5%', rationale: 'Multidecade energy transition and private industrial capex revitalization.' },
-        { name: 'Automotive & Mobility', performance: '+22.0%', rationale: 'Strong premiumization trends across utility vehicles and commercial vehicles.' }
+        { name: 'Capital Goods & Power', performance: '+28.5%', rationale: 'Multidecade energy transition and private industrial capex revitalization.' }
       ],
       losingSectors: [
-        { name: 'Information Technology', performance: '+4.2% (lagging)', rationale: 'Cautious global enterprise discretionary tech spending.' },
-        { name: 'Chemicals & Agrochemicals', performance: '-2.1%', rationale: 'Global inventory destocking pressure and Chinese dumping.' }
+        { name: 'Information Technology', performance: '+4.2% (lagging)', rationale: 'Cautious global enterprise discretionary tech spending.' }
       ],
       institutionalLessons: [
-        'India has transitioned from an FII-dependent market into an organically funded domestic liquidity powerhouse.',
-        'Macro stability (low current account deficit, \$721B reserves) minimizes systemic currency fragility.'
+        'India has transitioned from an FII-dependent market into an organically funded domestic liquidity powerhouse.'
       ],
       recoveryTimeline: 'Operating at active baseline regime.'
     },
+    simulationSteps: [],
     notableStocks: [
       { symbol: 'RELIANCE', name: 'Reliance Industries', price: '₹2,847.50', change: '+1.24%', pe: '28.4x', note: 'Market cap ₹19.2L Cr; retail, telecom, and new energy expansion.' },
-      { symbol: 'TCS', name: 'Tata Consultancy Services', price: '₹3,920.00', change: '+0.45%', pe: '29.2x', note: 'Operating margins resilient at 24.5% with strong deal pipeline.' },
-      { symbol: 'HDFCBANK', name: 'HDFC Bank', price: '₹1,680.00', change: '+0.85%', pe: '18.4x', note: 'Post-merger loan-to-deposit ratio normalization progressing ahead of target.' },
-      { symbol: 'ICICIBANK', name: 'ICICI Bank', price: '₹1,240.00', change: '+1.10%', pe: '17.2x', note: 'Industry-leading ROE at 18.5% with stellar asset quality.' }
+      { symbol: 'TCS', name: 'Tata Consultancy Services', price: '₹3,920.00', change: '+0.45%', pe: '29.2x', note: 'Operating margins resilient at 24.5% with strong deal pipeline.' }
     ]
   }
 ];
