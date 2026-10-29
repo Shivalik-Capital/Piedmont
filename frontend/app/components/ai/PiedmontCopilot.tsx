@@ -37,18 +37,31 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
     }
   }, []);
 
-  // Focus input when opened
+  // Focus input when opened and initialize welcome state
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
       if (messages.length === 0) {
-        // Initial greeting
-        const initialResponse = parseAndAnalyzeFinancialQuery('macro');
+        // Welcoming institutional response
         setMessages([
           {
-            id: 'init-1',
+            id: 'init-welcome',
             sender: 'copilot',
-            data: initialResponse,
+            data: {
+              queryType: 'general',
+              executiveSummary: 'Piedmont Copilot is active. Ask any quantitative or qualitative question regarding Indian equities, cross-asset macro transmissions (e.g., gold prices, crude oil, repo rates, USD/INR), or corporate valuation diagnostics.',
+              quantitativeMetrics: [
+                { label: 'Nifty 50 Benchmark', value: '25,800', stance: 'positive' },
+                { label: 'RBI Repo Rate', value: '5.50%', stance: 'neutral' },
+                { label: 'CPI Inflation (Oct 2026)', value: '5.54%', stance: 'neutral' },
+                { label: 'Forex Reserves', value: '$721.0B', stance: 'positive' }
+              ],
+              risksAndMonitors: [
+                'Type any question below or select one of the suggested institutional transmission pills.',
+                'Connect a free Google Gemini key in settings to unlock unconstrained neural generative reasoning.'
+              ],
+              sourceModel: 'Deterministic Institutional Engine (Tier 1)'
+            },
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
@@ -115,7 +128,6 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
         };
         setMessages((prev) => [...prev, copilotMsg]);
       } else {
-        // Fallback to client-side deterministic engine
         const fallbackData = parseAndAnalyzeFinancialQuery(q);
         const copilotMsg: ChatMessage = {
           id: `copilot-${Date.now()}`,
@@ -142,12 +154,12 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
   if (!isOpen) return null;
 
   const suggestionPills = [
-    'How is Reliance looking today?',
+    'How is gold prices falling affecting Nifty?',
     'How does crude oil affect Asian Paints and Swiggy?',
-    'What happens if RBI cuts the Repo Rate by 50 bps?',
-    'Break down DuPont ROE for HDFC Bank',
-    'What are expectations for TCS ahead of earnings?',
-    'USD/INR sensitivity on IT Services'
+    'What happens if US Fed cuts interest rates?',
+    'How do FII outflows affect domestic equities?',
+    'Is Nifty 50 overvalued at 25,800?',
+    'Break down DuPont ROE for HDFC Bank'
   ];
 
   return (
@@ -161,8 +173,12 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-white tracking-wide text-sm uppercase">Piedmont Copilot</span>
-                <span className="text-[10px] bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/30 px-1.5 py-0.5 rounded font-mono-data font-medium uppercase">
-                  BLENDED ENGINE
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono-data font-medium uppercase border ${
+                  customKey 
+                    ? 'bg-[#34d399]/10 text-[#34d399] border-[#34d399]/30'
+                    : 'bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/30'
+                }`}>
+                  {customKey ? `${provider.toUpperCase()} NEURAL ACTIVE` : 'BLENDED ENGINE'}
                 </span>
               </div>
               <p className="text-[11px] text-[#64748b]">Institutional Intelligence & Cross-Asset Transmission</p>
@@ -172,10 +188,15 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="p-1.5 rounded hover:bg-[#1c2840] text-[#64748b] hover:text-white transition-colors"
-              title="Configure API Key / BYOK"
+              className={`px-2 py-1 rounded text-xs font-mono-data flex items-center gap-1 border transition-colors ${
+                customKey 
+                  ? 'bg-[#080c14] border-[#34d399]/40 text-[#34d399]'
+                  : 'bg-[#3b82f6]/10 hover:bg-[#3b82f6]/20 border-[#3b82f6]/40 text-[#3b82f6]'
+              }`}
+              title="Configure API Key"
             >
-              <Icon name="tune" className="w-4 h-4" />
+              <Icon name="tune" className="w-3.5 h-3.5" />
+              <span>{customKey ? 'KEY ACTIVE' : 'CONNECT GEMINI KEY'}</span>
             </button>
             <button
               onClick={onClose}
@@ -187,18 +208,29 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
           </div>
         </div>
 
-        {/* BYOK Settings Drawer (Conditional) */}
+        {/* Free Neural API Settings Drawer */}
         {showSettings && (
-          <div className="p-4 bg-[#0d121c] border-b border-[#1c2840] text-xs">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-white uppercase tracking-wider text-[11px]">
-                API Settings (Optional BYOK)
-              </span>
-              <span className="text-[10px] text-[#64748b]">
-                Defaults to Free Tier Tier-1 Deterministic + Tier-2 Gemini Flash
-              </span>
+          <div className="p-4 bg-[#0d121c] border-b border-[#1c2840] text-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-semibold text-white uppercase tracking-wider text-[11px] block">
+                  Connect Free Neural AI (Google Gemini / Groq)
+                </span>
+                <span className="text-[10px] text-[#94a3b8]">
+                  Get an unconstrained free API key with zero billing required.
+                </span>
+              </div>
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[10px] text-[#3b82f6] underline hover:text-[#60a5fa] font-mono-data"
+              >
+                Get Free Gemini Key &rarr;
+              </a>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[#64748b] mb-1 text-[10px] uppercase">Engine Provider</label>
                 <select
@@ -213,33 +245,39 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
                 </select>
               </div>
               <div>
-                <label className="block text-[#64748b] mb-1 text-[10px] uppercase">Custom API Key</label>
+                <label className="block text-[#64748b] mb-1 text-[10px] uppercase">API Key (Stored Locally in Browser)</label>
                 <input
                   type="password"
                   value={customKey}
                   onChange={(e) => setCustomKey(e.target.value)}
-                  placeholder="Paste private key (stored locally)"
+                  placeholder="Paste AI Studio Key (e.g. AIzaSy...)"
                   className="w-full bg-[#080c14] border border-[#1c2840] rounded px-2.5 py-1.5 text-white outline-none focus:border-[#3b82f6]"
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => {
-                  setCustomKey('');
-                  localStorage.removeItem('piedmont_byok_key');
-                  setShowSettings(false);
-                }}
-                className="px-2.5 py-1 rounded bg-[#1c2840] text-[#cbd5e1] hover:text-white"
-              >
-                Clear Key
-              </button>
-              <button
-                onClick={saveSettings}
-                className="px-3 py-1 rounded bg-[#3b82f6] text-white font-medium hover:bg-[#2563eb]"
-              >
-                Save Settings
-              </button>
+
+            <div className="flex justify-between items-center pt-1 border-t border-[#1c2840]/60">
+              <span className="text-[10px] text-[#64748b]">
+                Key is saved strictly in your browser localStorage. Never sent to any third party.
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setCustomKey('');
+                    localStorage.removeItem('piedmont_byok_key');
+                    setShowSettings(false);
+                  }}
+                  className="px-2.5 py-1 rounded bg-[#1c2840] text-[#cbd5e1] hover:text-white"
+                >
+                  Clear Key
+                </button>
+                <button
+                  onClick={saveSettings}
+                  className="px-3 py-1 rounded bg-[#3b82f6] text-white font-medium hover:bg-[#2563eb]"
+                >
+                  Save Settings
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -418,7 +456,7 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleSubmit();
             }}
-            placeholder="Ask about any equity, forward earnings, or macro transmission..."
+            placeholder="Ask about any equity, forward earnings, or macro transmission (e.g. gold, crude, rates)..."
             className="flex-1 bg-[#080c14] border border-[#1c2840] rounded px-3 py-2 text-xs text-white placeholder-[#64748b] outline-none focus:border-[#3b82f6]"
           />
           <button
