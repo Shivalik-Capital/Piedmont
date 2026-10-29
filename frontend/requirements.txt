@@ -1,8 +1,7 @@
-fastapi==0.139.0
-uvicorn[standard]==0.50.2
-yfinance==1.5.1
-requests==2.32.3
-slowapi==0.1.10
-supabase==2.3.4
-python-dotenv==1.0.0
-beautifulsoup4==4.12.2
+fastapi>=0.100.0,<0.120.0
+yfinance>=0.2.30
+requests>=2.31.0
+slowapi>=0.1.9
+supabase>=2.3.0
+python-dotenv>=1.0.0
+beautifulsoup4>=4.12.0

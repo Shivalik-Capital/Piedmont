@@ -70,7 +70,7 @@ export default function CommoditiesPage() {
 
   if (loading) {
     return (
-      <div className="p-gutter lg:p-margin min-h-screen bg-surface">
+      <div className="w-full space-y-8">
         <div className="flex flex-col gap-unit mb-gutter">
           <div className="h-10 w-64 bg-surface-container rounded-lg animate-pulse"></div>
           <div className="h-6 w-96 bg-surface-container rounded-lg animate-pulse"></div>
@@ -91,7 +91,7 @@ export default function CommoditiesPage() {
 
   if (!data) {
     return (
-      <div className="p-gutter lg:p-margin min-h-screen bg-surface text-on-surface flex items-center justify-center">
+      <div className="w-full text-on-surface flex items-center justify-center py-20">
         <p>Failed to load commodities data.</p>
       </div>
     );
@@ -132,7 +132,7 @@ export default function CommoditiesPage() {
   };
 
   return (
-    <div className="p-gutter lg:p-margin min-h-screen bg-surface">
+    <div className="w-full space-y-8">
       {/* PAGE HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-gutter gap-4">
         <div>

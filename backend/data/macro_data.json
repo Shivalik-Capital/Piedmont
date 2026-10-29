@@ -2,9 +2,9 @@
   "rbi_rates": {
     "repo_rate": {
       "name": "RBI Repo Rate",
-      "value": "5.25%",
-      "trend": "Down",
-      "date": "Aug 2026"
+      "value": "5.50%",
+      "trend": "Up",
+      "date": "Oct 2026"
     },
     "reverse_repo": {
       "name": "Reverse Repo",
@@ -14,9 +14,9 @@
     },
     "sdf": {
       "name": "Standing Deposit Facility",
-      "value": "5.00%",
-      "trend": "Down",
-      "date": "Aug 2026"
+      "value": "5.25%",
+      "trend": "Up",
+      "date": "Oct 2026"
     }
   },
   "domestic_macro": {
@@ -54,9 +54,9 @@
   "external_sector": {
     "forex_reserves": {
       "name": "Forex Reserves",
-      "value": "$682.4B",
-      "trend": "Up",
-      "date": "Jul 24, 2026"
+      "value": "$721.0B",
+      "trend": "Down",
+      "date": "Oct 16, 2026"
     }
   },
   "market_liquidity": {
@@ -88,7 +88,7 @@
       "name": "Next Event",
       "value": "RBI MPC",
       "trend": "Stable",
-      "date": "Oct 5-7"
+      "date": "Dec 2-4"
     }
   }
 }

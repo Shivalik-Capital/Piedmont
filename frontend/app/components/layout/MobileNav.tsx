@@ -8,29 +8,29 @@ export default function MobileNav() {
   const pathname = usePathname();
   
   const navItems = [
-    { href: '/', label: 'Pulse', icon: 'dashboard' },
+    { href: '/dashboard', label: 'Pulse', icon: 'dashboard' },
+    { href: '/screener', label: 'Screener', icon: 'tune' },
     { href: '/equities', label: 'Equities', icon: 'show_chart' },
-    { href: '/equities/companies', label: 'Cos', icon: 'business' },
     { href: '/macro', label: 'Macro', icon: 'language' },
     { href: '/commodities', label: 'Commd', icon: 'oil_barrel' },
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[95%] max-w-md rounded-full bg-surface/80 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] flex justify-around items-center py-2 px-2 z-50">
+    <nav className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 w-[94%] max-w-md rounded-full bg-[#121212]/90 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] flex justify-around items-center py-2 px-2 z-50">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         return (
           <Link
             key={item.href}
             href={item.href}
-            className={`flex flex-col items-center justify-center px-3 py-2 rounded-full transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center px-2.5 py-1.5 rounded-full transition-all duration-200 ${
               isActive
-                ? 'bg-primary/10 text-primary'
-                : 'text-on-surface-variant/60 hover:bg-white/5 hover:text-primary'
+                ? 'bg-white/15 text-white font-medium'
+                : 'text-[#868f97] hover:bg-white/5 hover:text-white'
             }`}
           >
-            <Icon name={item.icon} filled={isActive} />
-            <span className="text-[10px] font-bold mt-1">{item.label}</span>
+            <Icon name={item.icon} filled={isActive} className="w-5 h-5 text-current" />
+            <span className="text-[10px] font-medium mt-0.5 tracking-tight">{item.label}</span>
           </Link>
         );
       })}

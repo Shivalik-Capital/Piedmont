@@ -78,34 +78,37 @@ export default function TopBar() {
   };
 
   return (
-    <nav className="fixed top-0 right-0 left-20 z-40 flex justify-between items-center h-16 px-gutter bg-surface/80 backdrop-blur-md border-b border-outline-variant transition-all duration-300">
-      <div className="flex items-center gap-gutter">
-        <div className="font-bold text-lg tracking-wide text-on-surface hidden sm:block">Piedmont Terminal</div>
-        <div className="flex items-center gap-unit text-primary font-bold border-b-2 border-primary h-16">
-          <Icon name={pathname === '/' ? 'dashboard' : pathname.startsWith('/macro') ? 'language' : pathname.startsWith('/commodities') ? 'oil_barrel' : 'show_chart'} className="text-sm" />
-          <span className="text-sm">{pathname === '/' ? 'Dashboard' : pathname.startsWith('/equities') ? 'Equities' : pathname.startsWith('/macro') ? 'Macro' : pathname.startsWith('/commodities') ? 'Commodities' : 'Dashboard'}</span>
+    <nav className="fixed top-0 right-0 left-0 md:left-20 z-40 flex justify-between items-center h-16 px-3 sm:px-gutter bg-surface/80 backdrop-blur-md border-b border-outline-variant transition-all duration-300">
+      <div className="flex items-center gap-2 sm:gap-gutter">
+        <div className="font-bold text-base sm:text-lg tracking-wide text-on-surface flex items-center gap-2">
+          <img src="/icon.svg" className="w-5 h-5 sm:hidden" alt="Piedmont" />
+          <span className="hidden sm:inline">Piedmont Terminal</span>
+        </div>
+        <div className="flex items-center gap-1 sm:gap-unit text-primary font-bold border-b-2 border-primary h-16">
+          <Icon name={pathname === '/' ? 'dashboard' : pathname.startsWith('/macro') ? 'language' : pathname.startsWith('/commodities') ? 'oil_barrel' : pathname.startsWith('/screener') ? 'filter_list' : 'show_chart'} className="text-sm" />
+          <span className="text-xs sm:text-sm">{pathname === '/' ? 'Dashboard' : pathname.startsWith('/equities') ? 'Equities' : pathname.startsWith('/macro') ? 'Macro' : pathname.startsWith('/commodities') ? 'Commodities' : pathname.startsWith('/screener') ? 'Screener' : 'Dashboard'}</span>
         </div>
       </div>
       
-      <div className="flex items-center gap-margin relative" ref={dropdownRef}>
+      <div className="flex items-center gap-2 sm:gap-margin relative" ref={dropdownRef}>
         <div className="flex items-center gap-unit relative">
           <Icon name="search" className="absolute left-2 text-on-surface-variant text-sm" />
           <input 
             type="text" 
-            placeholder="Command..." 
+            placeholder="Search..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => { if (results.length > 0) setShowDropdown(true); }}
-            className="bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 font-mono-data text-sm text-on-surface w-64 pl-8 py-1 transition-colors outline-none"
+            className="bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 font-mono-data text-xs sm:text-sm text-on-surface w-24 sm:w-44 md:w-64 pl-7 sm:pl-8 py-1 transition-all outline-none"
           />
           {isSearching && (
-             <div className="absolute right-2 top-2 w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+             <div className="absolute right-1 top-2 w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
           )}
         </div>
 
         {/* Search Results Dropdown */}
         {showDropdown && results.length > 0 && (
-          <div className="absolute top-full right-32 mt-2 bg-surface-container-high rounded-xl overflow-hidden border border-outline-variant shadow-xl z-50 w-80 max-h-[400px] overflow-y-auto">
+          <div className="absolute top-full right-0 sm:right-24 mt-2 bg-surface-container-high rounded-xl overflow-hidden border border-outline-variant shadow-xl z-50 w-72 sm:w-80 max-h-[350px] overflow-y-auto">
             {results.map((company) => (
               <button 
                 key={company.symbol}
@@ -123,13 +126,13 @@ export default function TopBar() {
         )}
         
         {showDropdown && results.length === 0 && searchQuery.length >= 2 && !isSearching && (
-          <div className="absolute top-full right-32 mt-2 bg-surface-container-high rounded-xl p-4 border border-outline-variant shadow-xl z-50 w-80 text-center text-sm text-on-surface-variant">
+          <div className="absolute top-full right-0 sm:right-24 mt-2 bg-surface-container-high rounded-xl p-4 border border-outline-variant shadow-xl z-50 w-72 sm:w-80 text-center text-sm text-on-surface-variant">
             No companies found for &quot;{searchQuery}&quot;
           </div>
         )}
 
-        <div className="flex items-center gap-gutter text-on-surface-variant">
-          <span className="text-xs font-mono-data tabular-nums hidden md:inline w-[110px] text-right" suppressHydrationWarning>
+        <div className="flex items-center gap-2 sm:gap-gutter text-on-surface-variant">
+          <span className="text-xs font-mono-data tabular-nums hidden lg:inline w-[110px] text-right" suppressHydrationWarning>
             {mounted ? `${time} IST` : ''}
           </span>
           <LivePulse />

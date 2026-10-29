@@ -141,7 +141,7 @@ export default function CompanyDetailPage() {
           layoutId={`card-content-${symbol}`}
           initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
         >
-        <div className="flex justify-between items-end border-b border-outline-variant/30 pb-4 mb-margin">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-4 border-b border-outline-variant/30 pb-4 mb-margin">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <button onClick={() => router.back()} className="text-on-surface-variant hover:text-on-surface transition-colors p-1 bg-surface-variant rounded-full">
@@ -149,7 +149,7 @@ export default function CompanyDetailPage() {
                 </button>
                 <div className="font-mono-data text-xs text-on-surface-variant uppercase tracking-widest">{info.sector || 'EQUITY'}</div>
               </div>
-              <motion.h1 layoutId={`company-name-${symbol}`} className="text-4xl md:text-5xl font-bold tracking-tight text-on-surface">
+              <motion.h1 layoutId={`company-name-${symbol}`} className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-on-surface break-words">
                 {info.name || symbol}
               </motion.h1>
               <span className="font-mono-data text-xs bg-surface-container-high text-on-surface-variant px-2 py-1 rounded mt-2 inline-block">
@@ -157,11 +157,11 @@ export default function CompanyDetailPage() {
               </span>
             </div>
             
-            <div className="text-right">
-              <motion.span layoutId={`company-price-${symbol}`} className="text-5xl font-bold text-on-surface">
+            <div className="sm:text-right">
+              <motion.span layoutId={`company-price-${symbol}`} className="text-3xl sm:text-5xl font-bold text-on-surface">
                 ₹{(info.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </motion.span>
-              <div className={`font-mono-data text-sm flex items-center justify-end mt-1 ${isPositive ? 'text-positive' : 'text-negative'}`}>
+              <div className={`font-mono-data text-sm flex items-center sm:justify-end mt-1 ${isPositive ? 'text-positive' : 'text-negative'}`}>
                 {isPositive ? '▲' : '▼'} {Math.abs(info.change || 0).toFixed(2)} ({isPositive ? '+' : ''}{(info.changePct || 0).toFixed(2)}%)
               </div>
             </div>

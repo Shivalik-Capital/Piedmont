@@ -27,17 +27,17 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0b0b0b] text-white overflow-hidden font-sans selection:bg-[#479ffa]/30 selection:text-white">
       
       {/* Navbar - Dock Style */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
-        <div className="h-12 px-2 rounded-full bg-[#191919] border border-[#333333] shadow-[0_0_44px_rgba(0,0,0,0.8)] flex items-center gap-1">
-          <Link href="/" className="px-4 h-8 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors gap-2">
-            <img src="/icon.svg" className="w-5 h-5" alt="Piedmont" />
-            <span className="font-semibold text-sm tracking-wide text-white">PIEDMONT</span>
+      <nav className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[94%] sm:w-auto max-w-fit">
+        <div className="h-11 sm:h-12 px-2.5 sm:px-3 rounded-full bg-[#191919] border border-[#333333] shadow-[0_0_44px_rgba(0,0,0,0.8)] flex items-center justify-between sm:justify-start gap-1 sm:gap-2">
+          <Link href="/" className="px-2.5 sm:px-3 h-8 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors gap-1.5 sm:gap-2 shrink-0">
+            <img src="/icon.svg" className="w-4 h-4 sm:w-5 sm:h-5" alt="Piedmont" />
+            <span className="font-semibold text-xs sm:text-sm tracking-wide text-white">PIEDMONT</span>
           </Link>
-          <div className="w-px h-4 bg-[#525252] mx-2" />
-          <Link href="/dashboard" className="px-4 h-8 rounded-full flex items-center justify-center text-sm font-medium text-[#868f97] hover:text-white hover:border-b hover:border-[#479ffa] transition-all">Dashboard</Link>
-          <Link href="/screener" className="px-4 h-8 rounded-full flex items-center justify-center text-sm font-medium text-[#868f97] hover:text-white hover:border-b hover:border-[#479ffa] transition-all">Screener</Link>
-          <div className="w-px h-4 bg-[#525252] mx-2" />
-          <Link href="/dashboard" className="ml-1 px-5 h-8 rounded-full bg-[#0b0b0b] text-white text-sm font-medium shadow-[0_1px_0_rgba(0,0,0,0.85),0_0_14px_rgba(255,255,255,0.25)] hover:shadow-[0_1px_0_rgba(0,0,0,0.85),0_0_20px_rgba(255,255,255,0.4)] transition-shadow flex items-center justify-center">
+          <div className="hidden sm:block w-px h-4 bg-[#525252]" />
+          <Link href="/dashboard" className="hidden sm:flex px-3 h-8 rounded-full items-center justify-center text-xs sm:text-sm font-medium text-[#868f97] hover:text-white transition-colors">Dashboard</Link>
+          <Link href="/screener" className="hidden sm:flex px-3 h-8 rounded-full items-center justify-center text-xs sm:text-sm font-medium text-[#868f97] hover:text-white transition-colors">Screener</Link>
+          <div className="w-px h-4 bg-[#525252] sm:mx-1" />
+          <Link href="/dashboard" className="px-3 sm:px-5 h-7 sm:h-8 rounded-full bg-[#0b0b0b] text-white text-xs sm:text-sm font-medium shadow-[0_1px_0_rgba(0,0,0,0.85),0_0_14px_rgba(255,255,255,0.25)] hover:shadow-[0_1px_0_rgba(0,0,0,0.85),0_0_20px_rgba(255,255,255,0.4)] transition-shadow flex items-center justify-center whitespace-nowrap">
             Enter Terminal
           </Link>
         </div>
