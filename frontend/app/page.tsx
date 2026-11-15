@@ -34,7 +34,7 @@ export default function LandingPage() {
           </Link>
           <div className="hidden sm:block w-px h-4 bg-[#525252]" />
           <Link href="/dashboard" className="hidden sm:flex px-3 h-8 rounded-full items-center justify-center text-xs sm:text-sm font-medium text-[#868f97] hover:text-white transition-colors">Overview</Link>
-          <Link href="/intelligence" className="hidden sm:flex px-3 h-8 rounded-full items-center justify-center text-xs sm:text-sm font-medium text-[#868f97] hover:text-white transition-colors">Signals</Link>
+          <Link href="/equities" className="hidden sm:flex px-3 h-8 rounded-full items-center justify-center text-xs sm:text-sm font-medium text-[#868f97] hover:text-white transition-colors">Equities</Link>
           <Link href="/replay" className="hidden sm:flex px-3 h-8 rounded-full items-center justify-center text-xs sm:text-sm font-medium text-[#868f97] hover:text-white transition-colors">Replay</Link>
           <Link href="/portfolio" className="hidden sm:flex px-3 h-8 rounded-full items-center justify-center text-xs sm:text-sm font-medium text-[#868f97] hover:text-white transition-colors">Portfolio</Link>
           <Link href="/screener" className="hidden sm:flex px-3 h-8 rounded-full items-center justify-center text-xs sm:text-sm font-medium text-[#868f97] hover:text-white transition-colors">Screener</Link>
@@ -374,52 +374,52 @@ export default function LandingPage() {
             </motion.div>
           </Link>
 
-          {/* Card 5: Quantitative Signals */}
-          <Link href="/intelligence" className="block group">
+          {/* Card 5: Equities Diagnostics */}
+          <Link href="/equities" className="block group">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.15 }}
-              className="bg-[#191919] rounded-[18px] p-6 shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-[#333333] group-hover:border-[#d6fe51]/50 transition-all flex flex-col h-full"
+              className="bg-[#191919] rounded-[18px] p-6 shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-[#333333] group-hover:border-[#479ffa]/50 transition-all flex flex-col h-full"
             >
-              <div className="h-44 bg-[#111111] rounded-[12px] p-3.5 mb-6 border border-white/10 flex flex-col justify-between relative overflow-hidden group-hover:border-[#d6fe51]/40 transition-colors">
+              <div className="h-44 bg-[#111111] rounded-[12px] p-3.5 mb-6 border border-white/10 flex flex-col justify-between relative overflow-hidden group-hover:border-[#479ffa]/40 transition-colors">
                 <div className="flex items-center justify-between text-[11px] font-mono text-[#868f97]">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#d6fe51]" />
-                    <span className="text-white/80 font-semibold">DARK LIQUIDITY MAP</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#479ffa]" />
+                    <span className="text-white/80 font-semibold">SECTOR INDICES & NIFTY 50</span>
                   </div>
-                  <span className="px-1.5 py-0.5 rounded bg-[#d6fe51]/10 text-[#d6fe51] text-[10px] font-semibold">68.4% BUY</span>
+                  <span className="px-1.5 py-0.5 rounded bg-[#479ffa]/10 text-[#479ffa] text-[10px] font-semibold">8 SECTORS</span>
                 </div>
                 
                 <div className="space-y-1.5 my-1 text-[11px] font-mono">
                   <div className="p-2 rounded bg-[#181818] border border-white/5 flex items-center justify-between">
-                    <span className="text-white font-bold">Block Trans &gt; ₹5 Cr</span>
-                    <span className="text-[#4ebe96] font-bold">₹1,840 Cr Net</span>
+                    <span className="text-white font-bold">NIFTY BANK (54,200)</span>
+                    <span className="text-[#4ebe96] font-bold">+0.84%</span>
                   </div>
                   <div className="p-2 rounded bg-[#181818] border border-white/5 flex items-center justify-between">
-                    <span className="text-white font-bold">90D Rolling Matrix</span>
-                    <span className="text-[#868f97]">6x6 Cross-Asset</span>
+                    <span className="text-white font-bold">NIFTY IT (42,100)</span>
+                    <span className="text-[#4ebe96] font-bold">+1.25%</span>
                   </div>
                 </div>
 
-                <div className="text-[10px] font-mono text-[#d6fe51] flex items-center justify-between">
-                  <span>AI Order Flow Synthesis</span>
-                  <span className="group-hover:translate-x-0.5 transition-transform">Launch Signals &rarr;</span>
+                <div className="text-[10px] font-mono text-[#479ffa] flex items-center justify-between">
+                  <span>Interactive Sector Modals</span>
+                  <span className="group-hover:translate-x-0.5 transition-transform">Explore Equities &rarr;</span>
                 </div>
               </div>
 
               <h3 className="text-[18px] font-semibold text-white mb-2 flex items-center justify-between">
-                <span>Quantitative Signals & Flows</span>
-                <span className="text-xs text-[#d6fe51] font-mono opacity-0 group-hover:opacity-100 transition-opacity">View &rarr;</span>
+                <span>Equities & Sector Rotation</span>
+                <span className="text-xs text-[#479ffa] font-mono opacity-0 group-hover:opacity-100 transition-opacity">View &rarr;</span>
               </h3>
               <p className="text-[14px] text-[#868f97] leading-[1.5]">
-                Surveil institutional block trades, dark liquidity accumulation, order flow imbalance meters, and rolling pairwise correlation regimes.
+                Full 50-constituent Nifty universe, interactive sectoral indices charts, banking-specific vs corporate statements, and financial metrics.
               </p>
             </motion.div>
           </Link>
 
-          {/* Card 6: Portfolio & Position Audit */}
+          {/* Card 6: Interactive Client Portfolio */}
           <Link href="/portfolio" className="block group">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -432,34 +432,34 @@ export default function LandingPage() {
                 <div className="flex items-center justify-between text-[11px] font-mono text-[#868f97]">
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#ffa16c]" />
-                    <span className="text-white/80 font-semibold">POSITION AUDIT</span>
+                    <span className="text-white/80 font-semibold">PORTFOLIO TRACKER</span>
                   </div>
-                  <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px]">FACTOR NEUTRAL</span>
+                  <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px]">PERSISTENT</span>
                 </div>
                 
                 <div className="space-y-1.5 my-1 text-[11px] font-mono">
                   <div className="p-2 rounded bg-[#181818] border border-white/5 flex items-center justify-between">
-                    <span className="text-white font-bold">Active Book NAV</span>
-                    <span className="text-white font-bold font-mono-data">₹184.20 Cr</span>
+                    <span className="text-white font-bold">Real-time NAV</span>
+                    <span className="text-emerald-400 font-bold">+10.29% Gain</span>
                   </div>
                   <div className="p-2 rounded bg-[#181818] border border-white/5 flex items-center justify-between">
-                    <span className="text-white font-bold">Rebalance Corridor</span>
-                    <span className="text-[#4ebe96]">All Within Limits</span>
+                    <span className="text-white font-bold">Interactive Positions</span>
+                    <span className="text-[#868f97]">Add, Edit & Track</span>
                   </div>
                 </div>
 
                 <div className="text-[10px] font-mono text-[#ffa16c] flex items-center justify-between">
-                  <span>9-Position Active Ledger</span>
+                  <span>Client-Side Local Storage</span>
                   <span className="group-hover:translate-x-0.5 transition-transform">Launch Portfolio &rarr;</span>
                 </div>
               </div>
 
               <h3 className="text-[18px] font-semibold text-white mb-2 flex items-center justify-between">
-                <span>Institutional Portfolio & Holdings</span>
+                <span>Personal Portfolio Manager</span>
                 <span className="text-xs text-[#ffa16c] font-mono opacity-0 group-hover:opacity-100 transition-opacity">View &rarr;</span>
               </h3>
               <p className="text-[14px] text-[#868f97] leading-[1.5]">
-                Real-time mark-to-market position audit, factor betas, dynamic corridor drift monitoring, and immutable execution ledger.
+                Custom stock entry with real-time mark-to-market valuations, unrealized P&L, day session changes, and dynamic sector concentration breakdown.
               </p>
             </motion.div>
           </Link>

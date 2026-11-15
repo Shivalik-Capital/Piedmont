@@ -2,8 +2,21 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Icon from '../ui/Icon';
-import { CopilotResponse, parseAndAnalyzeFinancialQuery } from '../../lib/financial-engine';
+import { 
+  Bot, 
+  X, 
+  Sliders, 
+  Send, 
+  ExternalLink, 
+  Copy, 
+  Check, 
+  Sparkles, 
+  ArrowRight,
+  TrendingUp,
+  TrendingDown,
+  Info
+} from 'lucide-react';
+import { CopilotResponse } from '../../lib/financial-engine';
 
 interface PiedmontCopilotProps {
   isOpen: boolean;
@@ -17,6 +30,13 @@ interface ChatMessage {
   data?: CopilotResponse;
   timestamp: string;
 }
+
+const SAMPLE_QUESTIONS = [
+  'How do falling gold prices affect Nifty 50 and Titan?',
+  'How does crude oil impact Asian Paints and Swiggy?',
+  'Why is CPI at 6.09% while WPI is at 2.36%?',
+  'Break down DuPont ROE for HDFC Bank'
+];
 
 export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProps) {
   const [query, setQuery] = useState('');
@@ -40,46 +60,12 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
     }
   }, []);
 
-  // Focus input when opened and initialize welcome state
+  // Focus input when opened
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 120);
-      if (messages.length === 0) {
-        setMessages([
-          {
-            id: 'init-welcome',
-            sender: 'copilot',
-            data: {
-              queryType: 'general',
-              title: 'Institutional Research Console Active',
-              executiveSummary: 'Piedmont Copilot initialized under mid-November 2026 baseline. Query cross-asset transmissions (e.g., falling gold prices, crude oil sensitivity, repo rate trajectory), DuPont ROE diagnostics for Indian equities, or macro policy transmission.',
-              markdownSynthesis: 'Operating within the Piedmont Deterministic & Neural Financial Reasoning Engine. Inquire about any Indian capital markets security, factor, or macro development.',
-              quantitativeMetrics: [
-                { label: 'Nifty 50 Benchmark', value: '25,810.45', stance: 'positive' },
-                { label: 'RBI Policy Repo Rate', value: '5.50%', stance: 'neutral' },
-                { label: 'CPI Inflation (Oct)', value: '6.09%', stance: 'negative' },
-                { label: 'WPI Inflation (Oct)', value: '2.36%', stance: 'positive' },
-                { label: 'Forex Reserves', value: '$719.55B', stance: 'positive' }
-              ],
-              actionableTakeaway: 'Select any sample transmission below or type a bespoke query to begin institutional research.',
-              risksAndMonitors: [
-                'Type any question below or select one of the suggested institutional transmission pills.',
-                'Optionally connect a free Google Gemini or Groq key in settings for unbounded generative synthesis.'
-              ],
-              followUpSuggestions: [
-                'How is gold prices falling affecting Nifty 50?',
-                'How does crude oil affect Asian Paints and Swiggy?',
-                'Why is CPI at 6.09% while WPI is at 2.36%?',
-                'Break down DuPont ROE for HDFC Bank'
-              ],
-              sourceModel: 'Deterministic Institutional Engine (Tier 1)'
-            },
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      }
     }
-  }, [isOpen, messages.length]);
+  }, [isOpen]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -145,24 +131,42 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
         };
         setMessages((prev) => [...prev, copilotMsg]);
       } else {
-        const fallbackData = parseAndAnalyzeFinancialQuery(q);
-        const copilotMsg: ChatMessage = {
-          id: `copilot-${Date.now()}`,
-          sender: 'copilot',
-          data: fallbackData,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setMessages((prev) => [...prev, copilotMsg]);
+        const fallbackRes = await fetch('/api/ai/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: q })
+        });
+        const data = await fallbackRes.json();
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `copilot-${Date.now()}`,
+            sender: 'copilot',
+            data,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
       }
     } catch {
-      const fallbackData = parseAndAnalyzeFinancialQuery(q);
-      const copilotMsg: ChatMessage = {
-        id: `copilot-${Date.now()}`,
-        sender: 'copilot',
-        data: fallbackData,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages((prev) => [...prev, copilotMsg]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `copilot-${Date.now()}`,
+          sender: 'copilot',
+          data: {
+            queryType: 'general',
+            title: 'Connection Notice',
+            executiveSummary: 'Unable to reach the AI server. Please check your network connection or configure an API key in settings.',
+            markdownSynthesis: 'Piedmont Copilot encountered a network error while connecting to the AI synthesis service.',
+            quantitativeMetrics: [],
+            actionableTakeaway: 'Retry your query or paste a Google Gemini API key into Copilot Settings.',
+            risksAndMonitors: ['Check internet connectivity', 'Verify API key validity in settings'],
+            followUpSuggestions: SAMPLE_QUESTIONS,
+            sourceModel: 'Deterministic Institutional Engine (Tier 1)'
+          },
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -170,31 +174,24 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
 
   if (!isOpen) return null;
 
-  const suggestionPills = [
-    'How is gold prices falling affecting Nifty 50?',
-    'How does crude oil affect Asian Paints and Swiggy?',
-    'Why is CPI at 6.09% while WPI is at 2.36%?',
-    'How do monthly SIPs of ₹24,500 Cr absorb FII selling?',
-    'Is Nifty 50 overvalued at 25,800?',
-    'Break down DuPont ROE for HDFC Bank'
-  ];
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6 transition-all duration-200">
-      <div className="w-full max-w-4xl h-[88vh] bg-[#191919] border border-[#262626] rounded-[16px] flex flex-col shadow-[0_0_60px_rgba(0,0,0,0.9)] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6 transition-all">
+      <div className="w-full max-w-4xl h-[88vh] bg-[#121212] border border-[#2a2a2a] rounded-2xl flex flex-col shadow-2xl overflow-hidden text-white font-sans">
         
         {/* Terminal Header */}
-        <div className="px-6 py-4 bg-[#141414] border-b border-[#262626] flex items-center justify-between shrink-0">
+        <div className="px-5 py-4 bg-[#161616] border-b border-[#262626] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-[#479ffa] shadow-[0_0_10px_rgba(71,159,250,0.6)]" />
+            <div className="w-8 h-8 rounded-full bg-[#479ffa]/15 border border-[#479ffa]/30 flex items-center justify-center text-[#479ffa]">
+              <Bot size={17} />
+            </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-white tracking-[-0.03em] text-sm">Piedmont Copilot</span>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono-data font-medium bg-[#1e1e1e] text-[#479ffa] border border-[#333333]">
-                  {customKey ? `${provider.toUpperCase()} NEURAL ACTIVE` : 'BLENDED ENGINE'}
+                <span className="font-bold text-white text-sm tracking-tight">Piedmont Copilot</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-white/5 text-[#868f97] border border-white/10">
+                  {customKey ? `${provider.toUpperCase()} ACTIVE` : 'INTELLIGENCE ENGINE'}
                 </span>
               </div>
-              <p className="text-[11px] text-[#868f97] mt-0.5">Institutional Market Intelligence & Quantitative Transmission</p>
+              <p className="text-xs text-[#868f97] mt-0.5">Indian Equities, Monetary Policy & Macro Transmission</p>
             </div>
           </div>
 
@@ -202,44 +199,45 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
             <Link
               href="/copilot"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#1a1a1a] hover:bg-[#222222] border border-[#2a2a2a] hover:border-[#3a3a3a] text-[#868f97] hover:text-white transition-all"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-white transition-all hidden sm:flex items-center gap-1"
             >
-              Full Studio &rarr;
+              <span>Full Studio</span>
+              <ExternalLink size={12} />
             </Link>
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="p-1.5 rounded-full hover:bg-[#222222] text-[#868f97] hover:text-white transition-colors"
+              className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
               title="API Key Configuration"
             >
-              <Icon name="tune" className="w-4 h-4" />
+              <Sliders size={16} />
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full hover:bg-[#222222] text-[#868f97] hover:text-white transition-colors"
+              className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
               title="Close (Esc)"
             >
-              <Icon name="close" className="w-4 h-4" />
+              <X size={16} />
             </button>
           </div>
         </div>
 
-        {/* Free Neural API Settings Drawer */}
+        {/* Settings Drawer */}
         {showSettings && (
-          <div className="p-4 bg-[#141414] border-b border-[#262626] text-xs space-y-3 shrink-0">
+          <div className="p-4 bg-[#181818] border-b border-[#262626] text-xs space-y-3 shrink-0">
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-semibold text-white tracking-[-0.02em] text-xs block">
-                  Connect Free Neural AI (Google Gemini / Groq)
+                <span className="font-semibold text-white block">
+                  Connect Generative AI Key (Google Gemini / Groq)
                 </span>
-                <span className="text-[11px] text-[#868f97]">
-                  Paste a free API key with zero billing required to unlock unbounded neural generation.
+                <span className="text-xs text-[#868f97]">
+                  Paste a free API key to unlock natural language synthesis for custom questions.
                 </span>
               </div>
               <a
                 href="https://aistudio.google.com/app/apikey"
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs text-[#ffa16c] hover:underline font-medium"
+                className="text-xs text-amber-400 hover:underline font-medium"
               >
                 Get Free Gemini Key &rarr;
               </a>
@@ -247,31 +245,31 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[#868f97] mb-1 text-[11px] uppercase tracking-wider font-mono-data">Engine Provider</label>
+                <label className="block text-[#868f97] mb-1 text-[11px] uppercase tracking-wider font-mono">Provider</label>
                 <select
                   value={provider}
                   onChange={(e: any) => setProvider(e.target.value)}
-                  className="w-full bg-[#191919] border border-[#2a2a2a] rounded-[10px] px-3 py-2 text-white outline-none focus:border-[#479ffa] text-xs"
+                  className="w-full bg-[#121212] border border-[#333333] rounded-xl px-3 py-2 text-white outline-none focus:border-[#479ffa] text-xs"
                 >
-                  <option value="gemini">Google Gemini 2.5 Flash (Official Free Tier)</option>
-                  <option value="groq">Groq Cloud Llama 3.3 (Fast LPU Free Tier)</option>
+                  <option value="gemini">Google Gemini 2.5 Flash (Free Tier)</option>
+                  <option value="groq">Groq Cloud Llama 3.3 (Free Tier)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-[#868f97] mb-1 text-[11px] uppercase tracking-wider font-mono-data">API Key (Stored Locally in Browser)</label>
+                <label className="block text-[#868f97] mb-1 text-[11px] uppercase tracking-wider font-mono">API Key</label>
                 <input
                   type="password"
                   value={customKey}
                   onChange={(e) => setCustomKey(e.target.value)}
-                  placeholder="Paste AI Studio Key (e.g. AIzaSy...)"
-                  className="w-full bg-[#191919] border border-[#2a2a2a] rounded-[10px] px-3 py-2 text-white outline-none focus:border-[#479ffa] text-xs"
+                  placeholder="Paste Key (e.g. AIzaSy...)"
+                  className="w-full bg-[#121212] border border-[#333333] rounded-xl px-3 py-2 text-white outline-none focus:border-[#479ffa] text-xs"
                 />
               </div>
             </div>
 
-            <div className="flex justify-between items-center pt-2 border-t border-[#262626]">
+            <div className="flex justify-between items-center pt-2 border-t border-white/5">
               <span className="text-[11px] text-[#868f97]">
-                Key is stored strictly in your browser localStorage. Never saved on our server.
+                Key stored in your browser's localStorage. Never logged to external servers.
               </span>
               <div className="flex gap-2">
                 <button
@@ -280,13 +278,13 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
                     localStorage.removeItem('piedmont_byok_key');
                     setShowSettings(false);
                   }}
-                  className="px-3.5 py-1.5 rounded-full bg-[#1e1e1e] hover:bg-[#252525] text-[#868f97] hover:text-white text-xs transition-all"
+                  className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs transition-all"
                 >
                   Clear Key
                 </button>
                 <button
                   onClick={saveSettings}
-                  className="px-4 py-1.5 rounded-full bg-white text-black font-semibold text-xs hover:bg-[#e0e0e0] transition-all"
+                  className="px-4 py-1.5 rounded-xl bg-white text-black font-semibold text-xs hover:bg-[#e0e0e0] transition-all"
                 >
                   Save Settings
                 </button>
@@ -295,67 +293,91 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
           </div>
         )}
 
-        {/* Chat History Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
-          {messages.map((msg) => (
-            <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
-              
-              {/* User Bubble */}
-              {msg.sender === 'user' && (
-                <div className="max-w-[85%] bg-[#222222] border border-[#333333] text-white px-4 py-2.5 rounded-[14px] text-xs font-normal shadow-sm">
-                  {msg.text}
-                  <div className="text-[10px] font-mono-data text-[#868f97] mt-1 text-right">{msg.timestamp}</div>
-                </div>
-              )}
+        {/* Chat History & Clean Canvas */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
+          {messages.length === 0 ? (
+            /* Inviting Welcome Empty State (Replaces the old chunky math equation!) */
+            <div className="h-full flex flex-col justify-center items-center text-center max-w-xl mx-auto py-8 space-y-6">
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#479ffa]">
+                <Sparkles size={24} />
+              </div>
 
-              {/* Copilot Institutional Analysis Block */}
-              {msg.sender === 'copilot' && msg.data && (
-                <div className="w-full bg-[#141414] border border-[#262626] rounded-[16px] p-5 space-y-4 text-xs text-white shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                  
-                  {/* Model & Title Header */}
-                  <div className="flex items-center justify-between border-b border-[#262626] pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono-data text-[10px] uppercase font-medium text-[#868f97] bg-[#1a1a1a] px-2.5 py-0.5 rounded-full border border-[#2a2a2a]">
-                        {msg.data.sourceModel}
-                      </span>
-                      <span className="font-semibold text-white text-sm tracking-[-0.03em] truncate">
-                        {msg.data.title || 'Institutional Diagnostic'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleCopy(msg.id, `${msg.data?.title}\n\n${msg.data?.executiveSummary}\n\n${msg.data?.markdownSynthesis}`)}
-                        className="text-[11px] text-[#868f97] hover:text-white px-3 py-1 rounded-full bg-[#191919] hover:bg-[#222222] border border-[#2a2a2a] transition-all"
-                      >
-                        {copiedId === msg.id ? 'Copied' : 'Copy'}
-                      </button>
-                      <span className="font-mono-data text-[10px] text-[#555555]">{msg.timestamp}</span>
-                    </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2">
+                  How can Piedmont assist your research?
+                </h2>
+                <p className="text-xs sm:text-sm text-[#868f97] leading-relaxed">
+                  Ask quantitative questions on Indian equities, monetary transmission channels, commodity sensitivities, or corporate accounting.
+                </p>
+              </div>
+
+              {/* Clean Clickable Suggestion Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left pt-2">
+                {SAMPLE_QUESTIONS.map((q, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSubmit(q)}
+                    className="p-3.5 rounded-xl bg-[#181818] hover:bg-[#202020] border border-[#2a2a2a] hover:border-[#479ffa]/40 transition-all text-xs text-white/80 hover:text-white group flex flex-col justify-between space-y-2"
+                  >
+                    <span className="leading-snug">{q}</span>
+                    <span className="text-[10px] text-[#868f97] group-hover:text-[#479ffa] flex items-center gap-1 font-mono">
+                      <span>Inquire</span>
+                      <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            messages.map((msg) => (
+              <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                
+                {/* User Message Bubble */}
+                {msg.sender === 'user' && (
+                  <div className="max-w-[85%] bg-white/10 border border-white/15 text-white px-4 py-3 rounded-2xl text-xs sm:text-sm shadow-sm leading-relaxed">
+                    {msg.text}
+                    <div className="text-[10px] font-mono text-[#868f97] mt-1.5 text-right">{msg.timestamp}</div>
                   </div>
+                )}
 
-                  {/* Executive Thesis */}
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-mono-data uppercase font-semibold text-[#ffa16c] tracking-wider">
-                      EXECUTIVE THESIS
-                    </div>
-                    <p className="text-white text-xs leading-relaxed font-normal">
-                      {msg.data.executiveSummary}
-                    </p>
-                  </div>
-
-                  {/* Quantitative Benchmarks Grid */}
-                  {msg.data.quantitativeMetrics && msg.data.quantitativeMetrics.length > 0 && (
-                    <div className="pt-1">
-                      <div className="text-[10px] font-mono-data uppercase font-semibold text-[#868f97] mb-2 tracking-wider">
-                        QUANTITATIVE SENSITIVITY BENCHMARKS
+                {/* Copilot Response Card */}
+                {msg.sender === 'copilot' && msg.data && (
+                  <div className="w-full bg-[#181818] border border-[#2a2a2a] rounded-2xl p-5 sm:p-6 space-y-4 text-xs sm:text-sm text-white shadow-lg">
+                    
+                    {/* Header */}
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                        <span className="font-bold text-white text-sm tracking-tight truncate">
+                          {msg.data.title || 'Research Analysis'}
+                        </span>
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleCopy(msg.id, `${msg.data?.title}\n\n${msg.data?.executiveSummary}\n\n${msg.data?.markdownSynthesis}`)}
+                          className="text-xs text-[#868f97] hover:text-white px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center gap-1"
+                        >
+                          {copiedId === msg.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                          <span>{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
+                        </button>
+                        <span className="font-mono text-[10px] text-white/40">{msg.timestamp}</span>
+                      </div>
+                    </div>
+
+                    {/* Executive Summary */}
+                    <div className="bg-[#121212] p-4 rounded-xl border border-white/5 text-white/90 leading-relaxed text-xs sm:text-sm">
+                      {msg.data.executiveSummary}
+                    </div>
+
+                    {/* Quantitative Metrics (if available) */}
+                    {msg.data.quantitativeMetrics && msg.data.quantitativeMetrics.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
                         {msg.data.quantitativeMetrics.map((metric, idx) => (
-                          <div key={idx} className="bg-[#191919] border border-[#262626] p-3 rounded-[12px]">
-                            <div className="text-[10px] text-[#868f97] uppercase tracking-wider font-mono-data">{metric.label}</div>
-                            <div className={`font-mono-data text-sm font-semibold mt-1 tabular-nums ${
-                              metric.stance === 'positive' ? 'text-[#4ebe96]' :
-                              metric.stance === 'negative' ? 'text-[#eb5757]' :
+                          <div key={idx} className="bg-[#121212] p-3 rounded-xl border border-white/5">
+                            <div className="text-[10px] text-[#868f97] uppercase tracking-wider font-mono">{metric.label}</div>
+                            <div className={`font-mono text-sm font-bold mt-1 ${
+                              metric.stance === 'positive' ? 'text-emerald-400' :
+                              metric.stance === 'negative' ? 'text-rose-400' :
                               'text-white'
                             }`}>
                               {metric.value}
@@ -363,73 +385,54 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Causal Transmission Vectors */}
-                  {msg.data.transmissionVectors && msg.data.transmissionVectors.length > 0 && (
-                    <div className="space-y-2 pt-1">
-                      <div className="text-[10px] font-mono-data uppercase font-semibold text-[#868f97] tracking-wider">
-                        CROSS-ASSET TRANSMISSION CHANNELS
+                    {/* Markdown Body */}
+                    {msg.data.markdownSynthesis && (
+                      <div className="prose prose-invert max-w-none text-xs sm:text-sm leading-relaxed text-white/85 space-y-2 whitespace-pre-wrap">
+                        {msg.data.markdownSynthesis}
                       </div>
-                      <div className="space-y-2">
-                        {msg.data.transmissionVectors.map((v, idx) => (
-                          <div key={idx} className="bg-[#191919] border border-[#262626] p-3.5 rounded-[12px] space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="font-medium text-white text-xs">{v.factor} &rarr; {v.target}</span>
-                              <span className={`text-[10px] font-mono-data uppercase font-semibold px-2 py-0.5 rounded-full border ${
-                                v.direction === 'tailwind' ? 'bg-[#4ebe96]/10 text-[#4ebe96] border-[#4ebe96]/20' :
-                                v.direction === 'headwind' ? 'bg-[#eb5757]/10 text-[#eb5757] border-[#eb5757]/20' :
-                                'bg-[#222222] text-[#868f97] border-[#333333]'
-                              }`}>
-                                {v.direction}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-[#868f97] leading-relaxed">{v.mechanism}</p>
-                          </div>
+                    )}
+
+                    {/* Actionable Takeaway */}
+                    {msg.data.actionableTakeaway && (
+                      <div className="bg-amber-500/10 border border-amber-500/20 p-3.5 rounded-xl text-xs text-amber-200 leading-normal flex items-start gap-2">
+                        <Info size={15} className="text-amber-400 shrink-0 mt-0.5" />
+                        <div>
+                          <span className="font-bold uppercase tracking-wider text-[10px] block text-amber-400 mb-0.5">Takeaway</span>
+                          {msg.data.actionableTakeaway}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Follow-up suggestions */}
+                    {msg.data.followUpSuggestions && msg.data.followUpSuggestions.length > 0 && (
+                      <div className="pt-2 flex flex-wrap gap-2">
+                        {msg.data.followUpSuggestions.map((s, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => handleSubmit(s)}
+                            className="px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-white/70 hover:text-white transition-all flex items-center gap-1.5"
+                          >
+                            <span>{s}</span>
+                            <ArrowRight size={11} className="text-white/40" />
+                          </button>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Actionable Takeaway */}
-                  {msg.data.actionableTakeaway && (
-                    <div className="bg-[#1c1815] border border-[#ffa16c]/25 p-3.5 rounded-[12px]">
-                      <span className="text-[10px] font-mono-data uppercase font-semibold text-[#ffa16c] block tracking-wider">
-                        PORTFOLIO TAKEAWAY
-                      </span>
-                      <p className="text-white text-xs mt-1 leading-relaxed">
-                        {msg.data.actionableTakeaway}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Follow-up suggestions */}
-                  {msg.data.followUpSuggestions && msg.data.followUpSuggestions.length > 0 && (
-                    <div className="pt-2 border-t border-[#262626] flex flex-wrap gap-2">
-                      {msg.data.followUpSuggestions.map((s, sIdx) => (
-                        <button
-                          key={sIdx}
-                          onClick={() => handleSubmit(s)}
-                          className="text-xs bg-[#191919] hover:bg-[#222222] border border-[#262626] hover:border-[#3a3a3a] px-3.5 py-1.5 rounded-full text-[#868f97] hover:text-white transition-all text-left"
-                        >
-                          &rarr; {s}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                </div>
-              )}
-            </div>
-          ))}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
 
           {/* Loading Indicator */}
           {loading && (
-            <div className="bg-[#141414] border border-[#262626] rounded-[16px] p-4 flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#479ffa] animate-pulse" />
+            <div className="bg-[#181818] border border-[#2a2a2a] rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#479ffa] animate-pulse" />
               <span className="text-xs text-[#868f97]">
-                Evaluating institutional transmission matrix...
+                Piedmont engine is synthesizing financial data...
               </span>
             </div>
           )}
@@ -437,8 +440,8 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
           <div ref={chatBottomRef} />
         </div>
 
-        {/* Input Bar & Suggestion Pills */}
-        <div className="p-4 bg-[#141414] border-t border-[#262626] space-y-3 shrink-0">
+        {/* Input Bar */}
+        <div className="p-4 bg-[#161616] border-t border-[#262626] space-y-3 shrink-0">
           <div className="flex gap-2">
             <input
               ref={inputRef}
@@ -446,26 +449,26 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="Ask about any equity, cross-asset transmission (e.g. falling gold, crude oil), or macro factor..."
-              className="flex-1 bg-[#101010] border border-[#262626] focus:border-[#479ffa] rounded-full px-4 py-2.5 text-xs text-white placeholder:text-[#555555] outline-none transition-all"
+              placeholder="Ask about any equity, cross-asset transmission, or macro indicator..."
+              className="flex-1 bg-[#121212] border border-[#333333] focus:border-[#479ffa] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder:text-white/30 outline-none transition-all"
             />
             <button
               onClick={() => handleSubmit()}
               disabled={loading || !query.trim()}
-              className="px-5 py-2.5 rounded-full bg-white hover:bg-[#e0e0e0] disabled:opacity-30 text-black font-semibold text-xs transition-all shrink-0 flex items-center gap-1.5 shadow-[0_0_15px_rgba(255,255,255,0.15)]"
+              className="px-5 py-2.5 rounded-xl bg-white hover:bg-[#e0e0e0] disabled:opacity-30 text-black font-semibold text-xs sm:text-sm transition-all shrink-0 flex items-center gap-1.5"
             >
               <span>Send</span>
-              <Icon name="arrow_forward" className="w-3.5 h-3.5" />
+              <Send size={13} />
             </button>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
-            <span className="text-[10px] font-mono-data text-[#555555] uppercase shrink-0 font-medium">SUGGESTED:</span>
-            {suggestionPills.map((p, idx) => (
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar text-xs">
+            <span className="text-[10px] font-mono text-[#868f97] uppercase shrink-0">Suggestions:</span>
+            {SAMPLE_QUESTIONS.map((p, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSubmit(p)}
-                className="whitespace-nowrap px-3 py-1 rounded-full text-[11px] bg-[#191919] hover:bg-[#222222] border border-[#262626] text-[#868f97] hover:text-white shrink-0 transition-all"
+                className="whitespace-nowrap px-3 py-1 rounded-full text-xs bg-white/5 hover:bg-white/10 border border-white/10 text-[#868f97] hover:text-white shrink-0 transition-all"
               >
                 {p}
               </button>

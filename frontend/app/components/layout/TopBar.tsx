@@ -88,7 +88,7 @@ export default function TopBar({ onOpenCopilot }: TopBarProps) {
     : pathname.startsWith('/intelligence')
     ? 'Quantitative Signals'
     : pathname.startsWith('/portfolio')
-    ? 'Position Audit & Holdings'
+    ? 'Portfolio Manager'
     : pathname.startsWith('/copilot')
     ? 'Copilot AI Studio'
     : pathname.startsWith('/replay')

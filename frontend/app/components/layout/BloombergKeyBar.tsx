@@ -60,7 +60,7 @@ export default function BloombergKeyBar({ onOpenCopilot }: BloombergKeyBarProps)
           break;
         case 'F9':
           e.preventDefault();
-          router.push('/intelligence');
+          router.push('/watchlist');
           break;
         case 'F10':
           e.preventDefault();
@@ -91,7 +91,7 @@ export default function BloombergKeyBar({ onOpenCopilot }: BloombergKeyBarProps)
     { key: 'F6', label: 'COMMODITIES', actionName: 'commodities', href: '/commodities' },
     { key: 'F7', label: 'PORTFOLIO', actionName: 'portfolio', href: '/portfolio' },
     { key: 'F8', label: 'REPLAY', actionName: 'replay', href: '/replay' },
-    { key: 'F9', label: 'SIGNALS', actionName: 'intelligence', href: '/intelligence' },
+    { key: 'F9', label: 'WATCHLIST', actionName: 'watchlist', href: '/watchlist' },
     { key: 'F10', label: 'OVERVIEW', actionName: 'dashboard', href: '/dashboard' },
   ];
 

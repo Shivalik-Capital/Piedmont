@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, FileText, Download, TrendingUp, TrendingDown, ChevronLeft } from 'lucide-react';
-import { getInstitutionalCompany, CompanyData, StatementRow } from '../../../../lib/company-database';
+import { getInstitutionalCompany, CompanyData, StatementRow, FINANCIAL_INSTITUTION_SYMBOLS } from '../../../../lib/company-database';
 
 function StatementTable({ data, type }: { data: StatementRow[], type: string }) {
   if (!data || data.length === 0) {
@@ -67,7 +67,7 @@ export default function CompanyFinancialsPage() {
 
   const fallback = getInstitutionalCompany(symbol);
   const [data, setData] = useState<CompanyData>(fallback);
-  const [statementType, setStatementType] = useState<'income' | 'balance' | 'cash'>('income');
+  const [statementType, setStatementType] = useState<'income' | 'balance' | 'cash' | 'asset_quality'>('income');
 
   useEffect(() => {
     async function fetchLive() {
@@ -88,11 +88,13 @@ export default function CompanyFinancialsPage() {
   }, [symbol]);
 
   const info = data.info;
+  const isBank = info.companyType === 'bank' || info.companyType === 'nbfc' || FINANCIAL_INSTITUTION_SYMBOLS.has(symbol);
 
   const exportCSV = () => {
     const activeData = data.financials.filter(f => {
       if (statementType === 'income') return f.statement_type === 'income_statement';
       if (statementType === 'balance') return f.statement_type === 'balance_sheet';
+      if (statementType === 'asset_quality') return f.statement_type === 'asset_quality';
       return f.statement_type === 'cash_flow';
     });
 
@@ -159,14 +161,14 @@ export default function CompanyFinancialsPage() {
 
       {/* Statement Selector */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-[#121212] p-3.5 rounded-xl border border-white/10">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setStatementType('income')}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               statementType === 'income' ? 'bg-white/20 text-white' : 'text-[#868f97] hover:text-white hover:bg-white/5'
             }`}
           >
-            Income Statement (P&L)
+            {isBank ? 'Interest & Operating P&L' : 'Income Statement (P&L)'}
           </button>
           <button
             onClick={() => setStatementType('balance')}
@@ -174,16 +176,27 @@ export default function CompanyFinancialsPage() {
               statementType === 'balance' ? 'bg-white/20 text-white' : 'text-[#868f97] hover:text-white hover:bg-white/5'
             }`}
           >
-            Balance Sheet
+            {isBank ? 'Balance Sheet (Deposits & Advances)' : 'Balance Sheet'}
           </button>
-          <button
-            onClick={() => setStatementType('cash')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              statementType === 'cash' ? 'bg-white/20 text-white' : 'text-[#868f97] hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Cash Flow Statement
-          </button>
+          {isBank ? (
+            <button
+              onClick={() => setStatementType('asset_quality')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                statementType === 'asset_quality' ? 'bg-white/20 text-white' : 'text-[#868f97] hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Asset Quality & Capital Adequacy (NPA / CRAR)
+            </button>
+          ) : (
+            <button
+              onClick={() => setStatementType('cash')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                statementType === 'cash' ? 'bg-white/20 text-white' : 'text-[#868f97] hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Cash Flow Statement
+            </button>
+          )}
         </div>
 
         <div className="text-xs text-[#868f97] font-mono">
@@ -197,8 +210,9 @@ export default function CompanyFinancialsPage() {
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <FileText size={16} className="text-emerald-400" />
             <span>
-              {statementType === 'income' && 'Consolidated Profit & Loss Statement'}
-              {statementType === 'balance' && 'Consolidated Balance Sheet'}
+              {statementType === 'income' && (isBank ? 'Interest & Operating Profit & Loss (NII & Provisions)' : 'Consolidated Profit & Loss Statement')}
+              {statementType === 'balance' && (isBank ? 'Balance Sheet (Customer Deposits & Loan Book Advances)' : 'Consolidated Balance Sheet')}
+              {statementType === 'asset_quality' && 'Asset Quality & Statutory Capital Adequacy (NPA & CRAR)'}
               {statementType === 'cash' && 'Consolidated Cash Flow Statement'}
             </span>
           </h2>
@@ -208,6 +222,7 @@ export default function CompanyFinancialsPage() {
           data={data.financials.filter(f => {
             if (statementType === 'income') return f.statement_type === 'income_statement';
             if (statementType === 'balance') return f.statement_type === 'balance_sheet';
+            if (statementType === 'asset_quality') return f.statement_type === 'asset_quality';
             return f.statement_type === 'cash_flow';
           })} 
           type={statementType} 

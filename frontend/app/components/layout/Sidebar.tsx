@@ -13,16 +13,15 @@ export default function Sidebar({ onOpenCopilot }: SidebarProps) {
   
   const navItems = [
     { href: '/dashboard', label: 'Overview (F10)', icon: 'dashboard' },
-    { href: '/intelligence', label: 'Signals Intelligence (F9)', icon: 'monitoring' },
-    { href: '/replay', label: 'Replay Simulator (F8)', icon: 'history' },
-    { href: '/portfolio', label: 'Portfolio Audit (F7)', icon: 'pie_chart' },
-    { href: '/copilot', label: 'Copilot AI (F1)', icon: 'bot' },
+    { href: '/equities', label: 'Equities (F2)', icon: 'show_chart' },
     { href: '/screener', label: 'Screener (F3)', icon: 'filter_list' },
+    { href: '/portfolio', label: 'Portfolio (F7)', icon: 'pie_chart' },
+    { href: '/replay', label: 'Replay Simulator (F8)', icon: 'history' },
     { href: '/macro', label: 'Macro Radar (F4)', icon: 'language' },
     { href: '/commodities', label: 'Commodities (F6)', icon: 'oil_barrel' },
     { href: '/calendar', label: 'Calendar (F5)', icon: 'calendar' },
-    { href: '/watchlist', label: 'Watchlist', icon: 'star' },
-    { href: '/equities', label: 'Equities (F2)', icon: 'show_chart' },
+    { href: '/watchlist', label: 'Watchlist (F9)', icon: 'star' },
+    { href: '/copilot', label: 'Copilot AI (F1)', icon: 'bot' },
   ];
 
   return (

@@ -18,10 +18,10 @@ import {
   LineChart as ChartIcon
 } from 'lucide-react';
 import PriceChart from '../../../components/PriceChart';
-import { getInstitutionalCompany, CompanyData, StatementRow } from '../../../lib/company-database';
+import { getInstitutionalCompany, CompanyData, StatementRow, FINANCIAL_INSTITUTION_SYMBOLS } from '../../../lib/company-database';
 
 // ─── Financials Statement Table Component ─────────────────────────────
-function FinancialTable({ data, type }: { data: StatementRow[], type: 'income' | 'balance' | 'cash' }) {
+function FinancialTable({ data, type }: { data: StatementRow[], type: 'income' | 'balance' | 'cash' | 'asset_quality' }) {
   if (!data || data.length === 0) {
     return <div className="p-8 text-center text-white/40">No statements available for this period.</div>;
   }
@@ -94,7 +94,7 @@ export default function CompanyDetailPage() {
   const fallbackProfile = getInstitutionalCompany(symbol);
   const [data, setData] = useState<CompanyData>(fallbackProfile);
   const [activeTab, setActiveTab] = useState<'overview' | 'chart' | 'financials'>('overview');
-  const [statementSubTab, setStatementSubTab] = useState<'income' | 'balance' | 'cash'>('income');
+  const [statementSubTab, setStatementSubTab] = useState<'income' | 'balance' | 'cash' | 'asset_quality'>('income');
   const [isStarred, setIsStarred] = useState(false);
 
   // Check URL query tab parameter
@@ -179,21 +179,39 @@ export default function CompanyDetailPage() {
   const info = data.info;
   const metrics = data.metrics || {};
   const isPositive = (info.change || 0) >= 0;
+  const isBank = info.companyType === 'bank' || info.companyType === 'nbfc' || FINANCIAL_INSTITUTION_SYMBOLS.has(symbol);
 
-  const metricKeys = [
+  const bankMetricKeys = [
     { key: 'pe', label: 'P/E Ratio', term: 'pe' },
     { key: 'pb', label: 'P/B Ratio', term: 'pb' },
     { key: 'eps', label: 'Earnings Per Share', term: 'eps' },
     { key: 'dividendYield', label: 'Dividend Yield', term: 'dividendYield' },
-    { key: 'roe', label: 'Return on Equity', term: 'roe' },
+    { key: 'roe', label: 'Return on Equity (RoE)', term: 'roe' },
+    { key: 'roa', label: 'Return on Assets (RoA)', term: 'roe' },
+    { key: 'nim', label: 'Net Interest Margin (NIM)', term: 'profit-loss' },
+    { key: 'casa', label: 'CASA Deposit Ratio', term: 'balance-sheet' },
+    { key: 'gnpa', label: 'Gross NPA Ratio', term: 'balance-sheet' },
+    { key: 'nnpa', label: 'Net NPA Ratio', term: 'balance-sheet' },
+    { key: 'crar', label: 'Capital Adequacy (CRAR)', term: 'balance-sheet' },
+    { key: 'costToIncome', label: 'Cost-to-Income', term: 'profit-loss' }
+  ];
+
+  const corporateMetricKeys = [
+    { key: 'pe', label: 'P/E Ratio', term: 'pe' },
+    { key: 'pb', label: 'P/B Ratio', term: 'pb' },
+    { key: 'eps', label: 'Earnings Per Share', term: 'eps' },
+    { key: 'dividendYield', label: 'Dividend Yield', term: 'dividendYield' },
+    { key: 'roe', label: 'Return on Equity (RoE)', term: 'roe' },
     { key: 'roce', label: 'ROCE', term: 'roe' },
     { key: 'debtToEquity', label: 'Debt to Equity', term: 'debtToEquity' },
-    { key: 'operatingMargin', label: 'Operating Margin', term: 'profit-loss' },
+    { key: 'operatingMargin', label: 'Operating Margin (EBITDA %)', term: 'profit-loss' },
     { key: 'netProfitMargin', label: 'Net Profit Margin', term: 'netProfit' },
     { key: 'revenue', label: 'Revenue (TTM)', term: 'revenue' },
-    { key: 'netProfit', label: 'Net Profit (TTM)', term: 'netProfit' },
+    { key: 'ebitda', label: 'Operating EBITDA', term: 'profit-loss' },
     { key: 'freeCashFlow', label: 'Free Cash Flow', term: 'cash-flow' }
   ];
+
+  const metricKeys = isBank ? bankMetricKeys : corporateMetricKeys;
 
   return (
     <div className="min-h-screen text-white p-4 sm:p-8 max-w-7xl mx-auto space-y-6">
@@ -390,7 +408,15 @@ export default function CompanyDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {metricKeys.map((item, idx) => {
                   const m = metrics[item.key];
-                  const displayValue = m?.formatted || (m?.value != null ? (item.key === 'dividendYield' || item.key.includes('Margin') || item.key === 'roe' || item.key === 'roce' ? `${m.value}%` : item.key === 'pe' || item.key === 'pb' || item.key === 'debtToEquity' ? `${m.value}x` : item.key === 'eps' ? `₹${m.value}` : m.value) : '—');
+                  const displayValue = m?.formatted || (m?.value != null ? (
+                    item.key === 'dividendYield' || item.key.includes('Margin') || item.key === 'roe' || item.key === 'roce' || item.key === 'roa' || item.key === 'nim' || item.key === 'casa' || item.key === 'gnpa' || item.key === 'nnpa' || item.key === 'crar' || item.key === 'costToIncome' 
+                      ? `${m.value}%` 
+                      : item.key === 'pe' || item.key === 'pb' || item.key === 'debtToEquity' 
+                        ? `${m.value}x` 
+                        : item.key === 'eps' 
+                          ? `₹${m.value}` 
+                          : m.value
+                  ) : '—');
                   const explanation = m?.explanation || 'Click to view institutional analysis of this financial ratio.';
 
                   return (
@@ -455,7 +481,7 @@ export default function CompanyDetailPage() {
           >
             {/* Statement Type Sub-Tabs */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-[#121212] p-3 rounded-xl border border-white/10">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <button
                   onClick={() => setStatementSubTab('income')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -464,7 +490,7 @@ export default function CompanyDetailPage() {
                       : 'text-[#868f97] hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  Profit & Loss (Income)
+                  {isBank ? 'Interest & Operating P&L' : 'Profit & Loss (Income)'}
                 </button>
                 <button
                   onClick={() => setStatementSubTab('balance')}
@@ -474,18 +500,31 @@ export default function CompanyDetailPage() {
                       : 'text-[#868f97] hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  Balance Sheet
+                  {isBank ? 'Balance Sheet (Deposits & Advances)' : 'Balance Sheet'}
                 </button>
-                <button
-                  onClick={() => setStatementSubTab('cash')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    statementSubTab === 'cash' 
-                      ? 'bg-white/20 text-white shadow-sm' 
-                      : 'text-[#868f97] hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  Cash Flow Statement
-                </button>
+                {isBank ? (
+                  <button
+                    onClick={() => setStatementSubTab('asset_quality')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      statementSubTab === 'asset_quality' 
+                        ? 'bg-white/20 text-white shadow-sm' 
+                        : 'text-[#868f97] hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    Asset Quality & Capital Adequacy (NPA / CRAR)
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setStatementSubTab('cash')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      statementSubTab === 'cash' 
+                        ? 'bg-white/20 text-white shadow-sm' 
+                        : 'text-[#868f97] hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    Cash Flow Statement (Capex & FCF)
+                  </button>
+                )}
               </div>
 
               <div className="text-[11px] text-[#868f97] font-mono">
@@ -499,8 +538,9 @@ export default function CompanyDetailPage() {
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <FileText size={16} className="text-emerald-400" />
                   <span>
-                    {statementSubTab === 'income' && 'Income Statement (Consolidated P&L)'}
-                    {statementSubTab === 'balance' && 'Balance Sheet (Assets & Liabilities)'}
+                    {statementSubTab === 'income' && (isBank ? 'Interest & Operating Profit & Loss (NII & Provisions)' : 'Income Statement (Consolidated P&L)')}
+                    {statementSubTab === 'balance' && (isBank ? 'Balance Sheet (Customer Deposits & Loan Book Advances)' : 'Balance Sheet (Assets & Liabilities)')}
+                    {statementSubTab === 'asset_quality' && 'Asset Quality & Statutory Capital Adequacy (NPA & CRAR)'}
                     {statementSubTab === 'cash' && 'Cash Flow Statement (Operations, Capex & Financing)'}
                   </span>
                 </h3>
@@ -510,6 +550,7 @@ export default function CompanyDetailPage() {
                 data={data.financials.filter(f => {
                   if (statementSubTab === 'income') return f.statement_type === 'income_statement';
                   if (statementSubTab === 'balance') return f.statement_type === 'balance_sheet';
+                  if (statementSubTab === 'asset_quality') return f.statement_type === 'asset_quality';
                   return f.statement_type === 'cash_flow';
                 })} 
                 type={statementSubTab} 

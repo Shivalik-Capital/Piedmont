@@ -13,10 +13,10 @@ export default function MobileNav({ onOpenCopilot }: MobileNavProps) {
   
   const navItems = [
     { href: '/dashboard', label: 'Overview', icon: 'dashboard' },
-    { href: '/intelligence', label: 'Signals', icon: 'monitoring' },
-    { href: '/replay', label: 'Replay', icon: 'history' },
-    { href: '/portfolio', label: 'Portfolio', icon: 'pie_chart' },
+    { href: '/equities', label: 'Equities', icon: 'show_chart' },
     { href: '/screener', label: 'Screen', icon: 'tune' },
+    { href: '/portfolio', label: 'Portfolio', icon: 'pie_chart' },
+    { href: '/replay', label: 'Replay', icon: 'history' },
   ];
 
   return (
