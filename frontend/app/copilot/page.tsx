@@ -25,13 +25,20 @@ export default function CopilotStudioPage() {
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load custom key from localStorage on mount
+  // Load custom key and URL query from localStorage / window on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedKey = localStorage.getItem('piedmont_byok_key') || '';
       const savedProvider = (localStorage.getItem('piedmont_byok_provider') as any) || 'gemini';
       setCustomKey(savedKey);
       setProvider(savedProvider);
+
+      // Support ?q= parameter from URL
+      const searchParams = new URLSearchParams(window.location.search);
+      const initialQuery = searchParams.get('q');
+      if (initialQuery && initialQuery.trim()) {
+        handleSend(initialQuery.trim());
+      }
     }
   }, []);
 
