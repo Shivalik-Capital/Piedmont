@@ -82,21 +82,21 @@ const DEFAULT_MACRO: MacroData = {
     rbi_repo: { name: 'RBI Repo Rate', value: '5.50%', trend: 'Up', date: 'Oct 2026' },
     reverse_repo: { name: 'Reverse Repo', value: '3.35%', trend: 'Stable', date: 'Current' },
     sdf: { name: 'Standing Deposit Facility', value: '5.25%', trend: 'Up', date: 'Oct 2026' },
-    inflation: { name: 'CPI Inflation', value: '5.54%', trend: 'Up', date: 'Sep 2026' },
-    wpi: { name: 'WPI Inflation', value: '11.39%', trend: 'Up', date: 'Sep 2026' },
-    pmi: { name: 'Manufacturing PMI', value: '55.1', trend: 'Up', date: 'Sep 2026' },
-    iip: { name: 'IIP Growth', value: '8.0%', trend: 'Up', date: 'Aug 2026' },
+    inflation: { name: 'CPI Inflation', value: '6.09%', trend: 'Up', date: 'Oct 2026' },
+    wpi: { name: 'WPI Inflation', value: '2.36%', trend: 'Down', date: 'Oct 2026' },
+    pmi: { name: 'Manufacturing PMI', value: '54.7', trend: 'Down', date: 'Oct 2026' },
+    iip: { name: 'IIP Growth', value: '6.7%', trend: 'Down', date: 'Sep 2026' },
     fiscal_deficit: { name: 'Fiscal Deficit', value: '₹3.08L Cr', trend: 'Stable', date: 'Q1 FY27' },
-    forex: { name: 'Forex Reserves', value: '$721.0B', trend: 'Down', date: 'Oct 16, 2026' },
-    fii_flows: { name: 'FII Flows (MTD)', value: '₹12,450 Cr', trend: 'Up', date: 'Oct 2026' },
-    dii_flows: { name: 'DII Flows (MTD)', value: '₹21,100 Cr', trend: 'Up', date: 'Oct 2026' },
+    forex: { name: 'Forex Reserves', value: '$719.55B', trend: 'Up', date: 'Nov 6, 2026' },
+    fii_flows: { name: 'FII Flows (MTD)', value: '₹8,240 Cr', trend: 'Down', date: 'Nov 2026' },
+    dii_flows: { name: 'DII Flows (MTD)', value: '₹18,450 Cr', trend: 'Up', date: 'Nov 2026' },
     borrowing_cal: { name: 'Govt Borrowing', value: '₹8.20L Cr', trend: 'Stable', date: 'H1 FY27' },
     current_account: { name: 'Current Account', value: '+$2.8B', trend: 'Up', date: 'Q1 FY27' },
     econ_cal: { name: 'Next Event', value: 'RBI MPC', trend: 'Stable', date: 'Dec 2-4' }
   },
   meta: {
-    source: 'World Bank, RBI, NSE (Updates Daily)',
-    fetched_at: 'Oct 29, 2026 at 9:15 AM IST'
+    source: 'World Bank, RBI, MoSPI, DPIIT (Verified Releases)',
+    fetched_at: 'Nov 14, 2026 at 9:30 AM IST'
   }
 };
 

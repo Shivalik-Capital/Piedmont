@@ -13,6 +13,7 @@ export default function Sidebar({ onOpenCopilot }: SidebarProps) {
   
   const navItems = [
     { href: '/', label: 'Dashboard (F9)', icon: 'dashboard' },
+    { href: '/copilot', label: 'AI Copilot (F1)', icon: 'bot' },
     { href: '/screener', label: 'Screener (F3)', icon: 'filter_list' },
     { href: '/watchlist', label: 'Watchlist & P&L (F7)', icon: 'star' },
     { href: '/calendar', label: 'Calendar (F5)', icon: 'calendar' },

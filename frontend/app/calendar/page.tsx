@@ -57,8 +57,8 @@ const MACRO_SCHEDULE: MacroEvent[] = [
     institution: 'Ministry of Statistics & PI (MoSPI)',
     period: 'October 2026',
     importance: 'Critical',
-    expected: '5.20%',
-    previous: '5.54%'
+    expected: '6.09% (Actual Released)',
+    previous: '5.49%'
   },
   {
     id: '2',
@@ -68,8 +68,8 @@ const MACRO_SCHEDULE: MacroEvent[] = [
     institution: 'MoSPI',
     period: 'September 2026',
     importance: 'High',
-    expected: '6.8%',
-    previous: '8.0%'
+    expected: '6.7% (Actual Released)',
+    previous: '4.8%'
   },
   {
     id: '3',
@@ -79,8 +79,8 @@ const MACRO_SCHEDULE: MacroEvent[] = [
     institution: 'Ministry of Commerce & Industry',
     period: 'October 2026',
     importance: 'Medium',
-    expected: '9.80%',
-    previous: '11.39%'
+    expected: '2.36% (Actual Released)',
+    previous: '1.84%'
   },
   {
     id: '4',
@@ -113,7 +113,7 @@ const MACRO_SCHEDULE: MacroEvent[] = [
     period: 'November 2026',
     importance: 'Critical',
     expected: 'TBA',
-    previous: '5.54%'
+    previous: '6.09%'
   },
   {
     id: '7',

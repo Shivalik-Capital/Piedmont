@@ -22,27 +22,27 @@
   "domestic_macro": {
     "cpi": {
       "name": "CPI Inflation",
-      "value": "5.54%",
+      "value": "6.09%",
       "trend": "Up",
-      "date": "Sep 2026"
+      "date": "Oct 2026"
     },
     "wpi": {
       "name": "WPI Inflation",
-      "value": "11.39%",
-      "trend": "Up",
-      "date": "Sep 2026"
+      "value": "2.36%",
+      "trend": "Down",
+      "date": "Oct 2026"
     },
     "pmi": {
       "name": "Manufacturing PMI",
-      "value": "55.1",
-      "trend": "Up",
-      "date": "Sep 2026"
+      "value": "54.7",
+      "trend": "Down",
+      "date": "Oct 2026"
     },
     "iip": {
       "name": "IIP Growth",
-      "value": "8.0%",
-      "trend": "Up",
-      "date": "Aug 2026"
+      "value": "6.7%",
+      "trend": "Down",
+      "date": "Sep 2026"
     },
     "fiscal_deficit": {
       "name": "Fiscal Deficit",
@@ -54,23 +54,23 @@
   "external_sector": {
     "forex_reserves": {
       "name": "Forex Reserves",
-      "value": "$721.0B",
-      "trend": "Down",
-      "date": "Oct 16, 2026"
+      "value": "$719.55B",
+      "trend": "Up",
+      "date": "Nov 6, 2026"
     }
   },
   "market_liquidity": {
     "fii_flows": {
       "name": "FII Flows (MTD)",
-      "value": "₹12,450 Cr",
-      "trend": "Up",
-      "date": "MTD"
+      "value": "₹8,240 Cr",
+      "trend": "Down",
+      "date": "Nov 2026"
     },
     "dii_flows": {
       "name": "DII Flows (MTD)",
-      "value": "₹21,100 Cr",
+      "value": "₹18,450 Cr",
       "trend": "Up",
-      "date": "MTD"
+      "date": "Nov 2026"
     },
     "borrowing_cal": {
       "name": "Govt Borrowing",
@@ -82,7 +82,7 @@
       "name": "Current Account",
       "value": "+$2.8B",
       "trend": "Up",
-      "date": "Apr-May 2026"
+      "date": "Q1 FY27"
     },
     "econ_cal": {
       "name": "Next Event",
