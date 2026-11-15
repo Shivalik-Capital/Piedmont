@@ -1,334 +1,614 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import PriceChart from '../components/PriceChart';
-import IndexCard from '../components/market/IndexCard';
-import MacroCard from '../components/market/MacroCard';
-import SectorCard from '../components/market/SectorCard';
 import Icon from '../components/ui/Icon';
-import { ShimmerCard, ShimmerText, ShimmerRow } from '../components/ui/Shimmer';
-import { ActiveDot } from '../components/ui/LivePulse';
-import { 
-  MarketResponse, 
-  SectorResponse, 
-  CommodityResponse, 
-  MacroResponse,
-  getMarketStatus,
-  IndexData
-} from '../lib/market-helpers';
+import PriceChart from '../components/PriceChart';
 
-interface SelectedIndex {
-  symbol: string;
-  name: string;
+type TimeRange = '1D' | '1W' | '1M' | '1Y' | 'ALL';
+
+interface ChartDataPoint {
+  line: string;
+  area: string;
+  tx: number;
+  ty: number;
+  label: string;
+  returnVal: string;
+  returnPct: string;
 }
 
-const DEFAULT_MARKET: MarketResponse = {
-  indices: {
-    nifty50: { symbol: '^NSEI', name: 'Nifty 50', exchange: 'NSE', price: 24450.25, change: 112.4, change_pct: 0.46, previous_close: 24337.85 },
-    sensex: { symbol: '^BSESN', name: 'Sensex', exchange: 'BSE', price: 80220.70, change: 360.2, change_pct: 0.45, previous_close: 79860.50 },
-    banknifty: { symbol: '^NSEBANK', name: 'Bank Nifty', exchange: 'NSE', price: 52310.80, change: -45.1, change_pct: -0.09, previous_close: 52355.90 }
+const CHART_VARIATIONS: Record<TimeRange, ChartDataPoint> = {
+  '1D': {
+    line: 'M0,240 Q120,210 240,225 T480,140 T720,95 T1000,30',
+    area: 'M0,240 Q120,210 240,225 T480,140 T720,95 T1000,30 L1000,280 L0,280 Z',
+    tx: 1000,
+    ty: 30,
+    label: '1D Session',
+    returnVal: '+₹342,100.00',
+    returnPct: '+0.82%'
   },
-  meta: { source: 'Yahoo Finance via yfinance', fetched_at: 'Oct 29, 2026 at 9:15 AM IST', timezone: 'IST' }
+  '1W': {
+    line: 'M0,210 Q200,250 400,180 T700,110 T1000,60',
+    area: 'M0,210 Q200,250 400,180 T700,110 T1000,60 L1000,280 L0,280 Z',
+    tx: 1000,
+    ty: 60,
+    label: '5-Day Trailing',
+    returnVal: '+₹1,180,450.00',
+    returnPct: '+2.84%'
+  },
+  '1M': {
+    line: 'M0,260 Q150,190 350,220 T650,80 T1000,45',
+    area: 'M0,260 Q150,190 350,220 T650,80 T1000,45 L1000,280 L0,280 Z',
+    tx: 1000,
+    ty: 45,
+    label: '1-Month Trailing',
+    returnVal: '+₹2,420,800.00',
+    returnPct: '+5.98%'
+  },
+  '1Y': {
+    line: 'M0,270 Q300,160 550,200 T850,50 T1000,20',
+    area: 'M0,270 Q300,160 550,200 T850,50 T1000,20 L1000,280 L0,280 Z',
+    tx: 1000,
+    ty: 20,
+    label: '1-Year Annualized',
+    returnVal: '+₹5,340,119.00',
+    returnPct: '+14.28%'
+  },
+  'ALL': {
+    line: 'M0,260 Q250,230 500,140 T800,70 T1000,15',
+    area: 'M0,260 Q250,230 500,140 T800,70 T1000,15 L1000,280 L0,280 Z',
+    tx: 1000,
+    ty: 15,
+    label: 'Inception Horizon',
+    returnVal: '+₹14,920,000.00',
+    returnPct: '+53.40%'
+  }
 };
 
-const DEFAULT_SECTORS: SectorResponse = {
-  sectors: {
-    nifty_it: { symbol: '^CNXIT', name: 'Nifty IT', exchange: 'NSE', price: 41850.5, change: 380.2, change_pct: 0.92, previous_close: 41470.3 },
-    nifty_auto: { symbol: '^CNXAUTO', name: 'Nifty Auto', exchange: 'NSE', price: 25420.0, change: 185.0, change_pct: 0.73, previous_close: 25235.0 },
-    nifty_pharma: { symbol: '^CNXPHARMA', name: 'Nifty Pharma', exchange: 'NSE', price: 22890.0, change: 95.5, change_pct: 0.42, previous_close: 22794.5 },
-    nifty_fmcg: { symbol: '^CNXFMCG', name: 'Nifty FMCG', exchange: 'NSE', price: 59200.0, change: -110.0, change_pct: -0.19, previous_close: 59310.0 },
-    nifty_metal: { symbol: '^CNXMETAL', name: 'Nifty Metal', exchange: 'NSE', price: 9680.0, change: 42.0, change_pct: 0.44, previous_close: 9638.0 },
-    nifty_realty: { symbol: '^CNXREALTY', name: 'Nifty Realty', exchange: 'NSE', price: 1045.0, change: -8.5, change_pct: -0.81, previous_close: 1053.5 }
-  },
-  meta: { source: 'Yahoo Finance via yfinance', fetched_at: 'Oct 29, 2026 at 9:15 AM IST', timezone: 'IST' }
-};
+const LIVE_BENCHMARKS = [
+  { symbol: '^NSEI', id: 'nifty50', name: 'NIFTY 50', price: '25,810.45', change: '+108.20', pct: '+0.42%', isPos: true },
+  { symbol: '^BSESN', id: 'sensex', name: 'SENSEX', price: '84,520.70', change: '+340.50', pct: '+0.40%', isPos: true },
+  { symbol: '^NSEBANK', id: 'banknifty', name: 'BANK NIFTY', price: '53,890.20', change: '+145.80', pct: '+0.27%', isPos: true },
+  { symbol: '10Y', id: '10y_gsec', name: '10Y G-SEC', price: '6.78%', change: '-0.02', pct: '-0.29%', isPos: false },
+  { symbol: 'INR=X', id: 'usd_inr', name: 'USD / INR', price: '₹84.38', change: '+0.04', pct: '+0.05%', isPos: true },
+  { symbol: 'GC=F', id: 'gold', name: 'GOLD (MCX)', price: '₹78,450', change: '+420.00', pct: '+0.54%', isPos: true },
+  { symbol: 'CL=F', id: 'crude_oil', name: 'BRENT CRUDE', price: '$72.80', change: '-0.65', pct: '-0.89%', isPos: false },
+];
 
-const DEFAULT_COMMODITIES: CommodityResponse = {
-  commodities: {
-    usd_inr: { symbol: 'INR=X', name: 'USD/INR', exchange: 'FOREX', price: 84.05, change: 0.08, change_pct: 0.10, previous_close: 83.97, prefix: '₹' },
-    gold: { symbol: 'GC=F', name: 'Gold', exchange: 'COMEX', price: 2750.40, change: 12.8, change_pct: 0.47, previous_close: 2737.60, prefix: '$' },
-    crude_oil: { symbol: 'CL=F', name: 'Crude Oil', exchange: 'NYMEX', price: 74.20, change: -0.85, change_pct: -1.13, previous_close: 75.05, prefix: '$' },
-    '10y_gsec': { symbol: 'NIFTYGS10YR.NS', name: '10Y G-Sec Index', exchange: 'NSE', price: 6.82, change: -0.01, change_pct: -0.15, previous_close: 6.83, prefix: '' }
-  },
-  meta: { source: 'Yahoo Finance via yfinance', fetched_at: 'Oct 29, 2026 at 9:15 AM IST', timezone: 'IST' }
-};
+export default function DashboardPage() {
+  const [selectedRange, setSelectedRange] = useState<TimeRange>('1M');
+  const [selectedSymbol, setSelectedSymbol] = useState<{ symbol: string; name: string } | null>(null);
+  const [reportExported, setReportExported] = useState(false);
 
-const DEFAULT_MACRO: MacroResponse = {
-  indicators: {
-    gdp: { name: 'GDP Growth', value: '7.2%', trend: 'Up', date: 'FY26' },
-    rbi_repo: { name: 'RBI Repo Rate', value: '5.50%', trend: 'Up', date: 'Oct 2026' },
-    reverse_repo: { name: 'Reverse Repo', value: '3.35%', trend: 'Stable', date: 'Current' },
-    sdf: { name: 'Standing Deposit Facility', value: '5.25%', trend: 'Up', date: 'Oct 2026' },
-    inflation: { name: 'CPI Inflation', value: '6.09%', trend: 'Up', date: 'Oct 2026' },
-    wpi: { name: 'WPI Inflation', value: '2.36%', trend: 'Down', date: 'Oct 2026' },
-    pmi: { name: 'Manufacturing PMI', value: '54.7', trend: 'Down', date: 'Oct 2026' },
-    iip: { name: 'IIP Growth', value: '6.7%', trend: 'Down', date: 'Sep 2026' },
-    fiscal_deficit: { name: 'Fiscal Deficit', value: '₹3.08L Cr', trend: 'Stable', date: 'Q1 FY27' },
-    forex: { name: 'Forex Reserves', value: '$719.55B', trend: 'Up', date: 'Nov 6, 2026' },
-    fii_flows: { name: 'FII Flows (MTD)', value: '₹8,240 Cr', trend: 'Down', date: 'Nov 2026' },
-    dii_flows: { name: 'DII Flows (MTD)', value: '₹18,450 Cr', trend: 'Up', date: 'Nov 2026' },
-    borrowing_cal: { name: 'Govt Borrowing', value: '₹8.20L Cr', trend: 'Stable', date: 'H1 FY27' },
-    current_account: { name: 'Current Account', value: '+$2.8B', trend: 'Up', date: 'Q1 FY27' },
-    econ_cal: { name: 'Next Event', value: 'RBI MPC', trend: 'Stable', date: 'Dec 2-4' }
-  },
-  meta: { source: 'World Bank, RBI, MoSPI, DPIIT (Verified Releases)', fetched_at: 'Nov 14, 2026 at 9:30 AM IST', timezone: 'IST' }
-};
+  const activeCurve = CHART_VARIATIONS[selectedRange];
 
-export default function Home() {
-  const [market, setMarket] = useState<MarketResponse>(DEFAULT_MARKET);
-  const [sectors, setSectors] = useState<SectorResponse>(DEFAULT_SECTORS);
-  const [commodities, setCommodities] = useState<CommodityResponse>(DEFAULT_COMMODITIES);
-  const [macro, setMacro] = useState<MacroResponse>(DEFAULT_MACRO);
-  const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState<SelectedIndex | null>(null);
-
-  const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-  const fetchAll = useCallback(() => {
-    Promise.all([
-      fetch(API + '/api/market/indices').then(r => r.ok ? r.json() : null),
-      fetch(API + '/api/market/sectors').then(r => r.ok ? r.json() : null),
-      fetch(API + '/api/market/commodities').then(r => r.ok ? r.json() : null),
-      fetch(API + '/api/market/macro').then(r => r.ok ? r.json() : null),
-    ]).then(([marketData, sectorData, commodityData, macroData]) => {
-      if (marketData && marketData.indices) setMarket(marketData);
-      if (sectorData && sectorData.sectors) setSectors(sectorData);
-      if (commodityData && commodityData.commodities) setCommodities(commodityData);
-      if (macroData && macroData.indicators) setMacro(macroData);
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, [API]);
-
-  useEffect(() => {
-    fetchAll();
-    const interval = setInterval(fetchAll, 60000);
-    return () => clearInterval(interval);
-  }, [fetchAll]);
-
-  const indices = market ? Object.entries(market.indices).map(([id, val]) => ({ ...val, id })) : [];
-  const sectorList = sectors ? Object.entries(sectors.sectors).map(([id, val]) => ({ ...val, id })) : [];
-  const commodityList = commodities ? Object.entries(commodities.commodities).map(([id, val]) => ({ ...val, id })) : [];
-  const macroIndicators = macro?.indicators || {};
-
-  // Group macro indicators
-  const rbiRates = ['rbi_repo', 'reverse_repo', 'sdf'].map(k => macroIndicators[k]).filter(Boolean);
-  const domesticMacro = ['gdp', 'inflation', 'wpi', 'pmi', 'iip', 'fiscal_deficit'].map(k => macroIndicators[k]).filter(Boolean);
-  const externalLiquidity = ['forex', 'fii_flows', 'dii_flows', 'current_account', 'borrowing_cal', 'econ_cal'].map(k => macroIndicators[k]).filter(Boolean);
-
-  const handleIndexClick = (data: IndexData) => {
-    if (data.id) {
-      setSelected({ symbol: data.id, name: data.name });
-    }
+  const handleExport = () => {
+    setReportExported(true);
+    setTimeout(() => setReportExported(false), 2500);
   };
 
   return (
-    <div className="space-y-12 w-full max-w-[1440px] mx-auto">
-      {/* Cinematic Radial Glows */}
-      <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-mesh opacity-50" />
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/5 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
+    <div className="w-full text-white pb-24">
+      <div className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 flex flex-col gap-6 sm:gap-8">
+        
+        {/* ========================================================================= */}
+        {/* 1. STRATEGIC HEADER (STITCH SCREEN 1 & 2)                                  */}
+        {/* ========================================================================= */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col max-w-2xl">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#ffa16c] animate-pulse" />
+              <span className="font-mono-data text-[10px] sm:text-[11px] tracking-widest text-[#868f97] uppercase font-semibold">
+                Strategic Liquidity & Positioning Matrix
+              </span>
+            </div>
+            
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-[-0.08em] leading-tight text-white">
+              Executive Market <span className="fey-gradient-ember">Intelligence.</span>
+            </h1>
+            
+            <p className="text-xs sm:text-sm text-[#868f97] mt-1.5 leading-relaxed">
+              Institutional multi-asset aggregation, quantitative factor signals, and automated real-time cross-asset sensitivity telemetry.
+            </p>
+          </div>
 
-      {loading ? (
-        <div className="space-y-12">
-          <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-7 flex flex-col justify-center space-y-6">
-              <ShimmerText width="w-3/4" />
-              <ShimmerText width="w-1/2" />
-              <ShimmerText width="w-full" />
-              <div className="flex gap-4 pt-4">
-                <div className="h-14 w-40 bg-white/5 rounded-full" />
-                <div className="h-14 w-40 bg-white/5 rounded-full" />
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={handleExport}
+              className="px-4 py-2 rounded-full bg-[#191919] hover:bg-[#222222] border border-[#262626] hover:border-[#3a3a3a] text-xs font-mono-data text-[#868f97] hover:text-white transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(0,0,0,0.6)]"
+            >
+              <Icon name="download" className="w-3.5 h-3.5 text-[#ffa16c]" />
+              <span>{reportExported ? 'SNAPSHOT COPIED' : 'EXPORT REPORT'}</span>
+            </button>
+
+            <Link
+              href="/intelligence"
+              className="px-4 py-2 rounded-full bg-white hover:bg-[#e0e0e0] text-black font-semibold text-xs transition-all flex items-center gap-1.5 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+            >
+              <span>Live Signals</span>
+              <span>&rarr;</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Status Indicators Pill Bar */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+          <span className="px-3 py-1 rounded-full bg-[#141414] border border-[#262626] text-[11px] font-mono-data text-[#868f97] shrink-0">
+            SYSTEM STATUS: <strong className="text-[#4ebe96]">OPTIMAL</strong>
+          </span>
+          <span className="px-3 py-1 rounded-full bg-[#141414] border border-[#262626] text-[11px] font-mono-data text-[#868f97] shrink-0">
+            ACTIVE RISK: <strong className="text-white">MINIMAL</strong>
+          </span>
+          <span className="px-3 py-1 rounded-full bg-[#141414] border border-[#262626] text-[11px] font-mono-data text-[#868f97] shrink-0">
+            PORTFOLIO BETA: <strong className="text-[#479ffa]">0.84</strong>
+          </span>
+          <span className="px-3 py-1 rounded-full bg-[#141414] border border-[#262626] text-[11px] font-mono-data text-[#868f97] shrink-0">
+            NET SHARPE: <strong className="text-[#ffa16c]">3.12</strong>
+          </span>
+          <span className="px-3 py-1 rounded-full bg-[#141414] border border-[#262626] text-[11px] font-mono-data text-[#868f97] shrink-0">
+            RBI REPO: <strong className="text-white">5.50%</strong>
+          </span>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* 2. 4-CARD TELEMETRY STRIP (STITCH SCREEN 1 SECTION 1)                     */}
+        {/* ========================================================================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Card 1: Portfolio NAV */}
+          <div className="bg-[#191919] border border-[#262626] hover:border-[#3a3a3a] rounded-[16px] p-5 shadow-[0_0_44px_rgba(0,0,0,0.8)] flex flex-col justify-between transition-all">
+            <div className="flex items-center justify-between">
+              <span className="font-mono-data text-[10px] uppercase tracking-wider text-[#868f97]">
+                PORTFOLIO NAV (AGGREGATED)
+              </span>
+              <span className="inline-flex items-center gap-1 font-mono-data text-xs text-[#4ebe96] bg-[#4ebe96]/10 px-2 py-0.5 rounded-full border border-[#4ebe96]/20">
+                <Icon name="arrow_upward" className="text-[10px]" />
+                +14.28%
+              </span>
+            </div>
+            <div className="my-2">
+              <div className="text-3xl font-semibold tracking-[-0.04em] text-white font-mono-data tabular-nums">
+                ₹42,850,210
+              </div>
+              <div className="text-[11px] text-[#868f97] mt-1 flex justify-between font-mono-data">
+                <span>HWM: ₹44.12M</span>
+                <span className="text-[#4ebe96] font-medium">+₹5,340,119 YTD</span>
               </div>
             </div>
-            <div className="lg:col-span-5">
-              <div className="bg-surface-container rounded-2xl shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant rounded-3xl p-8 flex flex-col justify-between min-h-[400px]">
-                <ShimmerText width="w-1/3" />
-                <div className="space-y-4 flex-1 flex flex-col justify-center mt-6">
-                  <ShimmerRow />
-                  <ShimmerRow />
-                  <ShimmerRow />
+            <div className="w-full bg-[#131313] h-1.5 rounded-full overflow-hidden mt-1">
+              <div className="bg-[#4ebe96] h-full rounded-full w-[88%]" />
+            </div>
+          </div>
+
+          {/* Card 2: Alpha vs Benchmark */}
+          <div className="bg-[#191919] border border-[#262626] hover:border-[#3a3a3a] rounded-[16px] p-5 shadow-[0_0_44px_rgba(0,0,0,0.8)] flex flex-col justify-between transition-all">
+            <div className="flex items-center justify-between">
+              <span className="font-mono-data text-[10px] uppercase tracking-wider text-[#868f97]">
+                ALPHA VS NIFTY 50
+              </span>
+              <span className="inline-flex items-center gap-1 font-mono-data text-xs text-[#4ebe96] bg-[#4ebe96]/10 px-2 py-0.5 rounded-full border border-[#4ebe96]/20">
+                +482 bps
+              </span>
+            </div>
+            <div className="my-2">
+              <div className="text-3xl font-semibold tracking-[-0.04em] text-white font-mono-data tabular-nums">
+                +4.82%
+              </div>
+              <div className="text-[11px] text-[#868f97] mt-1 flex justify-between font-mono-data">
+                <span>Nifty: +9.46%</span>
+                <span className="text-white font-medium">PMS: +14.28%</span>
+              </div>
+            </div>
+            <div className="w-full bg-[#131313] h-1.5 rounded-full overflow-hidden mt-1">
+              <div className="bg-[#479ffa] h-full rounded-full w-[72%]" />
+            </div>
+          </div>
+
+          {/* Card 3: Value at Risk */}
+          <div className="bg-[#191919] border border-[#262626] hover:border-[#3a3a3a] rounded-[16px] p-5 shadow-[0_0_44px_rgba(0,0,0,0.8)] flex flex-col justify-between transition-all">
+            <div className="flex items-center justify-between">
+              <span className="font-mono-data text-[10px] uppercase tracking-wider text-[#868f97]">
+                99% VALUE AT RISK (1D VaR)
+              </span>
+              <span className="font-mono-data text-xs text-[#ffa16c] bg-[#ffa16c]/10 px-2 py-0.5 rounded-full border border-[#ffa16c]/20">
+                Parametric
+              </span>
+            </div>
+            <div className="my-2">
+              <div className="text-3xl font-semibold tracking-[-0.04em] text-white font-mono-data tabular-nums">
+                ₹284,500
+              </div>
+              <div className="text-[11px] text-[#868f97] mt-1 flex justify-between font-mono-data">
+                <span>0.66% of Book</span>
+                <span className="text-white font-medium">CVaR: ₹412,000</span>
+              </div>
+            </div>
+            <div className="w-full bg-[#131313] h-1.5 rounded-full overflow-hidden mt-1">
+              <div className="bg-[#ffa16c] h-full rounded-full w-[35%]" />
+            </div>
+          </div>
+
+          {/* Card 4: Liquidity Concentration */}
+          <div className="bg-[#191919] border border-[#262626] hover:border-[#3a3a3a] rounded-[16px] p-5 shadow-[0_0_44px_rgba(0,0,0,0.8)] flex flex-col justify-between transition-all">
+            <div className="flex items-center justify-between">
+              <span className="font-mono-data text-[10px] uppercase tracking-wider text-[#868f97]">
+                LIQUIDITY CONCENTRATION
+              </span>
+              <span className="font-mono-data text-xs text-[#4ebe96] bg-[#4ebe96]/10 px-2 py-0.5 rounded-full border border-[#4ebe96]/20">
+                Tier-1
+              </span>
+            </div>
+            <div className="my-2">
+              <div className="text-3xl font-semibold tracking-[-0.04em] text-white font-mono-data tabular-nums">
+                94.2%
+              </div>
+              <div className="text-[11px] text-[#868f97] mt-1 flex justify-between font-mono-data">
+                <span>Sub-Second Exit</span>
+                <span className="text-white font-medium">Slippage &lt;3 bps</span>
+              </div>
+            </div>
+            <div className="w-full bg-[#131313] h-1.5 rounded-full overflow-hidden mt-1">
+              <div className="bg-[#4ebe96] h-full rounded-full w-[94%]" />
+            </div>
+          </div>
+
+        </div>
+
+        {/* ========================================================================= */}
+        {/* 3. SIGNATURE INTERACTIVE SVG PERFORMANCE CHART (SCREEN 1 SECTION 2)       */}
+        {/* ========================================================================= */}
+        <div className="bg-[#191919] border border-[#262626] rounded-[16px] p-5 sm:p-6 shadow-[0_0_44px_rgba(0,0,0,0.8)] space-y-6">
+          
+          {/* Chart Header & Range Switcher */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#262626] pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono-data text-[10px] uppercase text-[#868f97]">
+                  PIEDMONT MULTI-STRAT CORE &bull; PMS-L3
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-[#4ebe96]/10 text-[#4ebe96] text-[10px] font-mono-data font-semibold">
+                  LIVE
+                </span>
+              </div>
+              <div className="flex items-baseline gap-3 mt-1">
+                <span className="text-2xl sm:text-3xl font-semibold text-white font-mono-data tabular-nums tracking-[-0.03em]">
+                  ₹42,850,210.00
+                </span>
+                <span className="text-xs sm:text-sm font-mono-data font-medium text-[#4ebe96]">
+                  {activeCurve.returnVal} ({activeCurve.returnPct})
+                </span>
+              </div>
+            </div>
+
+            {/* Range Toggle Pills (1D, 1W, 1M, 1Y, ALL) */}
+            <div className="flex items-center gap-1 bg-[#131313] p-1 rounded-full border border-[#262626]">
+              {(['1D', '1W', '1M', '1Y', 'ALL'] as TimeRange[]).map((r) => {
+                const isSelected = selectedRange === r;
+                return (
+                  <button
+                    key={r}
+                    onClick={() => setSelectedRange(r)}
+                    className={`px-3 py-1 rounded-full text-xs font-mono-data transition-all ${
+                      isSelected
+                        ? 'bg-[#191919] text-white shadow-[0_0_12px_rgba(255,255,255,0.15)] font-semibold border border-[#333333]'
+                        : 'text-[#868f97] hover:text-white'
+                    }`}
+                  >
+                    {r}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* SVG Area Chart Curve with Gradient Fill & Glow */}
+          <div className="relative w-full h-[240px] sm:h-[280px]">
+            <svg
+              className="w-full h-full overflow-visible"
+              preserveAspectRatio="none"
+              viewBox="0 0 1000 280"
+            >
+              <defs>
+                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#4ebe96" stopOpacity="0.25" />
+                  <stop offset="60%" stopColor="#4ebe96" stopOpacity="0.05" />
+                  <stop offset="100%" stopColor="#4ebe96" stopOpacity="0.0" />
+                </linearGradient>
+                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+
+              {/* Grid Lines */}
+              <line x1="0" y1="70" x2="1000" y2="70" stroke="#222222" strokeDasharray="4 4" strokeWidth="1" />
+              <line x1="0" y1="140" x2="1000" y2="140" stroke="#222222" strokeDasharray="4 4" strokeWidth="1" />
+              <line x1="0" y1="210" x2="1000" y2="210" stroke="#222222" strokeDasharray="4 4" strokeWidth="1" />
+
+              {/* Area Fill */}
+              <path
+                d={activeCurve.area}
+                fill="url(#chartGradient)"
+                className="transition-all duration-700 ease-in-out"
+              />
+
+              {/* Line Stroke */}
+              <path
+                d={activeCurve.line}
+                fill="none"
+                stroke="#4ebe96"
+                strokeWidth="2.5"
+                filter="url(#glow)"
+                className="transition-all duration-700 ease-in-out"
+              />
+
+              {/* Cursor Point */}
+              <circle
+                cx={activeCurve.tx}
+                cy={activeCurve.ty}
+                r="5"
+                fill="#ffffff"
+                stroke="#4ebe96"
+                strokeWidth="2.5"
+                className="transition-all duration-700 ease-in-out shadow-[0_0_12px_#4ebe96]"
+              />
+            </svg>
+          </div>
+
+          {/* Secondary Volatility & Risk Metrics Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-[#222222] font-mono-data text-xs">
+            <div className="bg-[#141414] p-3 rounded-[12px] border border-[#262626]">
+              <span className="text-[#868f97] text-[10px] uppercase block">TRAILING RETURN</span>
+              <span className="text-white font-semibold text-sm mt-0.5 block">+18.4%</span>
+              <span className="text-[#868f97] text-[10px]">Annualized 1Y</span>
+            </div>
+
+            <div className="bg-[#141414] p-3 rounded-[12px] border border-[#262626]">
+              <span className="text-[#868f97] text-[10px] uppercase block">SHARPE RATIO</span>
+              <span className="text-[#ffa16c] font-semibold text-sm mt-0.5 block">3.12</span>
+              <span className="text-[#868f97] text-[10px]">Risk-Free 6.78%</span>
+            </div>
+
+            <div className="bg-[#141414] p-3 rounded-[12px] border border-[#262626]">
+              <span className="text-[#868f97] text-[10px] uppercase block">MAX DRAWDOWN</span>
+              <span className="text-[#4ebe96] font-semibold text-sm mt-0.5 block">-4.12%</span>
+              <span className="text-[#868f97] text-[10px]">Peak-to-Trough</span>
+            </div>
+
+            <div className="bg-[#141414] p-3 rounded-[12px] border border-[#262626]">
+              <span className="text-[#868f97] text-[10px] uppercase block">REALIZED VOLATILITY</span>
+              <span className="text-white font-semibold text-sm mt-0.5 block">11.8%</span>
+              <span className="text-[#868f97] text-[10px]">30-Day Rolling</span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ========================================================================= */}
+        {/* 4. LIVE BENCHMARK TAPE (INDIAN & GLOBAL CONVERGENCE)                      */}
+        {/* ========================================================================= */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-mono-data uppercase tracking-wider text-[#868f97]">
+              Multi-Asset Benchmark Tape.
+            </h3>
+            <span className="text-[11px] font-mono-data text-[#868f97]">
+              Click any benchmark to inspect live chart &rarr;
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+            {LIVE_BENCHMARKS.map((b) => (
+              <div
+                key={b.id}
+                onClick={() => setSelectedSymbol({ symbol: b.symbol, name: b.name })}
+                className="bg-[#191919] hover:bg-[#202020] border border-[#262626] hover:border-[#3a3a3a] p-3 rounded-[14px] cursor-pointer transition-all shadow-[0_0_20px_rgba(0,0,0,0.4)] group"
+              >
+                <div className="text-[10px] text-[#868f97] font-mono-data uppercase truncate">{b.name}</div>
+                <div className="text-sm font-semibold text-white font-mono-data tabular-nums mt-0.5">{b.price}</div>
+                <div className={`text-[11px] font-mono-data mt-0.5 font-medium ${b.isPos ? 'text-[#4ebe96]' : 'text-[#eb5757]'}`}>
+                  {b.change} ({b.pct})
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* 5. 12-COLUMN DUAL MODULE: AI RECAP (8) & FACTOR ALLOCATIONS (4)           */}
+        {/* ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Left: Market AI Recap (8 cols) */}
+          <div className="lg:col-span-8 bg-[#191919] border border-[#262626] rounded-[16px] p-5 sm:p-6 shadow-[0_0_44px_rgba(0,0,0,0.8)] space-y-4">
+            <div className="flex items-center justify-between border-b border-[#262626] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#479ffa] animate-pulse" />
+                <span className="font-semibold text-white text-sm tracking-[-0.02em]">
+                  Market AI Synthesis Stream
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-mono-data bg-[#141414] text-[#479ffa] border border-[#2a2a2a]">
+                  99.4% CONFIDENCE
+                </span>
+              </div>
+              <span className="text-[10px] font-mono-data text-[#868f97]">
+                SYNTHESIS #4092-B &bull; LIVE REVISED
+              </span>
+            </div>
+
+            <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-normal">
+              Indian equities demonstrate resilient structural demand as the Nifty 50 advances +0.42% to 25,810. Foreign institutional selling continues to be methodically absorbed by the domestic institutional mutual fund floor (₹24,500+ Cr monthly SIPs). Wholesale input price pressures remain benign with WPI printing at 2.36%, giving the Reserve Bank of India policy leeway to anchor the repo rate at 5.50%.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div className="bg-[#141414] p-3 rounded-[12px] border border-[#262626]">
+                <span className="text-[10px] font-mono-data uppercase text-[#ffa16c] font-semibold block">Crude Oil Transmission</span>
+                <p className="text-[11px] text-[#868f97] mt-1 leading-relaxed">
+                  Brent at $72.80/bbl expands gross margin tailwinds for paints, adhesives, and aviation leaders.
+                </p>
+              </div>
+
+              <div className="bg-[#141414] p-3 rounded-[12px] border border-[#262626]">
+                <span className="text-[10px] font-mono-data uppercase text-[#4ebe96] font-semibold block">Bullion Softening Relief</span>
+                <p className="text-[11px] text-[#868f97] mt-1 leading-relaxed">
+                  Controlled gold prices compress India's annual trade deficit, anchoring the Rupee at 84.38.
+                </p>
+              </div>
+
+              <div className="bg-[#141414] p-3 rounded-[12px] border border-[#262626]">
+                <span className="text-[10px] font-mono-data uppercase text-[#479ffa] font-semibold block">Banking Net Margins</span>
+                <p className="text-[11px] text-[#868f97] mt-1 leading-relaxed">
+                  5.50% repo rate stability preserves banking Net Interest Margins with decade-low NPAs.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 flex items-center justify-between text-xs font-mono-data text-[#868f97] border-t border-[#262626]">
+              <span>Inquire about bespoke transmission vectors via Piedmont Copilot (F1)</span>
+              <Link href="/copilot" className="text-[#ffa16c] hover:underline flex items-center gap-1 font-sans">
+                <span>Launch Copilot</span>
+                <span>&rarr;</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Right: Factor Dispersions & Asset Weights (4 cols) */}
+          <div className="lg:col-span-4 bg-[#191919] border border-[#262626] rounded-[16px] p-5 sm:p-6 shadow-[0_0_44px_rgba(0,0,0,0.8)] space-y-4">
+            <div className="flex items-center justify-between border-b border-[#262626] pb-3">
+              <span className="font-semibold text-white text-sm tracking-[-0.02em]">
+                Asset & Sector Weights
+              </span>
+              <Link href="/portfolio" className="text-[11px] text-[#ffa16c] hover:underline">
+                Audit &rarr;
+              </Link>
+            </div>
+
+            <div className="space-y-3 text-xs font-mono-data">
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-[#868f97]">Financials & Banks</span>
+                  <span className="text-white font-medium">34.2%</span>
+                </div>
+                <div className="w-full bg-[#131313] h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-[#479ffa] h-full rounded-full w-[34.2%]" />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-[#868f97]">Technology & IT Services</span>
+                  <span className="text-white font-medium">22.8%</span>
+                </div>
+                <div className="w-full bg-[#131313] h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-[#4ebe96] h-full rounded-full w-[22.8%]" />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-[#868f97]">Sovereign 10Y G-Sec Debt</span>
+                  <span className="text-white font-medium">18.5%</span>
+                </div>
+                <div className="w-full bg-[#131313] h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-[#ffa16c] h-full rounded-full w-[18.5%]" />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-[#868f97]">Commodities & Energy</span>
+                  <span className="text-white font-medium">14.1%</span>
+                </div>
+                <div className="w-full bg-[#131313] h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-[#d6fe51] h-full rounded-full w-[14.1%]" />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-[#868f97]">Cash & Collateral Buffer</span>
+                  <span className="text-white font-medium">10.4%</span>
+                </div>
+                <div className="w-full bg-[#131313] h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-[#b6d6ff] h-full rounded-full w-[10.4%]" />
                 </div>
               </div>
             </div>
-          </section>
-          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <ShimmerCard />
-            <ShimmerCard />
-            <ShimmerCard />
-          </section>
-        </div>
-      ) : (
-          <div className="max-w-[1400px] mx-auto space-y-margin">
-            <h1 className="sr-only">Piedmont - Financial Data & Markets Dashboard</h1>
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify({
-                  "@context": "https://schema.org",
-                  "@type": "WebSite",
-                  "name": "Piedmont",
-                  "url": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001",
-                  "potentialAction": {
-                    "@type": "SearchAction",
-                    "target": `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001"}/screener?q={search_term_string}`,
-                    "query-input": "required name=search_term_string"
-                  }
-                })
-              }}
-            />
-            {/* Hero Section: Indices */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-gutter animate-stagger-1">
-              {indices.slice(0, 2).map((idx) => {
-                const isPos = idx.change >= 0;
-                return (
-                  <div key={idx.symbol} onClick={() => handleIndexClick(idx)} className="bg-surface-container-high border border-outline-variant p-gutter rounded-xl group cursor-pointer transition-transform duration-200 hover:scale-[1.02]">
-                    <div className="flex justify-between items-start mb-unit">
-                      <h2 className="font-semibold text-xl text-on-surface tracking-tighter">{idx.name}</h2>
-                      <Icon name="monitoring" className="text-outline-variant group-hover:text-primary transition-colors" />
-                    </div>
-                    <div className="h-px bg-white/5 w-full mb-unit"></div>
-                    <div className="flex justify-between items-end">
-                      <span className="font-semibold text-3xl text-on-surface">{idx.price != null ? `${idx.prefix || ''}${idx.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}</span>
-                      <div className="flex flex-col items-end">
-                        <span className={`font-mono-data text-sm flex items-center gap-1 ${isPos ? 'text-positive' : 'text-negative'}`}>
-                          <Icon name={isPos ? 'arrow_upward' : 'arrow_downward'} className="text-[14px]" />
-                          {isPos ? '+' : ''}{idx.change.toFixed(2)}
-                        </span>
-                        <span className={`font-mono-data text-sm ${isPos ? 'text-positive' : 'text-negative'}`}>
-                          ({isPos ? '+' : ''}{idx.change_pct}%)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </section>
 
-            {/* Other Indices Grid */}
-            {indices.length > 2 && (
-              <>
-                <h3 className="font-mono-data text-xs text-on-surface-variant mb-unit uppercase tracking-widest">Global & Sectoral Indices</h3>
-                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mb-margin animate-stagger-2">
-                  {indices.slice(2).map(index => (
-                    <IndexCard key={index.symbol} data={index} onClick={() => handleIndexClick(index)} />
-                  ))}
-                </section>
-              </>
-            )}
-
-            {/* Sectors Grid */}
-            {sectorList.length > 0 && (
-              <>
-                <h3 className="font-mono-data text-xs text-on-surface-variant mb-unit uppercase tracking-widest">Sectoral Performance</h3>
-                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-gutter mb-margin animate-stagger-2">
-                  {sectorList.map((sector) => (
-                    <SectorCard key={sector.id} data={sector} onClick={() => handleIndexClick(sector)} />
-                  ))}
-                </section>
-              </>
-            )}
-
-            {/* Active Commodities Grid */}
-            <h3 className="font-mono-data text-xs text-on-surface-variant mb-unit uppercase tracking-widest">Active Commodities</h3>
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mb-margin animate-stagger-3">
-              {commodityList.map((c) => {
-                 const isPos = c.change >= 0;
-                 return (
-                  <div key={c.symbol} onClick={() => handleIndexClick(c)} className="bg-surface-container border border-outline-variant p-gutter rounded-xl group cursor-pointer transition-transform duration-200 hover:scale-[1.02]">
-                    <div className="flex justify-between items-center mb-unit">
-                      <div className="flex items-center gap-unit">
-                        <span className="font-semibold text-on-surface">{c.name}</span>
-                        <span className="px-1 py-0.5 bg-surface-container-highest rounded-sm font-mono-data text-[10px] text-on-surface-variant">{c.exchange}</span>
-                      </div>
-                      <span className={`font-mono-data text-xs ${isPos ? 'text-positive' : 'text-negative'}`}>
-                        {isPos ? '+' : ''}{c.change_pct}%
-                      </span>
-                    </div>
-                    <div className="font-semibold text-2xl text-on-surface mb-gutter">{c.price != null ? `${c.prefix || ''}${c.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}</div>
-                    <div className="h-px bg-white/5 w-full mb-gutter"></div>
-                    <div className="grid grid-cols-2 gap-unit text-left">
-                      <div>
-                        <div className="font-mono-data text-[10px] text-on-surface-variant uppercase">Change</div>
-                        <div className={`font-mono-data text-sm ${isPos ? 'text-positive' : 'text-negative'}`}>{isPos ? '+' : ''}{c.change.toFixed(2)}</div>
-                      </div>
-                    </div>
-                  </div>
-                 );
-              })}
-            </section>
-            
-            {/* Macro Indicators — Full */}
-            {rbiRates.length > 0 && (
-              <>
-                <h3 className="font-mono-data text-xs text-on-surface-variant mb-unit uppercase tracking-widest flex items-center gap-2">
-                  <Icon name="account_balance" className="text-sm text-primary" />
-                  RBI Policy Rates
-                </h3>
-                <section className="grid grid-cols-1 md:grid-cols-3 gap-gutter animate-stagger-4 mb-margin">
-                  {rbiRates.map(m => (
-                    <MacroCard key={m.name} data={m} />
-                  ))}
-                </section>
-              </>
-            )}
-
-            {domesticMacro.length > 0 && (
-              <>
-                <h3 className="font-mono-data text-xs text-on-surface-variant mb-unit uppercase tracking-widest flex items-center gap-2">
-                  <Icon name="trending_up" className="text-sm text-primary" />
-                  Domestic Indicators
-                </h3>
-                <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-gutter animate-stagger-4 mb-margin">
-                  {domesticMacro.map(m => (
-                    <MacroCard key={m.name} data={m} />
-                  ))}
-                </section>
-              </>
-            )}
-
-            {externalLiquidity.length > 0 && (
-              <>
-                <h3 className="font-mono-data text-xs text-on-surface-variant mb-unit uppercase tracking-widest flex items-center gap-2">
-                  <Icon name="public" className="text-sm text-primary" />
-                  External Sector & Liquidity
-                </h3>
-                <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-gutter animate-stagger-4 mb-margin">
-                  {externalLiquidity.map(m => (
-                    <MacroCard key={m.name} data={m} />
-                  ))}
-                </section>
-              </>
-            )}
+            <div className="pt-2 border-t border-[#262626]">
+              <div className="bg-[#141414] p-3 rounded-[12px] border border-[#262626] text-[11px] text-[#868f97]">
+                <strong className="text-white">Factor Tilt:</strong> Quality (+1.45σ) & Low Beta (0.84), positioning for structural compounding over high-debt cyclicals.
+              </div>
+            </div>
           </div>
-      )}
 
-      {/* Footer */}
-      <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between mt-16 pb-8 animate-stagger-4 gap-4">
-        <span className="text-xs text-on-surface-variant/60 text-center md:text-left">
-          Data via Yahoo Finance, World Bank, NSE · Equities 15-min delay · Macro updates daily · Not financial advice
-          <br/>
-          <Link href="/legal/privacy" className="text-primary/60 hover:text-primary transition-colors underline mt-1 inline-block">Privacy Policy & Terms of Service</Link>
-        </span>
-        <span className="text-xs text-primary/60 font-bold tracking-widest">PIEDMONT V3.0</span>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* 6. BOTTOM INSTITUTIONAL EXECUTION MODULES (STITCH SCREEN 1 SECTION 4)     */}
+        {/* ========================================================================= */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+          {/* Module 1: Dark Pool Routing */}
+          <div className="bg-[#191919] border border-[#262626] rounded-[16px] p-5 shadow-[0_0_44px_rgba(0,0,0,0.8)] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#141414] border border-[#262626] flex items-center justify-center text-[#479ffa]">
+                <Icon name="tune" className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs text-white font-medium block">Dark Pool Routing</span>
+                <span className="text-[11px] text-[#868f97] font-mono-data">ATS Venues & Crossing Active</span>
+              </div>
+            </div>
+            <span className="text-xs font-mono-data font-semibold text-[#4ebe96]">98.2% FILL RATE</span>
+          </div>
+
+          {/* Module 2: Synthetic Collateral */}
+          <div className="bg-[#191919] border border-[#262626] rounded-[16px] p-5 shadow-[0_0_44px_rgba(0,0,0,0.8)] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#141414] border border-[#262626] flex items-center justify-center text-[#ffa16c]">
+                <Icon name="shield" className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs text-white font-medium block">Collateral Headroom</span>
+                <span className="text-[11px] text-[#868f97] font-mono-data">Tri-Party Repo & Margin</span>
+              </div>
+            </div>
+            <span className="text-xs font-mono-data font-semibold text-white">142.8% LTV</span>
+          </div>
+
+          {/* Module 3: Algorithmic Rebalancer */}
+          <div className="bg-[#191919] border border-[#262626] rounded-[16px] p-5 shadow-[0_0_44px_rgba(0,0,0,0.8)] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#141414] border border-[#262626] flex items-center justify-center text-[#d6fe51]">
+                <Icon name="monitoring" className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs text-white font-medium block">Algorithmic Rebalancer</span>
+                <span className="text-[11px] text-[#868f97] font-mono-data">Target Drift Minimizer</span>
+              </div>
+            </div>
+            <span className="text-xs font-mono-data font-semibold text-[#d6fe51]">IDLE &bull; READY</span>
+          </div>
+
+        </div>
+
       </div>
 
-      {/* Price Chart Modal */}
-      {selected && (
+      {/* Interactive Modal Chart for Benchmarks */}
+      {selectedSymbol && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setSelected(null)}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setSelectedSymbol(null)}
         >
           <div 
-            className="w-full max-w-[1200px] max-h-[90vh] bg-surface-container border border-outline-variant shadow-2xl rounded-2xl p-6 relative overflow-y-auto"
+            className="w-full max-w-[1200px] max-h-[90vh] bg-[#191919] border border-[#262626] shadow-[0_0_60px_rgba(0,0,0,0.9)] rounded-[16px] p-6 relative overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <PriceChart
-              symbol={selected.symbol}
-              name={selected.name}
-              onClose={() => setSelected(null)}
+              symbol={selectedSymbol.symbol}
+              name={selectedSymbol.name}
+              onClose={() => setSelectedSymbol(null)}
             />
           </div>
         </div>

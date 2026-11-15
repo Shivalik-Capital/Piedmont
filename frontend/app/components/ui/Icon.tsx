@@ -131,6 +131,7 @@ export default function Icon({ name, className = '', size = 16 }: IconProps) {
     case 'bot':
     case 'ai':
     case 'copilot':
+    case 'smart_toy':
       return <Bot {...iconProps} />;
     case 'school':
     case 'learn':

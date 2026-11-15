@@ -11,44 +11,34 @@ export default function IndexCard({ data, onClick }: { data: IndexData; onClick:
     '^BSESN': 'trending_up',
     '^NSEBANK': 'account_balance',
   };
-  const colorMap: Record<string, string> = {
-    '^NSEI': 'text-primary',
-    '^BSESN': 'text-secondary',
-    '^NSEBANK': 'text-[#d4d8fb]',
-  };
-  const sparkColorMap: Record<string, string> = {
-    '^NSEI': '#0A84FF',
-    '^BSESN': '#FFFFFF',
-    '^NSEBANK': '#d4d8fb',
-  };
 
   return (
     <div
       onClick={onClick}
-      className="bg-surface-container rounded-2xl p-6 shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-outline-variant flex flex-col justify-between cursor-pointer group min-h-[180px]"
+      className="bg-[#191919] rounded-[16px] p-5 shadow-[0_0_44px_rgba(0,0,0,0.8)] border border-[#262626] hover:border-[#3a3a3a] flex flex-col justify-between cursor-pointer group transition-all duration-200 min-h-[170px]"
     >
-      <div className="flex justify-between items-start mb-6">
+      <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-[22px] font-semibold text-on-surface flex items-center">
+          <h3 className="text-base font-normal tracking-[-0.053em] text-white flex items-center gap-2">
             {data.name} <ActiveDot active={getMarketStatus(data.exchange)} />
           </h3>
-          <p className="text-on-surface-variant text-sm">{data.exchange}</p>
+          <p className="text-[#868f97] text-xs font-mono-data mt-0.5">{data.exchange}</p>
         </div>
-        <span className={`${colorMap[data.symbol] || 'text-primary'} bg-white/5 p-2 rounded-xl`}>
-          <Icon name={iconMap[data.symbol] || 'show_chart'} />
+        <span className="text-[#868f97] group-hover:text-white bg-[#141414] border border-[#262626] p-2 rounded-full transition-colors">
+          <Icon name={iconMap[data.symbol] || 'show_chart'} className="w-4 h-4" />
         </span>
       </div>
       <div className="flex items-end justify-between">
         <div>
-          <p className={`text-[32px] font-bold font-mono-data tabular-nums tracking-tight ${colorMap[data.symbol] || 'text-primary'}`}>
+          <p className="text-2xl font-normal text-white font-mono-data tabular-nums tracking-[-0.04em]">
             {data.price != null ? `${data.prefix || ''}${data.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
           </p>
-          <p className={`font-medium text-sm flex items-center gap-1 font-mono-data ${isPositive ? 'text-positive' : 'text-negative'}`}>
+          <p className={`text-xs flex items-center gap-1 font-mono-data mt-1 ${isPositive ? 'text-[#4ebe96]' : 'text-[#eb5757]'}`}>
             <Icon name={isPositive ? 'arrow_upward' : 'arrow_downward'} className="text-xs" />
             {isPositive ? '+' : ''}{data.change.toFixed(2)} ({data.change_pct}%)
           </p>
         </div>
-        <Sparkline positive={isPositive} color={sparkColorMap[data.symbol] || '#0A84FF'} />
+        <Sparkline positive={isPositive} color={isPositive ? '#4ebe96' : '#eb5757'} />
       </div>
     </div>
   );

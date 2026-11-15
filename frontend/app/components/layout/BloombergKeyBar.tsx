@@ -22,11 +22,9 @@ export default function BloombergKeyBar({ onOpenCopilot }: BloombergKeyBarProps)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Check if user is typing in an input or textarea
       const target = e.target as HTMLElement;
       const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
 
-      // Handle function keys F1 through F9
       switch (e.key) {
         case 'F1':
           e.preventDefault();
@@ -45,7 +43,6 @@ export default function BloombergKeyBar({ onOpenCopilot }: BloombergKeyBarProps)
           router.push('/macro');
           break;
         case 'F5':
-          // Only intercept F5 if not inside input to allow terminal navigation
           e.preventDefault();
           router.push('/calendar');
           break;
@@ -55,13 +52,17 @@ export default function BloombergKeyBar({ onOpenCopilot }: BloombergKeyBarProps)
           break;
         case 'F7':
           e.preventDefault();
-          router.push('/watchlist');
+          router.push('/portfolio');
           break;
         case 'F8':
           e.preventDefault();
           router.push('/replay');
           break;
         case 'F9':
+          e.preventDefault();
+          router.push('/intelligence');
+          break;
+        case 'F10':
           e.preventDefault();
           router.push('/dashboard');
           break;
@@ -82,21 +83,22 @@ export default function BloombergKeyBar({ onOpenCopilot }: BloombergKeyBarProps)
   }, [router, onOpenCopilot]);
 
   const keys: FunctionKeyAction[] = [
-    { key: 'F1', label: 'AI COPILOT', actionName: 'help', action: onOpenCopilot },
+    { key: 'F1', label: 'COPILOT', actionName: 'help', action: onOpenCopilot },
     { key: 'F2', label: 'EQUITIES', actionName: 'equities', href: '/equities' },
     { key: 'F3', label: 'SCREENER', actionName: 'screener', href: '/screener' },
     { key: 'F4', label: 'MACRO', actionName: 'macro', href: '/macro' },
     { key: 'F5', label: 'CALENDAR', actionName: 'calendar', href: '/calendar' },
     { key: 'F6', label: 'COMMODITIES', actionName: 'commodities', href: '/commodities' },
-    { key: 'F7', label: 'WATCH & P&L', actionName: 'watchlist', href: '/watchlist' },
+    { key: 'F7', label: 'PORTFOLIO', actionName: 'portfolio', href: '/portfolio' },
     { key: 'F8', label: 'REPLAY', actionName: 'replay', href: '/replay' },
-    { key: 'F9', label: 'PULSE', actionName: 'dashboard', href: '/dashboard' },
+    { key: 'F9', label: 'SIGNALS', actionName: 'intelligence', href: '/intelligence' },
+    { key: 'F10', label: 'OVERVIEW', actionName: 'dashboard', href: '/dashboard' },
   ];
 
   return (
-    <div className="hidden lg:flex fixed top-0 left-0 right-0 z-40 bg-[#080c14]/95 backdrop-blur-md border-b border-[#1c2840] h-7 items-center justify-between px-3 text-[10px] select-none">
+    <div className="hidden lg:flex fixed top-0 left-0 right-0 z-40 bg-[#0b0b0b]/95 backdrop-blur-md border-b border-[#262626] h-7 items-center justify-between px-3 text-[10px] select-none">
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-        <span className="text-[#64748b] font-mono-data tracking-wider uppercase text-[9px] mr-2">
+        <span className="text-[#868f97] font-mono-data tracking-wider uppercase text-[9px] mr-2">
           TERMINAL COMMANDS:
         </span>
         {keys.map((item) => {
@@ -108,14 +110,14 @@ export default function BloombergKeyBar({ onOpenCopilot }: BloombergKeyBarProps)
                 if (item.action) item.action();
                 else if (item.href) router.push(item.href);
               }}
-              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors ${
+              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full transition-all ${
                 isActive
-                  ? 'bg-[#3b82f6]/20 border border-[#3b82f6]/50 text-white font-medium'
-                  : 'bg-[#0f1520] hover:bg-[#1c2840] border border-[#1c2840] text-[#cbd5e1]'
+                  ? 'bg-[#479ffa]/15 border border-[#479ffa]/50 text-white font-medium'
+                  : 'bg-[#131313] hover:bg-[#191919] border border-[#262626] text-[#868f97] hover:text-white'
               }`}
               title={`Press ${item.key} or click to open ${item.label}`}
             >
-              <span className="font-mono-data font-bold text-[#f59e0b] text-[9px] bg-[#f59e0b]/10 px-1 rounded">
+              <span className="font-mono-data font-bold text-[#ffa16c] text-[9px] bg-[#ffa16c]/10 px-1 rounded-full">
                 {item.key}
               </span>
               <span className="tracking-tight uppercase">{item.label}</span>
@@ -124,7 +126,7 @@ export default function BloombergKeyBar({ onOpenCopilot }: BloombergKeyBarProps)
         })}
       </div>
 
-      <div className="flex items-center gap-2 shrink-0 text-[#64748b]">
+      <div className="flex items-center gap-2 shrink-0 text-[#868f97]">
         <span className="font-mono-data text-[9px]">CMD+K / F1 COPILOT</span>
         <button
           onClick={() => setCollapsed(!collapsed)}
