@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   CRISIS_REGIMES, 
   HistoricalCrisisRegime, 
@@ -9,11 +9,11 @@ import {
 } from '../lib/historical-database';
 import Icon from '../components/ui/Icon';
 
-type DetailTab = 'overview' | 'wire' | 'lookahead' | 'filing' | 'simulator' | 'sectors';
+type DetailTab = 'lookahead' | 'simulator' | 'filing' | 'sectors';
 
 export default function HistoricalReplayPage() {
   const [selectedRegimeId, setSelectedRegimeId] = useState<string>('gfc-2008');
-  const [currentDayIndex, setCurrentDayIndex] = useState<number>(3); // Default to a dramatic day
+  const [currentDayIndex, setCurrentDayIndex] = useState<number>(3); // Dramatic default day
   const [activeTab, setActiveTab] = useState<DetailTab>('lookahead');
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<1 | 2>(1);
@@ -21,7 +21,6 @@ export default function HistoricalReplayPage() {
 
   // Thesis Simulator state
   const [selectedThesis, setSelectedThesis] = useState<string>('accumulate_quality');
-  const [customThesis, setCustomThesis] = useState<string>('');
   const [simHorizon, setSimHorizon] = useState<'+1W' | '+1M' | '+3M' | '+6M' | '+1Y'>('+1M');
   const [simRevealed, setSimRevealed] = useState<boolean>(false);
 
@@ -72,11 +71,9 @@ export default function HistoricalReplayPage() {
     }
   };
 
-  // Compute simulated forward return from active day based on regime chartPath
+  // Compute simulated forward return from active day based on regime trajectory
   const computeSimulationResult = () => {
     const currentLevel = activeDay.indices.nifty50.level;
-    
-    // Horizon multiplier approximations based on historical crisis trajectories
     let factor = 1.0;
     let maxDrawdown = '-4.5%';
     let verdict = 'Neutral';
@@ -143,174 +140,131 @@ export default function HistoricalReplayPage() {
 
   const simResult = computeSimulationResult();
 
-  // Helper for phase color
-  const getPhaseColor = (phase: string) => {
+  const getPhaseBadge = (phase: string) => {
     switch (phase) {
-      case 'onset': return 'bg-[#f59e0b]/15 text-[#f59e0b] border-[#f59e0b]/30';
-      case 'acceleration': return 'bg-[#fb923c]/15 text-[#fb923c] border-[#fb923c]/30';
-      case 'peak_panic': return 'bg-[#ef4444]/15 text-[#ef4444] border-[#ef4444]/40 animate-pulse';
-      case 'capitulation': return 'bg-[#ec4899]/15 text-[#ec4899] border-[#ec4899]/40';
-      case 'policy_pivot': return 'bg-[#06b6d4]/15 text-[#06b6d4] border-[#06b6d4]/30';
-      case 'recovery': return 'bg-[#34d399]/15 text-[#34d399] border-[#34d399]/30';
-      default: return 'bg-[#3b82f6]/15 text-[#3b82f6] border-[#3b82f6]/30';
+      case 'onset': return 'bg-amber-500/10 text-amber-500 border-amber-500/30';
+      case 'acceleration': return 'bg-orange-500/10 text-orange-500 border-orange-500/30';
+      case 'peak_panic': return 'bg-red-500/15 text-red-500 border-red-500/40 animate-pulse';
+      case 'capitulation': return 'bg-pink-500/15 text-pink-500 border-pink-500/40';
+      case 'policy_pivot': return 'bg-cyan-500/10 text-cyan-500 border-cyan-500/30';
+      case 'recovery': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30';
+      default: return 'bg-primary/10 text-primary border-primary/30';
     }
   };
 
   return (
     <div className="max-w-7xl mx-auto pb-16 space-y-6">
       
-      {/* Workspace Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#1c2840] pb-4">
+      {/* 1. Sleek Header & Mode Controls */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-outline-variant pb-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono-data text-[10px] uppercase tracking-wider text-[#f59e0b] bg-[#f59e0b]/10 px-2 py-0.5 rounded border border-[#f59e0b]/30">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="font-mono-data text-[10px] uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded font-bold border border-amber-500/20">
               PIEDMONT V9
             </span>
-            <span className="text-xs text-[#64748b] font-mono-data uppercase">
+            <span className="text-xs text-on-surface-variant font-mono-data uppercase">
               POINT-IN-TIME HISTORICAL RESEARCH ENGINE
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-on-surface">
             Historical Crisis Chronicle & Replay
           </h1>
-          <p className="text-xs text-[#cbd5e1] mt-1 max-w-3xl">
-            Reconstruct the exact information set available on past crisis dates. Strictly eliminates lookahead bias by distinguishing data coverage periods from actual official availability dates.
+          <p className="text-xs text-on-surface-variant mt-1 max-w-2xl leading-relaxed">
+            Reconstruct the exact information set available on pivotal historical dates. Strictly eliminates lookahead bias by separating data periods from official release dates.
           </p>
         </div>
 
         {/* Anti-Lookahead Mode Pill */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={() => setPointInTimeStrict(!pointInTimeStrict)}
-            className={`px-3 py-1.5 rounded border text-xs font-mono-data flex items-center gap-1.5 transition-colors ${
+            className={`px-3.5 py-1.5 rounded-lg border text-xs font-mono-data flex items-center gap-2 transition-all ${
               pointInTimeStrict 
-                ? 'bg-[#3b82f6]/15 border-[#3b82f6] text-[#3b82f6] font-bold'
-                : 'bg-[#0f1520] border-[#1c2840] text-[#64748b]'
+                ? 'bg-primary/10 border-primary text-primary font-bold shadow-sm'
+                : 'bg-surface-container border-outline-variant text-on-surface-variant'
             }`}
             title="Toggle Anti-Lookahead Bias Filter"
           >
-            <span className={`w-2 h-2 rounded-full ${pointInTimeStrict ? 'bg-[#3b82f6] animate-pulse' : 'bg-[#64748b]'}`} />
+            <span className={`w-2 h-2 rounded-full ${pointInTimeStrict ? 'bg-primary animate-pulse' : 'bg-outline'}`} />
             <span>{pointInTimeStrict ? 'ZERO LOOKAHEAD (PIT ACTIVE)' : 'STANDARD HISTORICAL VIEW'}</span>
           </button>
-          
-          <div className="bg-[#0f1520] border border-[#1c2840] px-3 py-1.5 rounded text-right">
-            <div className="text-[9px] text-[#64748b] uppercase tracking-wider">ACTIVE DATE</div>
-            <div className="font-mono-data text-xs font-bold text-white uppercase">{activeDay.date}</div>
+
+          <div className="bg-surface-container border border-outline-variant px-3 py-1.5 rounded-lg text-right">
+            <div className="text-[9px] text-on-surface-variant uppercase tracking-wider font-mono-data">ACTIVE DATE</div>
+            <div className="font-mono-data text-xs font-bold text-on-surface uppercase">{activeDay.date}</div>
           </div>
         </div>
       </div>
 
-      {/* 1. Historical Crisis Era Selector */}
-      <div className="bg-[#0f1520] border border-[#1c2840] rounded-lg p-3">
-        <div className="text-[10px] text-[#64748b] uppercase tracking-wider font-semibold mb-2 flex items-center justify-between font-mono-data">
-          <span>SELECT HISTORICAL CRISIS CHRONICLE</span>
-          <span className="text-[#3b82f6]">{CRISIS_REGIMES.length} CRISIS REGIMES LOADED</span>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+      {/* 2. Crisis Era Switcher Tabs */}
+      <div className="bg-surface-container border border-outline-variant rounded-xl p-1.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           {CRISIS_REGIMES.map((regime) => {
             const isSelected = regime.id === selectedRegimeId;
             return (
               <button
                 key={regime.id}
                 onClick={() => handleRegimeChange(regime.id)}
-                className={`flex flex-col p-2.5 rounded text-left transition-all ${
+                className={`flex-1 min-w-[200px] px-3.5 py-2.5 rounded-lg text-left transition-all border ${
                   isSelected
-                    ? 'bg-[#3b82f6]/15 border-2 border-[#3b82f6] shadow-lg'
-                    : 'bg-[#080c14] border border-[#1c2840] hover:border-[#2a3f60]'
+                    ? 'bg-surface border-primary/50 shadow-sm'
+                    : 'bg-transparent border-transparent hover:bg-surface/50 text-on-surface-variant'
                 }`}
               >
-                <span className={`text-[9px] font-mono-data uppercase font-bold ${
-                  isSelected ? 'text-[#3b82f6]' : 'text-[#64748b]'
-                }`}>
-                  {regime.timeRange}
-                </span>
-                <span className="text-xs font-semibold text-white truncate mt-0.5">
+                <div className="flex justify-between items-center">
+                  <span className={`text-[10px] font-mono-data uppercase font-bold ${isSelected ? 'text-primary' : 'text-on-surface-variant'}`}>
+                    {regime.timeRange}
+                  </span>
+                  <span className="text-[10px] font-mono-data font-bold text-negative">
+                    {regime.totalDrawdown.split(' ')[0]}
+                  </span>
+                </div>
+                <div className={`text-xs font-semibold mt-0.5 truncate ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>
                   {regime.name.split('&')[0]}
-                </span>
-                <span className="text-[10px] text-[#f87171] font-mono-data font-semibold mt-0.5">
-                  Drawdown: {regime.totalDrawdown.split(' ')[0]}
-                </span>
+                </div>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 2. Active Crisis Regime Banner */}
-      <div className="bg-gradient-to-r from-[#0f1520] via-[#141c2b] to-[#0f1520] border border-[#2a3f60] rounded-lg p-5">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded text-[9px] font-mono-data uppercase font-bold border ${getPhaseColor(activeDay.phase)}`}>
-                PHASE: {activeDay.phase.replace('_', ' ')}
-              </span>
-              <span className="text-xs font-mono-data text-[#94a3b8]">{activeRegime.timeRange}</span>
-            </div>
-            <h2 className="text-lg md:text-xl font-bold text-white tracking-tight">
-              {activeRegime.headline}
-            </h2>
-            <p className="text-xs text-[#cbd5e1] max-w-4xl leading-relaxed pt-1">
-              {activeRegime.summary}
-            </p>
-          </div>
-
-          <div className="bg-[#080c14] border border-[#1c2840] p-3 rounded shrink-0 lg:w-72 font-mono-data text-xs space-y-1">
-            <div className="text-[9px] uppercase tracking-wider text-[#64748b] font-semibold mb-1">
-              REGIME PARAMETERS
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#94a3b8]">Max Drawdown:</span>
-              <span className="text-[#f87171] font-bold">{activeRegime.totalDrawdown}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#94a3b8]">Capitulation Trough:</span>
-              <span className="text-white font-bold">{activeRegime.troughDate.split('(')[0]}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#94a3b8]">Recovery Duration:</span>
-              <span className="text-[#34d399] font-bold">{activeRegime.recoveryDuration}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Interactive Chronological Scrubber & Playback Cockpit */}
-      <div className="bg-[#080c14] border border-[#1c2840] rounded-lg p-4 space-y-3 shadow-xl">
+      {/* 3. Unified Crisis Playback Cockpit & Timeline Scrubber */}
+      <div className="bg-surface-container border border-outline-variant rounded-xl p-5 space-y-4 shadow-sm">
         
-        {/* Playback Controls & Date Stepper */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1c2840] pb-3">
+        {/* Playback Controls & Status Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant pb-3">
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrevDay}
               disabled={currentDayIndex === 0}
-              className="px-2.5 py-1.5 rounded bg-[#0f1520] hover:bg-[#1c2840] disabled:opacity-30 border border-[#1c2840] text-xs font-mono-data text-white flex items-center gap-1 transition-all"
-              title="Previous Crisis Date"
+              className="px-3 py-1.5 rounded-lg bg-surface hover:bg-surface-container-highest disabled:opacity-30 border border-outline-variant text-xs font-mono-data text-on-surface flex items-center gap-1 transition-all"
             >
               &larr; PREV
             </button>
+            
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className={`px-4 py-1.5 rounded font-mono-data font-bold text-xs uppercase flex items-center gap-1.5 transition-all ${
+              className={`px-4 py-1.5 rounded-lg font-mono-data font-bold text-xs uppercase flex items-center gap-1.5 transition-all shadow-sm ${
                 isPlaying 
-                  ? 'bg-[#ef4444] text-white hover:bg-[#dc2626]' 
-                  : 'bg-[#3b82f6] text-white hover:bg-[#2563eb]'
+                  ? 'bg-negative text-white hover:opacity-90' 
+                  : 'bg-primary text-white hover:bg-primary-dim'
               }`}
             >
-              <Icon name={isPlaying ? 'pause' : 'play_arrow'} className="w-3.5 h-3.5" />
+              <Icon name={isPlaying ? 'pause' : 'play'} className="w-3.5 h-3.5" />
               <span>{isPlaying ? 'PAUSE AUTORUN' : 'PLAY TIMELINE'}</span>
             </button>
+
             <button
               onClick={handleNextDay}
               disabled={currentDayIndex === totalDays - 1}
-              className="px-2.5 py-1.5 rounded bg-[#0f1520] hover:bg-[#1c2840] disabled:opacity-30 border border-[#1c2840] text-xs font-mono-data text-white flex items-center gap-1 transition-all"
-              title="Next Crisis Date"
+              className="px-3 py-1.5 rounded-lg bg-surface hover:bg-surface-container-highest disabled:opacity-30 border border-outline-variant text-xs font-mono-data text-on-surface flex items-center gap-1 transition-all"
             >
               NEXT &rarr;
             </button>
 
             <button
               onClick={() => setPlaybackSpeed(playbackSpeed === 1 ? 2 : 1)}
-              className="px-2 py-1.5 rounded bg-[#0f1520] border border-[#1c2840] text-[10px] font-mono-data text-[#94a3b8] hover:text-white"
+              className="px-2.5 py-1.5 rounded-lg bg-surface border border-outline-variant text-xs font-mono-data text-on-surface-variant hover:text-on-surface"
               title="Toggle Playback Speed"
             >
               {playbackSpeed}X SPEED
@@ -318,42 +272,42 @@ export default function HistoricalReplayPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono-data text-[#64748b] uppercase">
-              DAY {safeDayIndex + 1} OF {totalDays}
+            <span className={`px-2 py-0.5 rounded text-[10px] font-mono-data uppercase font-bold border ${getPhaseBadge(activeDay.phase)}`}>
+              {activeDay.phase.replace('_', ' ')}
             </span>
-            <div className="font-mono-data text-xs font-bold text-white bg-[#0f1520] px-3 py-1 rounded border border-[#1c2840]">
-              {activeDay.date}
+            <div className="font-mono-data text-xs font-bold text-on-surface bg-surface px-3 py-1 rounded-lg border border-outline-variant">
+              DAY {safeDayIndex + 1} OF {totalDays} &bull; {activeDay.date}
             </div>
           </div>
         </div>
 
         {/* Milestone Nodes Along Crisis Trajectory */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-          {activeRegime.days.map((day, idx) => {
-            const isCurrent = idx === safeDayIndex;
-            return (
-              <button
-                key={day.id}
-                onClick={() => {
-                  setCurrentDayIndex(idx);
-                  setIsPlaying(false);
-                  setSimRevealed(false);
-                }}
-                className={`px-2.5 py-1.5 rounded font-mono-data text-[10px] shrink-0 transition-all border ${
-                  isCurrent 
-                    ? 'bg-[#3b82f6] border-[#3b82f6] text-white font-bold shadow-md scale-105' 
-                    : 'bg-[#0f1520] border-[#1c2840] text-[#94a3b8] hover:text-white hover:border-[#2a3f60]'
-                }`}
-              >
-                <div>{day.shortDate}</div>
-                <div className="text-[8px] opacity-75">{day.indices.nifty50.level}</div>
-              </button>
-            );
-          })}
-        </div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            {activeRegime.days.map((day, idx) => {
+              const isCurrent = idx === safeDayIndex;
+              return (
+                <button
+                  key={day.id}
+                  onClick={() => {
+                    setCurrentDayIndex(idx);
+                    setIsPlaying(false);
+                    setSimRevealed(false);
+                  }}
+                  className={`px-3 py-2 rounded-lg font-mono-data text-xs shrink-0 transition-all border text-left ${
+                    isCurrent 
+                      ? 'bg-primary text-white border-primary shadow-md font-bold' 
+                      : 'bg-surface border-outline-variant text-on-surface-variant hover:text-on-surface hover:border-primary/50'
+                  }`}
+                >
+                  <div className="font-semibold">{day.shortDate}</div>
+                  <div className="text-[10px] opacity-80 mt-0.5">Nifty {day.indices.nifty50.level.toLocaleString()}</div>
+                </button>
+              );
+            })}
+          </div>
 
-        {/* Range Slider Scrubber */}
-        <div className="pt-1">
+          {/* Range Slider Scrubber */}
           <input
             type="range"
             min={0}
@@ -364,417 +318,420 @@ export default function HistoricalReplayPage() {
               setIsPlaying(false);
               setSimRevealed(false);
             }}
-            className="w-full h-2 bg-[#1c2840] rounded-lg appearance-none cursor-pointer accent-[#3b82f6]"
+            className="w-full h-1.5 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary"
           />
         </div>
 
       </div>
 
-      {/* 4. Active Day Cockpit: Market Tape & Macro Environment */}
-      <div className="bg-[#0f1520] border border-[#1c2840] rounded-lg p-5 space-y-4">
+      {/* 4. Two-Column Intelligence Cockpit */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Day Header & Sentiment Gauge */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1c2840] pb-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded text-[10px] font-mono-data uppercase font-bold border ${getPhaseColor(activeDay.phase)}`}>
-                {activeDay.phase.replace('_', ' ')}
-              </span>
-              <span className="text-xs font-mono-data text-[#94a3b8]">{activeDay.date}</span>
-            </div>
-            <h3 className="text-base md:text-lg font-bold text-white tracking-tight mt-1">
-              {activeDay.dayTitle}
-            </h3>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[10px] font-mono-data uppercase text-[#64748b]">MARKET SENTIMENT:</span>
-            <span className="px-2.5 py-1 rounded font-mono-data text-xs font-bold uppercase bg-[#ef4444]/15 border border-[#ef4444]/30 text-[#ef4444]">
-              {activeDay.sentiment}
-            </span>
-          </div>
-        </div>
-
-        {/* Live Index Tape Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-[#080c14] border border-[#1c2840] p-3 rounded">
-            <div className="text-[9px] text-[#64748b] font-mono-data uppercase">NIFTY 50 INDEX</div>
-            <div className="font-mono-data text-lg font-bold text-white mt-0.5">
-              {activeDay.indices.nifty50.level.toLocaleString()}
-            </div>
-            <div className={`text-xs font-mono-data font-semibold ${
-              activeDay.indices.nifty50.change1D >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'
-            }`}>
-              {activeDay.indices.nifty50.change1D >= 0 ? '+' : ''}{activeDay.indices.nifty50.change1D}% 1D
-            </div>
-            <div className="text-[10px] text-[#94a3b8] font-mono-data mt-1">
-              P/E: <strong className="text-white">{activeDay.indices.nifty50.pe}x</strong> | P/B: <strong className="text-white">{activeDay.indices.nifty50.pb}x</strong>
-            </div>
-          </div>
-
-          <div className="bg-[#080c14] border border-[#1c2840] p-3 rounded">
-            <div className="text-[9px] text-[#64748b] font-mono-data uppercase">BSE SENSEX</div>
-            <div className="font-mono-data text-lg font-bold text-white mt-0.5">
-              {activeDay.indices.sensex.level.toLocaleString()}
-            </div>
-            <div className={`text-xs font-mono-data font-semibold ${
-              activeDay.indices.sensex.change1D >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'
-            }`}>
-              {activeDay.indices.sensex.change1D >= 0 ? '+' : ''}{activeDay.indices.sensex.change1D}% 1D
-            </div>
-            <div className="text-[10px] text-[#94a3b8] font-mono-data mt-1">
-              P/E: <strong className="text-white">{activeDay.indices.sensex.pe}x</strong>
-            </div>
-          </div>
-
-          <div className="bg-[#080c14] border border-[#1c2840] p-3 rounded">
-            <div className="text-[9px] text-[#64748b] font-mono-data uppercase">10Y G-SEC YIELD</div>
-            <div className="font-mono-data text-lg font-bold text-white mt-0.5">
-              {activeDay.macro.tenYearYield}
-            </div>
-            <div className="text-[10px] text-[#94a3b8] font-mono-data mt-1">
-              RBI Repo: <strong className="text-white">{activeDay.macro.rbiRepo}</strong>
-            </div>
-          </div>
-
-          <div className="bg-[#080c14] border border-[#1c2840] p-3 rounded">
-            <div className="text-[9px] text-[#64748b] font-mono-data uppercase">USD / INR & CRUDE</div>
-            <div className="font-mono-data text-lg font-bold text-white mt-0.5">
-              ₹{activeDay.macro.usdInr}
-            </div>
-            <div className="text-[10px] text-[#94a3b8] font-mono-data mt-1">
-              Brent: <strong className="text-white">{activeDay.macro.crudeOil}</strong> | Forex: <strong className="text-white">{activeDay.macro.forex}</strong>
-            </div>
-          </div>
-        </div>
-
-        {/* Macro Comparison vs Nov 2026 Baseline Strip */}
-        <div className="bg-[#080c14] border border-[#1c2840] p-3 rounded flex flex-wrap items-center justify-between gap-3 text-xs font-mono-data">
-          <span className="text-[#64748b] uppercase text-[10px] font-bold">
-            DELTA VS NOVEMBER 2026 BASELINE:
-          </span>
-          <div className="flex flex-wrap items-center gap-4 text-[11px]">
-            <span>Nifty: <strong className="text-white">{activeDay.indices.nifty50.level}</strong> vs {MODERN_BASELINE.niftyLevel}</span>
-            <span>P/E: <strong className="text-white">{activeDay.indices.nifty50.pe}x</strong> vs {MODERN_BASELINE.niftyPE}x</span>
-            <span>Repo: <strong className="text-white">{activeDay.macro.rbiRepo}</strong> vs {MODERN_BASELINE.repoRate}</span>
-            <span>Forex: <strong className="text-white">{activeDay.macro.forex}</strong> vs {MODERN_BASELINE.forex}</span>
-          </div>
-        </div>
-
-      </div>
-
-      {/* 5. Deep Investigation Tabs */}
-      <div className="space-y-4">
-        
-        {/* Tabs Bar */}
-        <div className="flex border-b border-[#1c2840] gap-1 overflow-x-auto no-scrollbar">
-          {[
-            { id: 'lookahead', label: 'THE LOOKAHEAD TRAP (PIT)', icon: 'visibility' },
-            { id: 'wire', label: 'WHAT CROSSED THE WIRE TODAY', icon: 'schedule' },
-            { id: 'simulator', label: 'THESIS BACKTESTER (WITHOUT HINDSIGHT)', icon: 'bot' },
-            { id: 'filing', label: 'CORPORATE FILING IN FOCUS', icon: 'business' },
-            { id: 'sectors', label: 'WINNING & LOSING SECTORS', icon: 'pie_chart' },
-          ].map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as DetailTab)}
-                className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-mono-data whitespace-nowrap transition-colors border-b-2 ${
-                  isActive
-                    ? 'border-[#3b82f6] text-white font-bold bg-[#3b82f6]/5'
-                    : 'border-transparent text-[#64748b] hover:text-[#cbd5e1] hover:bg-white/5'
-                }`}
-              >
-                <Icon name={tab.icon} className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Tab 1: The Lookahead Trap (Signature Feature) */}
-        {activeTab === 'lookahead' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Left Column: Market Telemetry & Live Tape (5 cols) */}
+        <div className="lg:col-span-5 space-y-4">
+          
+          {/* Active Day Tape Card */}
+          <div className="bg-surface-container border border-outline-variant rounded-xl p-5 space-y-4 shadow-sm">
             
-            {/* Known Information Set */}
-            <div className="bg-[#0f1520] border border-[#1c2840] rounded-lg p-5 space-y-3">
-              <div className="flex items-center gap-2 text-[#34d399] font-mono-data text-xs font-bold uppercase">
-                <span className="w-2 h-2 rounded-full bg-[#34d399]" />
-                <span>WHAT WAS OFFICIALLY KNOWN ON {activeDay.date}</span>
-              </div>
-              <p className="text-xs text-[#cbd5e1] leading-relaxed">
-                {activeDay.whatWasKnown}
-              </p>
-              <div className="pt-2 border-t border-[#1c2840]/60 text-[11px] text-[#94a3b8] font-mono-data">
-                <strong className="text-white">Institutional Desk Action:</strong> {activeDay.institutionalAction}
-              </div>
-            </div>
-
-            {/* Lookahead Trap */}
-            <div className="bg-[#0f1520] border-2 border-[#ef4444]/40 rounded-lg p-5 space-y-3">
-              <div className="flex items-center gap-2 text-[#ef4444] font-mono-data text-xs font-bold uppercase">
-                <span className="w-2 h-2 rounded-full bg-[#ef4444] animate-pulse" />
-                <span>THE LOOKAHEAD BIAS TRAP (WHAT WAS UNKNOWN)</span>
-              </div>
-              <p className="text-xs text-[#cbd5e1] leading-relaxed">
-                {activeDay.whatWasUnknown}
-              </p>
-              <div className="pt-2 border-t border-[#1c2840]/60 text-[10px] text-[#ef4444] font-mono-data bg-[#ef4444]/5 p-2 rounded">
-                <strong>Academic Principle:</strong> Distinguishing historical data coverage periods from actual release dates prevents backward-looking bias when evaluating market decisions.
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* Tab 2: What Crossed The Wire Today */}
-        {activeTab === 'wire' && (
-          <div className="bg-[#0f1520] border border-[#1c2840] rounded-lg p-5 space-y-3">
-            <div className="flex items-center justify-between border-b border-[#1c2840] pb-2">
-              <span className="text-xs font-mono-data uppercase font-bold text-white flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#3b82f6] animate-pulse" />
-                <span>WIRE HEADLINES CROSSING THE TAPE ON {activeDay.date}</span>
-              </span>
-              <span className="text-[10px] font-mono-data text-[#64748b]">REUTERS / PTI / BLOOMBERG ARCHIVE</span>
-            </div>
-
-            <div className="space-y-2 pt-1">
-              {activeDay.tapeHeadlines.map((headline, idx) => (
-                <div key={idx} className="bg-[#080c14] border border-[#1c2840] p-3 rounded flex items-start gap-3">
-                  <span className="font-mono-data text-[#3b82f6] text-xs font-bold shrink-0">
-                    #{idx + 1}
-                  </span>
-                  <p className="text-xs text-white leading-relaxed font-medium">
-                    {headline}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Tab 3: Thesis Backtester (Without Hindsight) */}
-        {activeTab === 'simulator' && (
-          <div className="bg-[#0f1520] border border-[#1c2840] rounded-lg p-5 space-y-4">
             <div>
-              <h3 className="text-sm font-bold text-white uppercase font-mono-data">
-                Trade The Crisis Simulator (Zero Lookahead)
-              </h3>
-              <p className="text-xs text-[#94a3b8] mt-0.5">
-                Assume the role of a portfolio manager on <strong className="text-white">{activeDay.date}</strong> (Nifty {activeDay.indices.nifty50.level}). Select an investment stance and evaluate its real historical outcome.
-              </p>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-mono-data uppercase font-bold text-on-surface-variant">
+                  MARKET TAPE &bull; {activeDay.date}
+                </span>
+                <span className="text-xs font-mono-data font-bold text-negative uppercase bg-negative/10 px-2 py-0.5 rounded border border-negative/20">
+                  {activeDay.sentiment}
+                </span>
+              </div>
+              <h2 className="text-base font-bold text-on-surface tracking-tight leading-snug">
+                {activeDay.dayTitle}
+              </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              {/* Strategy Form */}
-              <div className="space-y-3 bg-[#080c14] border border-[#1c2840] p-4 rounded">
-                <div>
-                  <label className="block text-[10px] font-mono-data uppercase text-[#64748b] mb-1">
-                    Select Your Thesis / Capital Allocation
-                  </label>
-                  <select
-                    value={selectedThesis}
-                    onChange={(e) => {
-                      setSelectedThesis(e.target.value);
-                      setSimRevealed(false);
-                    }}
-                    className="w-full bg-[#0f1520] border border-[#1c2840] rounded px-3 py-2 text-xs text-white font-mono-data outline-none focus:border-[#3b82f6]"
-                  >
-                    <option value="accumulate_quality">Accumulate High-Quality Equities (Private Banks & FMCG)</option>
-                    <option value="cash_defensive">Flight to 100% Cash & 91-Day Treasury Bills</option>
-                    <option value="short_leverage">Short Leveraged High-Debt Real Estate & Infrastructure</option>
-                    <option value="rotate_defensive">Rotate into Dollar-Earning IT & Pharma Exporters</option>
-                  </select>
+            {/* Core Metrics Grid */}
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="bg-surface border border-outline-variant p-3.5 rounded-lg">
+                <div className="text-[10px] text-on-surface-variant font-mono-data uppercase font-medium">NIFTY 50</div>
+                <div className="font-mono-data text-xl font-bold text-on-surface mt-0.5">
+                  {activeDay.indices.nifty50.level.toLocaleString()}
                 </div>
-
-                <div>
-                  <label className="block text-[10px] font-mono-data uppercase text-[#64748b] mb-1">
-                    Evaluation Horizon
-                  </label>
-                  <div className="grid grid-cols-5 gap-1.5">
-                    {(['+1W', '+1M', '+3M', '+6M', '+1Y'] as const).map((h) => (
-                      <button
-                        key={h}
-                        onClick={() => {
-                          setSimHorizon(h);
-                          setSimRevealed(false);
-                        }}
-                        className={`py-1.5 rounded font-mono-data text-xs font-semibold border transition-all ${
-                          simHorizon === h 
-                            ? 'bg-[#3b82f6] border-[#3b82f6] text-white' 
-                            : 'bg-[#0f1520] border-[#1c2840] text-[#94a3b8] hover:text-white'
-                        }`}
-                      >
-                        {h}
-                      </button>
-                    ))}
-                  </div>
+                <div className={`text-xs font-mono-data font-semibold mt-0.5 ${activeDay.indices.nifty50.change1D >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {activeDay.indices.nifty50.change1D >= 0 ? '+' : ''}{activeDay.indices.nifty50.change1D}% 1D
                 </div>
-
-                <button
-                  onClick={() => setSimRevealed(true)}
-                  className="w-full py-2 rounded bg-[#3b82f6] hover:bg-[#2563eb] text-white font-mono-data font-bold text-xs uppercase transition-colors"
-                >
-                  TEST THESIS AGAINST HISTORICAL REALITY
-                </button>
+                <div className="text-[10px] text-on-surface-variant font-mono-data mt-1 border-t border-outline-variant/50 pt-1">
+                  P/E: <strong className="text-on-surface">{activeDay.indices.nifty50.pe}x</strong> | P/B: <strong className="text-on-surface">{activeDay.indices.nifty50.pb}x</strong>
+                </div>
               </div>
 
-              {/* Simulation Result */}
-              <div className="bg-[#080c14] border border-[#1c2840] p-4 rounded flex flex-col justify-between">
-                <div>
-                  <div className="text-[10px] font-mono-data uppercase text-[#64748b] mb-1">
-                    FORWARD OUTCOME ({simHorizon})
+              <div className="bg-surface border border-outline-variant p-3.5 rounded-lg">
+                <div className="text-[10px] text-on-surface-variant font-mono-data uppercase font-medium">BSE SENSEX</div>
+                <div className="font-mono-data text-xl font-bold text-on-surface mt-0.5">
+                  {activeDay.indices.sensex.level.toLocaleString()}
+                </div>
+                <div className={`text-xs font-mono-data font-semibold mt-0.5 ${activeDay.indices.sensex.change1D >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {activeDay.indices.sensex.change1D >= 0 ? '+' : ''}{activeDay.indices.sensex.change1D}% 1D
+                </div>
+                <div className="text-[10px] text-on-surface-variant font-mono-data mt-1 border-t border-outline-variant/50 pt-1">
+                  P/E: <strong className="text-on-surface">{activeDay.indices.sensex.pe}x</strong>
+                </div>
+              </div>
+
+              <div className="bg-surface border border-outline-variant p-3 rounded-lg">
+                <div className="text-[10px] text-on-surface-variant font-mono-data uppercase">10Y G-SEC YIELD</div>
+                <div className="font-mono-data text-base font-bold text-on-surface mt-0.5">
+                  {activeDay.macro.tenYearYield}
+                </div>
+                <div className="text-[10px] text-on-surface-variant font-mono-data">
+                  RBI Repo: <strong className="text-on-surface">{activeDay.macro.rbiRepo}</strong>
+                </div>
+              </div>
+
+              <div className="bg-surface border border-outline-variant p-3 rounded-lg">
+                <div className="text-[10px] text-on-surface-variant font-mono-data uppercase">USD / INR & CRUDE</div>
+                <div className="font-mono-data text-base font-bold text-on-surface mt-0.5">
+                  ₹{activeDay.macro.usdInr}
+                </div>
+                <div className="text-[10px] text-on-surface-variant font-mono-data">
+                  Brent: <strong className="text-on-surface">{activeDay.macro.crudeOil}</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Wire Headlines */}
+            <div className="space-y-2 pt-2 border-t border-outline-variant">
+              <span className="text-[10px] font-mono-data uppercase font-bold text-on-surface-variant block">
+                WHAT CROSSED THE WIRE TODAY
+              </span>
+              <div className="space-y-1.5">
+                {activeDay.tapeHeadlines.map((headline, idx) => (
+                  <div key={idx} className="bg-surface border border-outline-variant p-2.5 rounded-lg flex items-start gap-2.5">
+                    <span className="font-mono-data text-primary text-xs font-bold shrink-0">
+                      #{idx + 1}
+                    </span>
+                    <p className="text-xs text-on-surface leading-relaxed">
+                      {headline}
+                    </p>
                   </div>
-                  {simRevealed ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-[9px] text-[#94a3b8] uppercase font-mono-data">Nifty Starting Level</div>
-                          <div className="font-mono-data text-sm font-bold text-white">{simResult.startLevel}</div>
-                        </div>
-                        <div>
-                          <div className="text-[9px] text-[#94a3b8] uppercase font-mono-data">Projected Index</div>
-                          <div className="font-mono-data text-sm font-bold text-white">{simResult.projectedLevel}</div>
-                        </div>
-                        <div>
-                          <div className="text-[9px] text-[#94a3b8] uppercase font-mono-data">Forward Return</div>
-                          <div className={`font-mono-data text-sm font-bold ${simResult.isPositive ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
-                            {simResult.returnPct}
+                ))}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Delta vs Modern Nov 2026 Baseline */}
+          <div className="bg-surface-container border border-outline-variant rounded-xl p-4 space-y-2 font-mono-data text-xs">
+            <span className="text-[10px] uppercase font-bold text-on-surface-variant block">
+              DELTA VS NOVEMBER 2026 BASELINE:
+            </span>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex justify-between border-b border-outline-variant/60 pb-1">
+                <span className="text-on-surface-variant">Nifty Level:</span>
+                <span className="text-on-surface font-bold">{activeDay.indices.nifty50.level} vs {MODERN_BASELINE.niftyLevel}</span>
+              </div>
+              <div className="flex justify-between border-b border-outline-variant/60 pb-1">
+                <span className="text-on-surface-variant">P/E Ratio:</span>
+                <span className="text-on-surface font-bold">{activeDay.indices.nifty50.pe}x vs {MODERN_BASELINE.niftyPE}x</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-on-surface-variant">RBI Repo:</span>
+                <span className="text-on-surface font-bold">{activeDay.macro.rbiRepo} vs {MODERN_BASELINE.repoRate}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-on-surface-variant">Forex:</span>
+                <span className="text-on-surface font-bold">{activeDay.macro.forex} vs {MODERN_BASELINE.forex}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Column: Point-In-Time Investigation & Simulator (7 cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          
+          {/* Navigation Tabs Bar */}
+          <div className="flex border-b border-outline-variant gap-2 overflow-x-auto no-scrollbar">
+            {[
+              { id: 'lookahead', label: 'THE LOOKAHEAD TRAP (PIT)', icon: 'visibility' },
+              { id: 'simulator', label: 'TRADE THE CRISIS SIMULATOR', icon: 'bot' },
+              { id: 'filing', label: 'CORPORATE FILING', icon: 'business' },
+              { id: 'sectors', label: 'SECTOR DISSECTION', icon: 'pie_chart' },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as DetailTab)}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-mono-data font-semibold whitespace-nowrap transition-colors border-b-2 ${
+                    isActive
+                      ? 'border-primary text-primary font-bold'
+                      : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  <Icon name={tab.icon} className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tab 1: The Lookahead Trap (Signature Anti-Bias Feature) */}
+          {activeTab === 'lookahead' && (
+            <div className="space-y-4">
+              
+              {/* Officially Known Facts */}
+              <div className="bg-surface-container border border-outline-variant rounded-xl p-5 space-y-2.5">
+                <div className="flex items-center gap-2 text-positive font-mono-data text-xs font-bold uppercase">
+                  <span className="w-2 h-2 rounded-full bg-positive" />
+                  <span>WHAT WAS OFFICIALLY KNOWN ON {activeDay.date}</span>
+                </div>
+                <p className="text-sm text-on-surface leading-relaxed font-normal">
+                  {activeDay.whatWasKnown}
+                </p>
+                <div className="pt-2 border-t border-outline-variant text-xs text-on-surface-variant font-mono-data">
+                  <strong className="text-on-surface">Institutional Desk Action:</strong> {activeDay.institutionalAction}
+                </div>
+              </div>
+
+              {/* The Lookahead Bias Trap */}
+              <div className="bg-surface-container border-2 border-negative/30 rounded-xl p-5 space-y-2.5">
+                <div className="flex items-center gap-2 text-negative font-mono-data text-xs font-bold uppercase">
+                  <span className="w-2 h-2 rounded-full bg-negative animate-pulse" />
+                  <span>THE LOOKAHEAD BIAS TRAP (WHAT WAS UNKNOWN)</span>
+                </div>
+                <p className="text-sm text-on-surface leading-relaxed font-normal">
+                  {activeDay.whatWasUnknown}
+                </p>
+                <div className="pt-2 border-t border-outline-variant text-xs text-on-surface-variant font-mono-data">
+                  <span className="text-negative font-bold">Academic Principle:</span> Distinguishing data coverage periods from actual publication dates prevents false confidence when analyzing historical financial events.
+                </div>
+              </div>
+
+              {/* Institutional Lessons Strip */}
+              <div className="bg-surface-container border border-outline-variant rounded-xl p-4 space-y-1.5">
+                <span className="text-[10px] font-mono-data uppercase font-bold text-on-surface-variant">
+                  INSTITUTIONAL CRISIS POST-MORTEM LESSONS
+                </span>
+                <ul className="space-y-1">
+                  {activeRegime.institutionalLessons.map((lesson, idx) => (
+                    <li key={idx} className="text-xs text-on-surface flex items-start gap-2">
+                      <span className="text-primary font-bold">&bull;</span>
+                      <span>{lesson}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+            </div>
+          )}
+
+          {/* Tab 2: Trade The Crisis Simulator */}
+          {activeTab === 'simulator' && (
+            <div className="bg-surface-container border border-outline-variant rounded-xl p-5 space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-on-surface uppercase font-mono-data">
+                  Trade The Crisis Simulator (Without Hindsight)
+                </h3>
+                <p className="text-xs text-on-surface-variant mt-0.5">
+                  Formulate an allocation stance on <strong className="text-on-surface">{activeDay.date}</strong> (Nifty {activeDay.indices.nifty50.level}) and evaluate its real historical outcome.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Parameters Form */}
+                <div className="space-y-3 bg-surface border border-outline-variant p-4 rounded-lg">
+                  <div>
+                    <label className="block text-[10px] font-mono-data uppercase text-on-surface-variant mb-1 font-bold">
+                      Select Investment Stance
+                    </label>
+                    <select
+                      value={selectedThesis}
+                      onChange={(e) => {
+                        setSelectedThesis(e.target.value);
+                        setSimRevealed(false);
+                      }}
+                      className="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-xs text-on-surface font-mono-data outline-none focus:border-primary"
+                    >
+                      <option value="accumulate_quality">Accumulate High-Quality Equities (Private Banks & FMCG)</option>
+                      <option value="cash_defensive">Flight to 100% Cash & 91-Day Treasury Bills</option>
+                      <option value="short_leverage">Short Leveraged High-Debt Real Estate & Infrastructure</option>
+                      <option value="rotate_defensive">Rotate into Dollar-Earning IT & Pharma Exporters</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-mono-data uppercase text-on-surface-variant mb-1 font-bold">
+                      Holding Horizon
+                    </label>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {(['+1W', '+1M', '+3M', '+6M', '+1Y'] as const).map((h) => (
+                        <button
+                          key={h}
+                          onClick={() => {
+                            setSimHorizon(h);
+                            setSimRevealed(false);
+                          }}
+                          className={`py-1.5 rounded-md font-mono-data text-xs font-semibold border transition-all ${
+                            simHorizon === h 
+                              ? 'bg-primary border-primary text-white font-bold' 
+                              : 'bg-surface-container border-outline-variant text-on-surface-variant hover:text-on-surface'
+                          }`}
+                        >
+                          {h}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setSimRevealed(true)}
+                    className="w-full py-2.5 rounded-lg bg-primary hover:bg-primary-dim text-white font-mono-data font-bold text-xs uppercase transition-colors shadow-sm"
+                  >
+                    TEST THESIS AGAINST HISTORICAL REALITY
+                  </button>
+                </div>
+
+                {/* Outcome Display */}
+                <div className="bg-surface border border-outline-variant p-4 rounded-lg flex flex-col justify-between">
+                  <div>
+                    <div className="text-[10px] font-mono-data uppercase text-on-surface-variant mb-2 font-bold">
+                      FORWARD SIMULATION OUTCOME ({simHorizon})
+                    </div>
+                    {simRevealed ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-3 gap-2 text-center py-2 border-y border-outline-variant">
+                          <div>
+                            <div className="text-[9px] text-on-surface-variant uppercase font-mono-data">Nifty Start</div>
+                            <div className="font-mono-data text-sm font-bold text-on-surface">{simResult.startLevel}</div>
+                          </div>
+                          <div>
+                            <div className="text-[9px] text-on-surface-variant uppercase font-mono-data">Projected Level</div>
+                            <div className="font-mono-data text-sm font-bold text-on-surface">{simResult.projectedLevel}</div>
+                          </div>
+                          <div>
+                            <div className="text-[9px] text-on-surface-variant uppercase font-mono-data">Return</div>
+                            <div className={`font-mono-data text-sm font-bold ${simResult.isPositive ? 'text-positive' : 'text-negative'}`}>
+                              {simResult.returnPct}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="bg-[#0f1520] border border-[#1c2840] p-2.5 rounded text-xs space-y-1">
-                        <div className="flex justify-between font-mono-data text-[11px]">
-                          <span className="text-[#94a3b8]">Intermediate Drawdown Risk:</span>
-                          <span className="text-[#f87171] font-bold">{simResult.maxDrawdown}</span>
+                        <div className="bg-surface-container border border-outline-variant p-2.5 rounded-lg text-xs space-y-1">
+                          <div className="flex justify-between font-mono-data text-[11px]">
+                            <span className="text-on-surface-variant">Max Drawdown Risk:</span>
+                            <span className="text-negative font-bold">{simResult.maxDrawdown}</span>
+                          </div>
+                          <div className="flex justify-between font-mono-data text-[11px]">
+                            <span className="text-on-surface-variant">Institutional Verdict:</span>
+                            <span className="text-primary font-bold">{simResult.verdict}</span>
+                          </div>
                         </div>
-                        <div className="flex justify-between font-mono-data text-[11px]">
-                          <span className="text-[#94a3b8]">Institutional Verdict:</span>
-                          <span className="text-[#3b82f6] font-bold">{simResult.verdict}</span>
-                        </div>
+
+                        <p className="text-xs text-on-surface leading-relaxed">
+                          {simResult.commentary}
+                        </p>
                       </div>
-
-                      <p className="text-xs text-[#cbd5e1] leading-relaxed">
-                        {simResult.commentary}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="py-8 text-center text-xs text-[#64748b] font-mono-data">
-                      Select your parameters and click "Test Thesis" to evaluate without hindsight.
-                    </div>
-                  )}
+                    ) : (
+                      <div className="py-8 text-center text-xs text-on-surface-variant font-mono-data">
+                        Select parameters and click "Test Thesis" to evaluate without hindsight.
+                      </div>
+                    )}
+                  </div>
                 </div>
+
               </div>
-
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Tab 4: Corporate Filing in Focus */}
-        {activeTab === 'filing' && (
-          <div className="bg-[#0f1520] border border-[#1c2840] rounded-lg p-5 space-y-3">
-            {activeDay.corporateFilingInFocus ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between border-b border-[#1c2840] pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono-data text-xs font-bold text-[#3b82f6] bg-[#3b82f6]/10 px-2 py-0.5 rounded border border-[#3b82f6]/20">
-                      {activeDay.corporateFilingInFocus.symbol}
+          {/* Tab 3: Corporate Filing in Focus */}
+          {activeTab === 'filing' && (
+            <div className="bg-surface-container border border-outline-variant rounded-xl p-5 space-y-4">
+              {activeDay.corporateFilingInFocus ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-outline-variant pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono-data text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                        {activeDay.corporateFilingInFocus.symbol}
+                      </span>
+                      <span className="text-sm font-bold text-on-surface">
+                        {activeDay.corporateFilingInFocus.name}
+                      </span>
+                    </div>
+                    <span className="text-xs font-mono-data text-on-surface-variant">
+                      {activeDay.corporateFilingInFocus.filing}
                     </span>
-                    <span className="text-sm font-bold text-white">
-                      {activeDay.corporateFilingInFocus.name}
-                    </span>
                   </div>
-                  <span className="text-xs font-mono-data text-[#94a3b8]">
-                    {activeDay.corporateFilingInFocus.filing}
-                  </span>
-                </div>
 
-                <div className="grid grid-cols-2 gap-3 font-mono-data text-xs">
-                  <div className="bg-[#080c14] p-3 rounded border border-[#1c2840]">
-                    <div className="text-[9px] text-[#64748b] uppercase">Reported Revenue</div>
-                    <div className="text-base font-bold text-white mt-0.5">{activeDay.corporateFilingInFocus.revenue}</div>
-                  </div>
-                  <div className="bg-[#080c14] p-3 rounded border border-[#1c2840]">
-                    <div className="text-[9px] text-[#64748b] uppercase">Reported Net Profit</div>
-                    <div className="text-base font-bold text-white mt-0.5">{activeDay.corporateFilingInFocus.netProfit}</div>
-                  </div>
-                </div>
-
-                <div className="bg-[#080c14] p-3 rounded border border-[#1c2840] text-xs text-[#cbd5e1] leading-relaxed">
-                  <strong className="text-white font-mono-data">Market Reaction & Filing Notes:</strong> {activeDay.corporateFilingInFocus.note}
-                </div>
-              </div>
-            ) : (
-              <div className="py-8 text-center text-xs text-[#64748b] font-mono-data">
-                No single corporate filing dominated the wire on this specific macroeconomic date.
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tab 5: Winning & Losing Sectors */}
-        {activeTab === 'sectors' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            {/* Winning Sectors */}
-            <div className="bg-[#0f1520] border border-[#1c2840] rounded-lg p-5 space-y-3">
-              <span className="text-xs font-mono-data uppercase font-bold text-[#34d399] flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#34d399]" />
-                <span>OUTPERFORMING DEFENSIVE SECTORS</span>
-              </span>
-              <div className="space-y-2">
-                {activeRegime.winningSectors.map((s, idx) => (
-                  <div key={idx} className="bg-[#080c14] border border-[#1c2840] p-3 rounded space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-white text-xs">{s.name}</span>
-                      <span className="font-mono-data text-xs font-bold text-[#34d399]">{s.performance}</span>
+                  <div className="grid grid-cols-2 gap-3 font-mono-data text-xs">
+                    <div className="bg-surface p-3.5 rounded-lg border border-outline-variant">
+                      <div className="text-[10px] text-on-surface-variant uppercase font-medium">Reported Revenue</div>
+                      <div className="text-base font-bold text-on-surface mt-0.5">{activeDay.corporateFilingInFocus.revenue}</div>
                     </div>
-                    <p className="text-[11px] text-[#94a3b8] leading-tight">{s.rationale}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Losing Sectors */}
-            <div className="bg-[#0f1520] border border-[#1c2840] rounded-lg p-5 space-y-3">
-              <span className="text-xs font-mono-data uppercase font-bold text-[#f87171] flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#f87171]" />
-                <span>VULNERABLE HIGH-BETA SECTORS</span>
-              </span>
-              <div className="space-y-2">
-                {activeRegime.losingSectors.map((s, idx) => (
-                  <div key={idx} className="bg-[#080c14] border border-[#1c2840] p-3 rounded space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-white text-xs">{s.name}</span>
-                      <span className="font-mono-data text-xs font-bold text-[#f87171]">{s.performance}</span>
+                    <div className="bg-surface p-3.5 rounded-lg border border-outline-variant">
+                      <div className="text-[10px] text-on-surface-variant uppercase font-medium">Reported Net Profit</div>
+                      <div className="text-base font-bold text-on-surface mt-0.5">{activeDay.corporateFilingInFocus.netProfit}</div>
                     </div>
-                    <p className="text-[11px] text-[#94a3b8] leading-tight">{s.rationale}</p>
                   </div>
-                ))}
+
+                  <div className="bg-surface p-3.5 rounded-lg border border-outline-variant text-xs text-on-surface leading-relaxed">
+                    <strong className="text-primary font-mono-data block mb-1">Market Reaction & Filing Commentary:</strong>
+                    {activeDay.corporateFilingInFocus.note}
+                  </div>
+                </div>
+              ) : (
+                <div className="py-8 text-center text-xs text-on-surface-variant font-mono-data">
+                  No single corporate filing dominated the wire on this specific macroeconomic date.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tab 4: Winning & Losing Sectors */}
+          {activeTab === 'sectors' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              {/* Winning Sectors */}
+              <div className="bg-surface-container border border-outline-variant rounded-xl p-5 space-y-3">
+                <span className="text-xs font-mono-data uppercase font-bold text-positive flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-positive" />
+                  <span>OUTPERFORMING DEFENSIVE SECTORS</span>
+                </span>
+                <div className="space-y-2">
+                  {activeRegime.winningSectors.map((s, idx) => (
+                    <div key={idx} className="bg-surface border border-outline-variant p-3 rounded-lg space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-on-surface text-xs">{s.name}</span>
+                        <span className="font-mono-data text-xs font-bold text-positive">{s.performance}</span>
+                      </div>
+                      <p className="text-xs text-on-surface-variant leading-relaxed">{s.rationale}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* Losing Sectors */}
+              <div className="bg-surface-container border border-outline-variant rounded-xl p-5 space-y-3">
+                <span className="text-xs font-mono-data uppercase font-bold text-negative flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-negative" />
+                  <span>VULNERABLE HIGH-BETA SECTORS</span>
+                </span>
+                <div className="space-y-2">
+                  {activeRegime.losingSectors.map((s, idx) => (
+                    <div key={idx} className="bg-surface border border-outline-variant p-3 rounded-lg space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-on-surface text-xs">{s.name}</span>
+                        <span className="font-mono-data text-xs font-bold text-negative">{s.performance}</span>
+                      </div>
+                      <p className="text-xs text-on-surface-variant leading-relaxed">{s.rationale}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
+          )}
 
-          </div>
-        )}
-
-      </div>
-
-      {/* 6. Institutional Lessons Post-Mortem */}
-      <div className="bg-[#0f1520] border border-[#1c2840] rounded-lg p-5 space-y-2.5">
-        <span className="text-[10px] font-mono-data uppercase font-bold text-[#64748b] block border-b border-[#1c2840] pb-1.5">
-          INSTITUTIONAL CRISIS POST-MORTEM & PORTFOLIO LESSONS
-        </span>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {activeRegime.institutionalLessons.map((lesson, idx) => (
-            <div key={idx} className="bg-[#080c14] border border-[#1c2840] p-3 rounded text-xs text-[#cbd5e1] leading-relaxed">
-              <span className="font-mono-data text-[#3b82f6] font-bold block mb-1">LESSON #{idx + 1}:</span>
-              {lesson}
-            </div>
-          ))}
         </div>
+
       </div>
 
     </div>

@@ -8,6 +8,7 @@ import MobileNav from "./MobileNav";
 import ShaderBg from "./ShaderBg";
 import BloombergKeyBar from "./BloombergKeyBar";
 import PiedmontCopilot from "../ai/PiedmontCopilot";
+import { ThemeProvider } from "../../context/ThemeContext";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -19,16 +20,20 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   if (isLanding) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <main className="flex-1">{children}</main>
-      </div>
+      <ThemeProvider>
+        <div className="min-h-screen flex flex-col bg-background text-foreground">
+          <main className="flex-1">{children}</main>
+        </div>
+      </ThemeProvider>
     );
   }
 
   return (
-    <>
-      <div className="flex min-h-screen">
-        <ShaderBg />
+    <ThemeProvider>
+      <div className="flex min-h-screen bg-background text-foreground transition-colors duration-200">
+        <div className="dark:block hidden">
+          <ShaderBg />
+        </div>
         
         {/* Bloomberg Function Key Navigator Bar (F1-F9) */}
         <BloombergKeyBar onOpenCopilot={handleOpenCopilot} />
@@ -48,8 +53,8 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       {/* Mobile Bottom Navigation */}
       <MobileNav onOpenCopilot={handleOpenCopilot} />
 
-      {/* AI Market Intelligence Copilot Slide-Over Drawer */}
+      {/* AI Market Intelligence Copilot Slide-Over / Modal */}
       <PiedmontCopilot isOpen={isCopilotOpen} onClose={handleCloseCopilot} />
-    </>
+    </ThemeProvider>
   );
 }

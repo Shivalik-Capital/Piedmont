@@ -52,7 +52,7 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
             data: {
               queryType: 'general',
               title: 'Institutional Research Console Initialized',
-              executiveSummary: 'Piedmont Copilot is active. Inquire about any Indian listed equity, macroeconomic policy transmission (e.g., falling gold prices, crude oil sensitivity, repo rate trajectory), DuPont ROE diagnostics, or market microstructure.',
+              executiveSummary: 'Piedmont Copilot is active. Inquire about any Indian equity, macroeconomic policy transmission (e.g., falling gold prices, crude oil sensitivity, repo rate trajectory), DuPont ROE diagnostics, or market microstructure.',
               markdownSynthesis: 'You are operating within the Piedmont High-Precision Financial Reasoning Engine. Ask any quantitative or qualitative question regarding Indian capital markets.',
               quantitativeMetrics: [
                 { label: 'Nifty 50 Benchmark', value: '25,800', stance: 'positive' },
@@ -179,47 +179,22 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
     'Break down DuPont ROE for HDFC Bank'
   ];
 
-  const renderSimpleMarkdown = (text: string) => {
-    return text.split('\n').map((line, idx) => {
-      if (line.startsWith('### ')) {
-        return <h4 key={idx} className="text-xs font-bold text-white uppercase font-mono-data mt-2 mb-1 border-b border-[#1c2840] pb-0.5">{line.replace('### ', '')}</h4>;
-      }
-      if (line.startsWith('- ') || line.startsWith('* ')) {
-        return (
-          <li key={idx} className="text-xs text-[#cbd5e1] leading-relaxed ml-3 list-disc my-0.5">
-            <span dangerouslySetInnerHTML={{ __html: line.replace(/^[-*]\s+/, '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>') }} />
-          </li>
-        );
-      }
-      if (!line.trim()) return <div key={idx} className="h-1" />;
-      return (
-        <p key={idx} className="text-xs text-[#cbd5e1] leading-relaxed my-0.5">
-          <span dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>') }} />
-        </p>
-      );
-    });
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 sm:p-6 transition-opacity">
-      <div className="w-full max-w-4xl h-[88vh] bg-[#080c14] border border-[#1c2840] rounded-xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 transition-opacity">
+      <div className="w-full max-w-4xl h-[88vh] bg-surface border border-outline-variant rounded-xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         
         {/* Terminal Header */}
-        <div className="px-5 py-3.5 bg-[#0f1520] border-b border-[#1c2840] flex items-center justify-between shrink-0">
+        <div className="px-6 py-4 bg-surface-container border-b border-outline-variant flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#3b82f6] animate-pulse" />
+            <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-white tracking-wide text-sm font-mono-data uppercase">Piedmont Copilot</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded font-mono-data font-semibold uppercase border ${
-                  customKey 
-                    ? 'bg-[#34d399]/10 text-[#34d399] border-[#34d399]/30'
-                    : 'bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/30'
-                }`}>
+                <span className="font-bold text-on-surface tracking-wide text-sm font-mono-data uppercase">Piedmont Copilot</span>
+                <span className="text-[10px] px-2 py-0.5 rounded font-mono-data font-semibold uppercase bg-primary/10 text-primary border border-primary/20">
                   {customKey ? `${provider.toUpperCase()} NEURAL ACTIVE` : 'BLENDED ENGINE'}
                 </span>
               </div>
-              <p className="text-[11px] text-[#64748b] font-mono-data">Institutional Market Intelligence & Quantitative Transmission</p>
+              <p className="text-xs text-on-surface-variant font-mono-data">Institutional Market Intelligence & Quantitative Transmission</p>
             </div>
           </div>
 
@@ -227,20 +202,20 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
             <Link
               href="/copilot"
               onClick={onClose}
-              className="px-2.5 py-1 rounded text-xs font-mono-data bg-[#3b82f6]/10 hover:bg-[#3b82f6]/20 border border-[#3b82f6]/40 text-[#3b82f6] hover:text-white transition-colors"
+              className="px-3 py-1.5 rounded text-xs font-mono-data font-semibold bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary hover:text-on-surface transition-colors"
             >
               FULL STUDIO &rarr;
             </Link>
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="p-1.5 rounded hover:bg-[#1c2840] text-[#94a3b8] hover:text-white"
+              className="p-1.5 rounded hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-colors"
               title="API Key Configuration"
             >
               <Icon name="tune" className="w-4 h-4" />
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded hover:bg-[#1c2840] text-[#94a3b8] hover:text-white"
+              className="p-1.5 rounded hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-colors"
               title="Close (Esc)"
             >
               <Icon name="close" className="w-5 h-5" />
@@ -250,13 +225,13 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
 
         {/* Free Neural API Settings Drawer */}
         {showSettings && (
-          <div className="p-4 bg-[#0d121c] border-b border-[#1c2840] text-xs space-y-3 shrink-0">
+          <div className="p-4 bg-surface-container border-b border-outline-variant text-xs space-y-3 shrink-0">
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-semibold text-white uppercase tracking-wider text-[11px] block font-mono-data">
+                <span className="font-semibold text-on-surface uppercase tracking-wider text-xs block font-mono-data">
                   Connect Free Neural AI (Google Gemini / Groq)
                 </span>
-                <span className="text-[10px] text-[#94a3b8]">
+                <span className="text-xs text-on-surface-variant">
                   Get an unconstrained free API key with zero billing required.
                 </span>
               </div>
@@ -264,7 +239,7 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
                 href="https://aistudio.google.com/app/apikey"
                 target="_blank"
                 rel="noreferrer"
-                className="text-[10px] text-[#3b82f6] underline hover:text-[#60a5fa] font-mono-data"
+                className="text-xs text-primary underline hover:text-primary-dim font-mono-data"
               >
                 Get Free Gemini Key &rarr;
               </a>
@@ -272,30 +247,30 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[#64748b] mb-1 text-[10px] uppercase font-mono-data">Engine Provider</label>
+                <label className="block text-on-surface-variant mb-1 text-[11px] uppercase font-mono-data">Engine Provider</label>
                 <select
                   value={provider}
                   onChange={(e: any) => setProvider(e.target.value)}
-                  className="w-full bg-[#080c14] border border-[#1c2840] rounded px-2.5 py-1.5 text-white outline-none focus:border-[#3b82f6] font-mono-data"
+                  className="w-full bg-surface border border-outline-variant rounded px-3 py-2 text-on-surface outline-none focus:border-primary font-mono-data text-xs"
                 >
                   <option value="gemini">Google Gemini 2.5 Flash (Official Free Tier)</option>
                   <option value="groq">Groq Cloud Llama 3.3 (Fast LPU Free Tier)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-[#64748b] mb-1 text-[10px] uppercase font-mono-data">API Key (Stored Locally in Browser)</label>
+                <label className="block text-on-surface-variant mb-1 text-[11px] uppercase font-mono-data">API Key (Stored Locally in Browser)</label>
                 <input
                   type="password"
                   value={customKey}
                   onChange={(e) => setCustomKey(e.target.value)}
                   placeholder="Paste AI Studio Key (e.g. AIzaSy...)"
-                  className="w-full bg-[#080c14] border border-[#1c2840] rounded px-2.5 py-1.5 text-white outline-none focus:border-[#3b82f6] font-mono-data"
+                  className="w-full bg-surface border border-outline-variant rounded px-3 py-2 text-on-surface outline-none focus:border-primary font-mono-data text-xs"
                 />
               </div>
             </div>
 
-            <div className="flex justify-between items-center pt-1 border-t border-[#1c2840]/60">
-              <span className="text-[10px] text-[#64748b]">
+            <div className="flex justify-between items-center pt-2 border-t border-outline-variant">
+              <span className="text-xs text-on-surface-variant">
                 Key is saved strictly in your browser localStorage. Never sent to any third party.
               </span>
               <div className="flex gap-2">
@@ -305,13 +280,13 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
                     localStorage.removeItem('piedmont_byok_key');
                     setShowSettings(false);
                   }}
-                  className="px-2.5 py-1 rounded bg-[#1c2840] text-[#cbd5e1] hover:text-white font-mono-data"
+                  className="px-3 py-1.5 rounded bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-mono-data text-xs"
                 >
                   Clear Key
                 </button>
                 <button
                   onClick={saveSettings}
-                  className="px-3 py-1 rounded bg-[#3b82f6] text-white font-mono-data font-bold hover:bg-[#2563eb]"
+                  className="px-4 py-1.5 rounded bg-primary text-white font-mono-data font-bold text-xs hover:bg-primary-dim transition-colors"
                 >
                   Save Settings
                 </button>
@@ -321,74 +296,67 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
         )}
 
         {/* Chat History Messages */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
           {messages.map((msg) => (
             <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
               
               {/* User Bubble */}
               {msg.sender === 'user' && (
-                <div className="max-w-[85%] bg-[#1c2840] text-white px-4 py-2.5 rounded-lg border border-[#2a3f60] text-xs font-medium shadow-md">
+                <div className="max-w-[85%] bg-primary/10 border border-primary/30 text-on-surface px-4 py-3 rounded-xl text-sm font-medium shadow-sm">
                   {msg.text}
-                  <div className="text-[9px] font-mono-data text-[#64748b] mt-1 text-right">{msg.timestamp}</div>
+                  <div className="text-[10px] font-mono-data text-on-surface-variant mt-1 text-right">{msg.timestamp}</div>
                 </div>
               )}
 
               {/* Copilot Institutional Analysis Block */}
               {msg.sender === 'copilot' && msg.data && (
-                <div className="max-w-full w-full bg-[#0f1520] border border-[#1c2840] rounded-lg p-5 space-y-3.5 text-xs text-[#cbd5e1] shadow-xl">
+                <div className="w-full bg-surface-container border border-outline-variant rounded-xl p-6 space-y-5 text-sm text-on-surface shadow-sm">
                   
                   {/* Model & Title Header */}
-                  <div className="flex items-center justify-between border-b border-[#1c2840] pb-2">
+                  <div className="flex items-center justify-between border-b border-outline-variant pb-3">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono-data text-[10px] uppercase font-bold text-[#3b82f6] bg-[#3b82f6]/10 px-2 py-0.5 rounded border border-[#3b82f6]/20">
+                      <span className="font-mono-data text-xs uppercase font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
                         {msg.data.sourceModel}
                       </span>
-                      <span className="font-bold text-white text-xs truncate">
+                      <span className="font-bold text-on-surface text-sm truncate">
                         {msg.data.title || 'Institutional Diagnostic'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleCopy(msg.id, `${msg.data?.title}\n\n${msg.data?.executiveSummary}\n\n${msg.data?.markdownSynthesis}`)}
-                        className="text-[10px] font-mono-data text-[#64748b] hover:text-white px-2 py-0.5 rounded bg-[#080c14] border border-[#1c2840]"
+                        className="text-xs font-mono-data text-on-surface-variant hover:text-on-surface px-2.5 py-1 rounded bg-surface border border-outline-variant hover:border-primary transition-colors"
                       >
-                        {copiedId === msg.id ? 'COPIED' : 'COPY'}
+                        {copiedId === msg.id ? 'COPIED!' : 'COPY MEMO'}
                       </button>
-                      <span className="font-mono-data text-[10px] text-[#64748b]">{msg.timestamp}</span>
+                      <span className="font-mono-data text-xs text-on-surface-variant">{msg.timestamp}</span>
                     </div>
                   </div>
 
-                  {/* Executive Summary */}
-                  <div className="bg-[#080c14] border-l-2 border-[#3b82f6] p-3 rounded-r border-y border-r border-[#1c2840]">
-                    <div className="text-[9px] font-mono-data uppercase font-bold text-[#3b82f6] mb-1">
+                  {/* Executive Thesis */}
+                  <div className="space-y-1">
+                    <div className="text-[11px] font-mono-data uppercase font-bold text-primary">
                       EXECUTIVE THESIS
                     </div>
-                    <p className="text-white leading-relaxed text-xs font-medium">
+                    <p className="text-on-surface text-sm leading-relaxed font-normal">
                       {msg.data.executiveSummary}
                     </p>
                   </div>
 
-                  {/* Markdown Synthesis (If Present) */}
-                  {msg.data.markdownSynthesis && (
-                    <div className="space-y-1 text-xs">
-                      {renderSimpleMarkdown(msg.data.markdownSynthesis)}
-                    </div>
-                  )}
-
-                  {/* Quantitative Metrics Grid */}
+                  {/* Quantitative Benchmarks Grid */}
                   {msg.data.quantitativeMetrics && msg.data.quantitativeMetrics.length > 0 && (
-                    <div>
-                      <div className="text-[9px] font-mono-data uppercase font-bold text-[#64748b] mb-1.5">
+                    <div className="pt-2">
+                      <div className="text-[11px] font-mono-data uppercase font-bold text-on-surface-variant mb-2">
                         QUANTITATIVE SENSITIVITY BENCHMARKS
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                         {msg.data.quantitativeMetrics.map((metric, idx) => (
-                          <div key={idx} className="bg-[#080c14] border border-[#1c2840] p-2.5 rounded">
-                            <div className="text-[9px] text-[#64748b] uppercase tracking-tight">{metric.label}</div>
-                            <div className={`font-mono-data text-xs font-bold mt-0.5 tabular-nums ${
-                              metric.stance === 'positive' ? 'text-[#34d399]' :
-                              metric.stance === 'negative' ? 'text-[#f87171]' :
-                              'text-white'
+                          <div key={idx} className="bg-surface border border-outline-variant p-3 rounded-lg">
+                            <div className="text-[10px] text-on-surface-variant uppercase tracking-wider font-mono-data font-medium">{metric.label}</div>
+                            <div className={`font-mono-data text-sm font-bold mt-1 tabular-nums ${
+                              metric.stance === 'positive' ? 'text-positive' :
+                              metric.stance === 'negative' ? 'text-negative' :
+                              'text-on-surface'
                             }`}>
                               {metric.value}
                             </div>
@@ -400,35 +368,37 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
 
                   {/* Causal Transmission Vectors */}
                   {msg.data.transmissionVectors && msg.data.transmissionVectors.length > 0 && (
-                    <div className="space-y-1.5 pt-1">
-                      <div className="text-[9px] font-mono-data uppercase font-bold text-[#64748b]">
+                    <div className="space-y-2 pt-2">
+                      <div className="text-[11px] font-mono-data uppercase font-bold text-on-surface-variant">
                         CROSS-ASSET TRANSMISSION CHANNELS
                       </div>
-                      {msg.data.transmissionVectors.map((v, idx) => (
-                        <div key={idx} className="bg-[#080c14] border border-[#1c2840] p-2.5 rounded space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-white text-xs">{v.factor} &rarr; {v.target}</span>
-                            <span className={`text-[9px] font-mono-data uppercase font-bold px-1.5 py-0.5 rounded border ${
-                              v.direction === 'tailwind' ? 'bg-[#34d399]/10 text-[#34d399] border-[#34d399]/30' :
-                              v.direction === 'headwind' ? 'bg-[#f87171]/10 text-[#f87171] border-[#f87171]/30' :
-                              'bg-[#64748b]/10 text-[#94a3b8] border-[#64748b]/30'
-                            }`}>
-                              {v.direction}
-                            </span>
+                      <div className="space-y-2">
+                        {msg.data.transmissionVectors.map((v, idx) => (
+                          <div key={idx} className="bg-surface border border-outline-variant p-3.5 rounded-lg space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-on-surface text-sm">{v.factor} &rarr; {v.target}</span>
+                              <span className={`text-[10px] font-mono-data uppercase font-bold px-2 py-0.5 rounded border ${
+                                v.direction === 'tailwind' ? 'bg-positive/10 text-positive border-positive/30' :
+                                v.direction === 'headwind' ? 'bg-negative/10 text-negative border-negative/30' :
+                                'bg-outline-variant text-on-surface-variant border-outline-variant'
+                              }`}>
+                                {v.direction}
+                              </span>
+                            </div>
+                            <p className="text-xs text-on-surface-variant leading-relaxed">{v.mechanism}</p>
                           </div>
-                          <p className="text-[11px] text-[#cbd5e1]">{v.mechanism}</p>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   )}
 
                   {/* Actionable Takeaway */}
                   {msg.data.actionableTakeaway && (
-                    <div className="bg-[#3b82f6]/5 border border-[#3b82f6]/30 p-2.5 rounded">
-                      <span className="text-[9px] font-mono-data uppercase font-bold text-[#3b82f6] block">
+                    <div className="bg-primary/5 border border-primary/20 p-3.5 rounded-lg">
+                      <span className="text-[10px] font-mono-data uppercase font-bold text-primary block">
                         INSTITUTIONAL TAKEAWAY
                       </span>
-                      <p className="text-white text-xs mt-0.5 font-medium">
+                      <p className="text-on-surface text-xs mt-1 font-medium leading-relaxed">
                         {msg.data.actionableTakeaway}
                       </p>
                     </div>
@@ -436,12 +406,12 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
 
                   {/* Follow-up suggestions */}
                   {msg.data.followUpSuggestions && msg.data.followUpSuggestions.length > 0 && (
-                    <div className="pt-2 border-t border-[#1c2840] flex flex-wrap gap-1.5">
+                    <div className="pt-3 border-t border-outline-variant flex flex-wrap gap-2">
                       {msg.data.followUpSuggestions.map((s, sIdx) => (
                         <button
                           key={sIdx}
                           onClick={() => handleSubmit(s)}
-                          className="text-[10px] bg-[#080c14] hover:bg-[#1c2840] border border-[#1c2840] hover:border-[#3b82f6] px-2 py-1 rounded text-[#cbd5e1] hover:text-white transition-all font-mono-data text-left"
+                          className="text-xs bg-surface hover:bg-surface-container-highest border border-outline-variant hover:border-primary px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface transition-all font-mono-data text-left"
                         >
                           &rarr; {s}
                         </button>
@@ -456,9 +426,9 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
 
           {/* Loading Indicator */}
           {loading && (
-            <div className="bg-[#0f1520] border border-[#3b82f6]/40 rounded-lg p-3.5 flex items-center gap-3">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#3b82f6] animate-pulse" />
-              <span className="font-mono-data text-xs text-[#3b82f6] animate-pulse">
+            <div className="bg-surface-container border border-primary/30 rounded-xl p-4 flex items-center gap-3">
+              <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
+              <span className="font-mono-data text-xs text-primary animate-pulse">
                 Evaluating institutional transmission matrix...
               </span>
             </div>
@@ -468,7 +438,7 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
         </div>
 
         {/* Input Bar & Suggestion Pills */}
-        <div className="p-3 bg-[#0f1520] border-t border-[#1c2840] space-y-2 shrink-0">
+        <div className="p-4 bg-surface-container border-t border-outline-variant space-y-3 shrink-0">
           <div className="flex gap-2">
             <input
               ref={inputRef}
@@ -476,25 +446,26 @@ export default function PiedmontCopilot({ isOpen, onClose }: PiedmontCopilotProp
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="Ask about any equity, cross-asset transmission, or macro factor..."
-              className="flex-1 bg-[#080c14] border border-[#1c2840] focus:border-[#3b82f6] rounded px-3 py-2 text-xs text-white placeholder-[#64748b] outline-none font-sans"
+              placeholder="Ask about any equity, cross-asset transmission (e.g. falling gold, crude oil), or macro factor..."
+              className="flex-1 bg-surface border border-outline-variant focus:border-primary rounded-lg px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/60 outline-none font-sans"
             />
             <button
               onClick={() => handleSubmit()}
               disabled={loading || !query.trim()}
-              className="px-4 py-2 rounded bg-[#3b82f6] hover:bg-[#2563eb] disabled:opacity-40 text-white font-mono-data font-bold text-xs uppercase transition-colors shrink-0"
+              className="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary-dim disabled:opacity-40 text-white font-mono-data font-bold text-xs uppercase transition-colors shrink-0 flex items-center gap-1.5"
             >
-              SEND
+              <span>SEND</span>
+              <Icon name="send" className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
-            <span className="text-[9px] font-mono-data text-[#64748b] uppercase shrink-0">SUGGESTED:</span>
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
+            <span className="text-[10px] font-mono-data text-on-surface-variant uppercase shrink-0 font-bold">SUGGESTED:</span>
             {suggestionPills.map((p, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSubmit(p)}
-                className="whitespace-nowrap px-2 py-0.5 rounded text-[10px] font-mono-data bg-[#080c14] hover:bg-[#1c2840] border border-[#1c2840] text-[#cbd5e1] hover:text-white shrink-0 transition-colors"
+                className="whitespace-nowrap px-2.5 py-1 rounded-md text-xs font-mono-data bg-surface hover:bg-surface-container-highest border border-outline-variant text-on-surface-variant hover:text-on-surface shrink-0 transition-colors"
               >
                 {p}
               </button>

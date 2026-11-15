@@ -25,7 +25,14 @@ import {
   History,
   Bot,
   X,
-  User
+  User,
+  Sun,
+  Moon,
+  Play,
+  Pause,
+  PieChart,
+  Eye,
+  Send
 } from 'lucide-react';
 
 interface IconProps {
@@ -103,6 +110,24 @@ export default function Icon({ name, className = '', size = 16 }: IconProps) {
     case 'account_circle':
     case 'user':
       return <User {...iconProps} />;
+    case 'light_mode':
+    case 'sun':
+      return <Sun {...iconProps} />;
+    case 'dark_mode':
+    case 'moon':
+      return <Moon {...iconProps} />;
+    case 'play_arrow':
+    case 'play':
+      return <Play {...iconProps} />;
+    case 'pause':
+      return <Pause {...iconProps} />;
+    case 'pie_chart':
+      return <PieChart {...iconProps} />;
+    case 'visibility':
+    case 'eye':
+      return <Eye {...iconProps} />;
+    case 'send':
+      return <Send {...iconProps} />;
     default:
       return <Activity {...iconProps} />;
   }

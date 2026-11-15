@@ -1,31 +1,59 @@
 @import "tailwindcss";
 
-:root {
-  /* Fey Aesthetic Dark Palette */
-  --background: #0b0b0b;
-  --foreground: #ffffff;
-  --surface: #0b0b0b;
-  --surface-container: #191919;
-  --surface-container-high: #131313;
-  --surface-container-highest: #262626;
+:root, [data-theme="dark"], .dark {
+  /* Institutional Terminal Dark Palette */
+  --background: #080c14;
+  --foreground: #f8fafc;
+  --surface: #0f1520;
+  --surface-container: #141c2b;
+  --surface-container-high: #1a2336;
+  --surface-container-highest: #243048;
   
-  --primary: #ffffff;
-  --primary-dim: #cccccc;
-  --secondary: #868f97;
-  --secondary-container: #131313;
+  --primary: #3b82f6;
+  --primary-dim: #60a5fa;
+  --secondary: #94a3b8;
+  --secondary-container: #1c2840;
   
-  --on-surface: #ffffff;
-  --on-surface-variant: #868f97;
-  --on-primary: #0b0b0b;
+  --on-surface: #f8fafc;
+  --on-surface-variant: #94a3b8;
+  --on-primary: #ffffff;
   
-  --outline: #525252;
-  --outline-variant: #333333;
+  --outline: #334155;
+  --outline-variant: #1e293b;
   
-  --error: #d85e5e;
-  --positive: #4ebe96;
-  --negative: #d85e5e;
-  --signal: #479ffa;
-  --ember: #ffa16c;
+  --error: #f87171;
+  --positive: #34d399;
+  --negative: #f87171;
+  --signal: #38bdf8;
+  --ember: #fb923c;
+}
+
+[data-theme="light"], .light {
+  /* Crisp Institutional Terminal Light Palette */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-container: #f1f5f9;
+  --surface-container-high: #ffffff;
+  --surface-container-highest: #e2e8f0;
+  
+  --primary: #2563eb;
+  --primary-dim: #1d4ed8;
+  --secondary: #475569;
+  --secondary-container: #e2e8f0;
+  
+  --on-surface: #0f172a;
+  --on-surface-variant: #475569;
+  --on-primary: #ffffff;
+  
+  --outline: #94a3b8;
+  --outline-variant: #e2e8f0;
+  
+  --error: #dc2626;
+  --positive: #059669;
+  --negative: #dc2626;
+  --signal: #2563eb;
+  --ember: #d97706;
 }
 
 @theme {
@@ -51,13 +79,9 @@
   --color-signal: var(--signal);
   --color-ember: var(--ember);
 
-  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-serif: "PT Serif", serif;
   --font-mono-data: "JetBrains Mono", monospace;
-
-  /* Fey Shadows */
-  --shadow-fey-base: 0 0 44px rgba(0, 0, 0, 0.8);
-  --shadow-fey-btn: 0 1px 0 rgba(0, 0, 0, 0.85), 0 0 14px rgba(255, 255, 255, 0.25);
 
   --spacing-unit: 8px;
   --spacing-gutter: 16px;
@@ -69,13 +93,14 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
-/* Custom scrollbar matching Fey */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--background);

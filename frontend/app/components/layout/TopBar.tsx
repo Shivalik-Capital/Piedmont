@@ -7,12 +7,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import LivePulse from '../ui/LivePulse';
 import Icon from '../ui/Icon';
+import { useTheme } from '../../context/ThemeContext';
 
 interface TopBarProps {
   onOpenCopilot?: () => void;
 }
 
 export default function TopBar({ onOpenCopilot }: TopBarProps) {
+  const { theme, toggleTheme } = useTheme();
   const [time, setTime] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
@@ -185,6 +187,16 @@ export default function TopBar({ onOpenCopilot }: TopBarProps) {
         )}
 
         <div className="flex items-center gap-2 sm:gap-gutter text-on-surface-variant">
+          {/* Light / Dark Mode Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded border border-outline-variant hover:border-primary/50 bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center"
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            aria-label="Toggle Theme"
+          >
+            <Icon name={theme === 'dark' ? 'light_mode' : 'dark_mode'} className="text-sm" />
+          </button>
+
           <span className="text-xs font-mono-data tabular-nums hidden lg:inline w-[110px] text-right" suppressHydrationWarning>
             {mounted ? `${time} IST` : ''}
           </span>

@@ -2,8 +2,9 @@
 
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, BookOpen, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, BarChart3, Landmark, Banknote, PiggyBank, Scale, Coins, Receipt, Wallet, Building2, Factory, ShieldCheck, Info, Lightbulb, Target, Zap } from 'lucide-react';
+import { ArrowLeft, BookOpen, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, BarChart3, Landmark, Banknote, PiggyBank, Scale, Coins, Receipt, Wallet, Building2, Factory, ShieldCheck, Info, Lightbulb, Target, Zap, Calendar, Clock, RefreshCw, Flame, Layers, ArrowUpRight, ArrowDownRight, Sparkles } from 'lucide-react';
 import { Suspense, useState, useEffect } from 'react';
+import { getCommodityBySlug, isWeekendNow, CommodityDefinition } from '../../lib/commodity-database';
 
 // ─── Company context map ─────────────────────────────────────────────
 const COMPANIES: Record<string, { name: string; sector: string; desc: string }> = {
@@ -736,12 +737,406 @@ const MACRO: Record<string, { title: string; icon: any; intro: string; analogy: 
 // ─── Section Component ───────────────────────────────────────────────
 function Section({ icon: Icon, title, children, accent = false }: { icon?: any; title: string; children: React.ReactNode; accent?: boolean }) {
   return (
-    <div className={`${accent ? 'bg-[#D4AF37]/5 border border-[#D4AF37]/20' : 'bg-white/[0.03] border border-white/5'} rounded-2xl p-6 md:p-8`}>
+    <div className={`${accent ? 'bg-[#D4AF37]/5 border border-[#D4AF37]/25' : 'bg-surface-container border border-outline-variant'} rounded-2xl p-6 md:p-8 transition-colors`}>
       <h3 className="text-xl md:text-2xl font-bold text-[#D4AF37] mb-4 flex items-center gap-3">
-        {Icon && <Icon size={22} className="text-[#D4AF37]/70 flex-shrink-0" />}
+        {Icon && <Icon size={22} className="text-[#D4AF37]/80 flex-shrink-0" />}
         {title}
       </h3>
-      <div className="text-white/80 leading-relaxed space-y-4 text-[15px]">{children}</div>
+      <div className="text-on-surface/85 leading-relaxed space-y-4 text-[15px]">{children}</div>
+    </div>
+  );
+}
+
+// ─── Commodity Learning & Dynamic Transmission View ──────────────────
+function CommodityLearnView({ commodity }: { commodity: CommodityDefinition }) {
+  const isWeekendDefault = isWeekendNow();
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekend'>(isWeekendDefault ? 'weekend' : 'daily');
+
+  const { dailyUpdate, weekendWrap, transmissionChannels } = commodity;
+
+  return (
+    <div className="min-h-screen bg-surface text-on-surface">
+      <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-16">
+        
+        {/* Navigation Breadcrumb */}
+        <div className="flex items-center justify-between mb-8">
+          <Link 
+            href="/commodities" 
+            className="inline-flex items-center gap-2 text-on-surface-variant hover:text-[#D4AF37] transition-colors text-sm group"
+          >
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            <span>Commodities Universe</span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono uppercase tracking-wider font-semibold bg-surface-container-high border border-outline-variant text-on-surface-variant">
+              {commodity.category}
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono uppercase tracking-wider font-semibold bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37]">
+              {commodity.exchange}
+            </span>
+          </div>
+        </div>
+
+        {/* Hero Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-5xl font-bold text-on-surface tracking-tight mb-4 leading-tight">
+            {commodity.title}
+          </h1>
+          <p className="text-lg md:text-xl text-on-surface-variant leading-relaxed max-w-3xl">
+            {commodity.intro}
+          </p>
+        </div>
+
+        {/* ─── DYNAMIC DAILY / WEEKEND MARKET TRANSMISSION ENGINE ─────────── */}
+        <div className="bg-surface-container border border-[#D4AF37]/30 rounded-2xl p-6 md:p-8 mb-8 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-[#D4AF37]" />
+          
+          {/* Card Meta Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-outline-variant">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs uppercase tracking-widest text-[#D4AF37] font-bold">
+                  {activeTab === 'weekend' ? 'Weekend Market Impact Wrap' : 'Daily Trading Day Transmission'}
+                </span>
+                <span className="text-[11px] text-on-surface-variant font-mono bg-surface-container-high px-2 py-0.5 rounded border border-outline-variant">
+                  {activeTab === 'weekend' ? weekendWrap.weekEnding : dailyUpdate.tradingDate}
+                </span>
+              </div>
+              <p className="text-xs text-on-surface-variant">
+                Dynamic cross-asset sensitivity and transmission to Indian capital markets
+              </p>
+            </div>
+
+            {/* Interactive Toggle for Evaluators and Users */}
+            <div className="flex items-center gap-1 bg-surface-container-high border border-outline-variant p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setActiveTab('daily')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                  activeTab === 'daily'
+                    ? 'bg-[#D4AF37] text-black shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                <Zap size={13} />
+                <span>Trading Day</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('weekend')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                  activeTab === 'weekend'
+                    ? 'bg-[#D4AF37] text-black shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                <Calendar size={13} />
+                <span>Weekend Wrap</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Benchmark Price Strip */}
+          <div className="py-6 flex flex-wrap items-baseline justify-between gap-4 border-b border-outline-variant">
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl md:text-5xl font-mono-data font-bold text-on-surface tracking-tight tabular-nums">
+                {commodity.livePriceDisplay}
+              </span>
+              <span className={`text-sm md:text-base font-mono-data font-semibold flex items-center px-2.5 py-1 rounded-full ${
+                commodity.isPositive
+                  ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                  : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
+              }`}>
+                {commodity.isPositive ? <TrendingUp size={15} className="mr-1" /> : <TrendingDown size={15} className="mr-1" />}
+                {commodity.liveChangeDisplay}
+              </span>
+            </div>
+
+            <div className="text-left sm:text-right text-xs font-mono text-on-surface-variant">
+              <div>Benchmark Unit: <span className="font-semibold text-on-surface">{commodity.benchmarkUnit}</span></div>
+              <div className="text-[11px] text-[#D4AF37] mt-0.5">MCX & Global ICE/NYMEX Feed</div>
+            </div>
+          </div>
+
+          {/* DYNAMIC CONTENT SWITCHER */}
+          {activeTab === 'daily' ? (
+            <div className="pt-6 space-y-6">
+              {/* Session Verdict Callout */}
+              <div className="bg-surface-container-high border border-outline-variant rounded-xl p-4 md:p-5">
+                <div className="text-xs uppercase tracking-wider text-[#D4AF37] font-bold mb-1">
+                  Session Verdict & Headline
+                </div>
+                <p className="text-base md:text-lg font-semibold text-on-surface leading-snug">
+                  "{dailyUpdate.sessionVerdict}"
+                </p>
+              </div>
+
+              {/* Market Impact Narrative */}
+              <div>
+                <h4 className="text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-2">
+                  Trading Day Transmission Mechanism
+                </h4>
+                <p className="text-[15px] text-on-surface/90 leading-relaxed">
+                  {dailyUpdate.marketImpactSummary}
+                </p>
+              </div>
+
+              {/* Sector Winners & Losers 2-Column Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                {/* Winners */}
+                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4 md:p-5">
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider mb-3">
+                    <CheckCircle size={15} />
+                    <span>Sector Winners / Gross Margin Expansion</span>
+                  </div>
+                  <div className="space-y-3">
+                    {dailyUpdate.sectorWinners.map((w, idx) => (
+                      <div key={idx} className="border-b border-emerald-500/10 pb-2 last:border-0 last:pb-0">
+                        <div className="text-sm font-semibold text-on-surface">{w.name}</div>
+                        <div className="text-xs text-on-surface-variant mt-0.5">{w.rationale}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Losers */}
+                <div className="bg-rose-500/5 border border-rose-500/20 rounded-xl p-4 md:p-5">
+                  <div className="flex items-center gap-2 text-rose-400 font-bold text-xs uppercase tracking-wider mb-3">
+                    <AlertTriangle size={15} />
+                    <span>Sector Headwinds / Margin Compression</span>
+                  </div>
+                  <div className="space-y-3">
+                    {dailyUpdate.sectorLosers.map((l, idx) => (
+                      <div key={idx} className="border-b border-rose-500/10 pb-2 last:border-0 last:pb-0">
+                        <div className="text-sm font-semibold text-on-surface">{l.name}</div>
+                        <div className="text-xs text-on-surface-variant mt-0.5">{l.rationale}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Nifty 50 Transmission */}
+              <div className="pt-2 border-t border-outline-variant">
+                <div className="text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-1">
+                  Nifty 50 Index Aggregate Transmission
+                </div>
+                <p className="text-sm text-on-surface/90 leading-relaxed font-mono">
+                  {dailyUpdate.niftyTransmission}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="pt-6 space-y-6">
+              {/* Weekend Wrap Performance Banner */}
+              <div className="bg-surface-container-high border border-outline-variant rounded-xl p-4 md:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-[#D4AF37] font-bold mb-0.5">
+                    Weekly Cumulative Performance
+                  </div>
+                  <div className="text-lg md:text-xl font-bold font-mono text-on-surface">
+                    {weekendWrap.weeklyPerformance}
+                  </div>
+                </div>
+                <span className="self-start sm:self-center px-3 py-1 bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-semibold rounded-full">
+                  Weekend Strategic Wrap
+                </span>
+              </div>
+
+              {/* Weekly Narrative */}
+              <div>
+                <h4 className="text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-2">
+                  Weekly Global Commodity Narrative
+                </h4>
+                <p className="text-[15px] text-on-surface/90 leading-relaxed">
+                  {weekendWrap.weeklyNarrative}
+                </p>
+              </div>
+
+              {/* Global Drivers */}
+              <div className="bg-surface-container-high/60 border border-outline-variant rounded-xl p-5">
+                <h4 className="text-xs uppercase tracking-wider text-[#D4AF37] font-bold mb-3 flex items-center gap-2">
+                  <Flame size={14} /> Key Global Catalysts & Inventory Drivers
+                </h4>
+                <ul className="space-y-2 text-sm text-on-surface-variant">
+                  {weekendWrap.globalDrivers.map((driver, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="text-[#D4AF37] mt-1">•</span>
+                      <span>{driver}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Monday Market Open Strategy & Watchlist */}
+              <div className="bg-[#D4AF37]/5 border border-[#D4AF37]/25 rounded-xl p-5">
+                <div className="flex items-center gap-2 text-[#D4AF37] font-bold text-xs uppercase tracking-wider mb-2">
+                  <Clock size={14} /> Monday 9:00 AM IST Market Watchlist
+                </div>
+                <p className="text-sm font-mono text-on-surface leading-relaxed">
+                  {weekendWrap.mondayOpeningWatchlist}
+                </p>
+              </div>
+
+              {/* Institutional Portfolio Takeaway */}
+              <div className="pt-2 border-t border-outline-variant">
+                <div className="text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-1">
+                  Institutional Portfolio Allocation Stance
+                </div>
+                <p className="text-sm text-on-surface/90 leading-relaxed font-semibold">
+                  {weekendWrap.institutionalTakeaway}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ─── THE SIMPLE INTUITIVE ANALOGY ─────────────────────────────── */}
+        <div className="space-y-6">
+          <Section icon={Lightbulb} title="The Simple Intuitive Analogy" accent>
+            <p className="text-base text-on-surface/90 leading-relaxed">
+              {commodity.analogy}
+            </p>
+          </Section>
+
+          {/* ─── CROSS-ASSET MACRO TRANSMISSION MATRIX ──────────────────── */}
+          <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 md:p-8">
+            <h3 className="text-xl md:text-2xl font-bold text-[#D4AF37] mb-2 flex items-center gap-3">
+              <Layers size={22} className="text-[#D4AF37]/80" />
+              Cross-Asset Transmission to Indian Equities
+            </h3>
+            <p className="text-xs text-on-surface-variant mb-6">
+              Empirical margin sensitivity formulas, valuation impacts, and historical transmission episodes
+            </p>
+
+            <div className="space-y-4">
+              {transmissionChannels.map((channel, idx) => (
+                <div 
+                  key={idx} 
+                  className="bg-surface-container-high border border-outline-variant rounded-xl p-5 hover:border-[#D4AF37]/40 transition-colors"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-base text-on-surface">
+                        {channel.targetEquityOrIndex}
+                      </span>
+                    </div>
+                    <span className={`self-start sm:self-auto px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${
+                      channel.direction === 'tailwind'
+                        ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
+                        : 'bg-rose-500/10 border border-rose-500/30 text-rose-400'
+                    }`}>
+                      {channel.direction === 'tailwind' ? 'Tailwind' : 'Headwind'}
+                    </span>
+                  </div>
+
+                  <div className="bg-surface-container p-3 rounded-lg border border-outline-variant font-mono text-xs text-[#D4AF37] mb-3">
+                    <span className="text-on-surface-variant font-sans font-medium mr-1.5">Sensitivity Metric:</span>
+                    {channel.sensitivityMetric}
+                  </div>
+
+                  <p className="text-sm text-on-surface/85 leading-relaxed mb-3">
+                    {channel.mechanism}
+                  </p>
+
+                  <div className="text-xs text-on-surface-variant border-t border-outline-variant pt-2 flex items-start gap-1.5">
+                    <span className="font-semibold text-on-surface">Historical Episode:</span>
+                    <span>{channel.historicalPrecedent}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ─── FULL INSTITUTIONAL EXPLANATION ──────────────────────────── */}
+          <Section icon={BookOpen} title="The Full Institutional Explanation">
+            {commodity.deepDive.map((para, i) => (
+              <p key={i} className="text-on-surface/85 leading-relaxed text-[15px]">{para}</p>
+            ))}
+          </Section>
+
+          {/* ─── PRICING FORMULA & SOURCING MECHANICS ─────────────────────── */}
+          <Section icon={Zap} title="MCX Landed Price & Sourcing Mechanics">
+            <p className="text-xs text-on-surface-variant mb-2">
+              Mathematical conversion from global benchmark spot to Indian rupee landed price:
+            </p>
+            <pre className="bg-black/40 p-4 md:p-6 rounded-xl font-mono text-xs md:text-sm text-[#D4AF37] whitespace-pre-wrap border border-[#D4AF37]/20 overflow-x-auto leading-relaxed">
+              {commodity.formulaOrCalculation}
+            </pre>
+          </Section>
+
+          {/* ─── 10-YEAR HISTORICAL BENCHMARKS ──────────────────────────── */}
+          <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 md:p-8">
+            <h3 className="text-xl font-bold text-[#D4AF37] mb-4 flex items-center gap-2">
+              <BarChart3 size={20} className="text-[#D4AF37]/80" />
+              10-Year Historical Range & Benchmarks
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-surface-container-high border border-outline-variant rounded-xl p-4">
+                <div className="text-xs text-on-surface-variant mb-1 uppercase font-semibold">10-Year High</div>
+                <div className="text-base font-bold font-mono text-on-surface">{commodity.historicalRange.tenYearHigh}</div>
+              </div>
+              <div className="bg-surface-container-high border border-outline-variant rounded-xl p-4">
+                <div className="text-xs text-on-surface-variant mb-1 uppercase font-semibold">10-Year Low</div>
+                <div className="text-base font-bold font-mono text-on-surface">{commodity.historicalRange.tenYearLow}</div>
+              </div>
+              <div className="bg-surface-container-high border border-outline-variant rounded-xl p-4">
+                <div className="text-xs text-on-surface-variant mb-1 uppercase font-semibold">Historical Median</div>
+                <div className="text-base font-bold font-mono text-on-surface">{commodity.historicalRange.historicalMedian}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* ─── HEALTHY SIGNS VS RED FLAGS ─────────────────────────────── */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 md:p-8">
+              <h3 className="text-lg font-bold text-emerald-400 mb-3 flex items-center gap-2">
+                <CheckCircle size={18} />
+                <span>Healthy Range for Indian Economy</span>
+              </h3>
+              <p className="text-on-surface/85 text-[15px] leading-relaxed">{commodity.goodBad.good}</p>
+            </div>
+            <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-6 md:p-8">
+              <h3 className="text-lg font-bold text-rose-400 mb-3 flex items-center gap-2">
+                <AlertTriangle size={18} />
+                <span>Destabilizing Volatility & Red Flags</span>
+              </h3>
+              <p className="text-on-surface/85 text-[15px] leading-relaxed">{commodity.goodBad.bad}</p>
+            </div>
+          </div>
+
+          {/* ─── INDIAN MARKET CONTEXT ──────────────────────────────────── */}
+          <Section icon={Landmark} title="Indian Macroeconomic Context">
+            <p className="text-on-surface/85 leading-relaxed text-[15px]">{commodity.indianContext}</p>
+          </Section>
+
+          {/* ─── ACTION TRIPPERS ────────────────────────────────────────── */}
+          <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 md:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h4 className="font-bold text-on-surface mb-1">Explore Cross-Asset Transmission in Copilot</h4>
+              <p className="text-xs text-on-surface-variant">Ask our institutional reasoning engine how {commodity.name} interacts with individual Nifty 50 stocks.</p>
+            </div>
+            <Link
+              href={`/copilot?q=${encodeURIComponent(`how does ${commodity.name.toLowerCase()} prices affect nifty and key stocks`)}`}
+              className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap shadow-sm"
+            >
+              <Sparkles size={14} />
+              <span>Ask Copilot</span>
+            </Link>
+          </div>
+
+        </div>
+
+        {/* Footer */}
+        <div className="mt-16 pt-8 border-t border-outline-variant text-center">
+          <p className="text-xs text-on-surface-variant">
+            Piedmont Terminal · Institutional Commodities Engine · Not Financial Advice
+          </p>
+        </div>
+
+      </div>
     </div>
   );
 }
@@ -780,6 +1175,7 @@ function LearnPageInner() {
     desc: `${symbol} is a publicly traded constituent of the Indian equity market.` 
   }) : null;
 
+  const commodity = getCommodityBySlug(term);
   const metric = METRICS[term];
   const macro = MACRO[term];
   const content = metric || macro;
@@ -824,12 +1220,17 @@ function LearnPageInner() {
     }
   }, [term, macro]);
 
+  // If term matches a commodity, render specialized institutional commodity view!
+  if (commodity) {
+    return <CommodityLearnView commodity={commodity} />;
+  }
+
   if (!content) {
     return (
-      <div className="min-h-screen bg-[#111110] text-white p-8 flex items-center justify-center">
+      <div className="min-h-screen bg-surface text-on-surface p-8 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl text-[#D4AF37] mb-4">Term Not Found</h1>
-          <p className="text-white/60 mb-6">We don't have an explanation for "{term}" yet.</p>
+          <p className="text-on-surface-variant mb-6">We don't have an explanation for "{term}" yet.</p>
           <button onClick={() => window.history.back()} className="text-[#D4AF37] hover:underline">← Go Back</button>
         </div>
       </div>
@@ -840,10 +1241,10 @@ function LearnPageInner() {
   const companySpecificContent = metric && company ? metric.companySpecific(company.name, company.sector, company.desc) : null;
 
   return (
-    <div className="min-h-screen bg-[#111110] text-white">
+    <div className="min-h-screen bg-surface text-on-surface">
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-16">
         {/* Back Button */}
-        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'} className="inline-flex items-center gap-2 text-[#D4AF37]/70 hover:text-[#D4AF37] transition-colors mb-8 text-sm group">
+        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'} className="inline-flex items-center gap-2 text-on-surface-variant hover:text-[#D4AF37] transition-colors mb-8 text-sm group">
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Go Back
         </button>
 
@@ -858,14 +1259,14 @@ function LearnPageInner() {
                 <Building2 size={12} /> Customized for {company.name}
               </div>
             )}
-            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">{content.title}</h1>
-            <p className="text-lg md:text-xl text-white/70 leading-relaxed max-w-3xl">{content.intro}</p>
+            <h1 className="text-3xl md:text-5xl font-bold text-on-surface mb-4 leading-tight">{content.title}</h1>
+            <p className="text-lg md:text-xl text-on-surface-variant leading-relaxed max-w-3xl">{content.intro}</p>
           </div>
         </div>
 
         {/* Live Indicator Pulse / Dynamic Value Banner */}
         {liveData && (
-          <div className="bg-[#1A1917] border border-[#D4AF37]/30 rounded-2xl p-6 md:p-7 mb-8 shadow-[0_0_35px_rgba(212,175,55,0.06)] relative overflow-hidden group">
+          <div className="bg-surface-container border border-[#D4AF37]/30 rounded-2xl p-6 md:p-7 mb-8 shadow-sm relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-1.5 h-full bg-[#D4AF37]" />
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -875,13 +1276,13 @@ function LearnPageInner() {
                     {company ? `Reported for ${company.name}` : 'Current Live Reading'}
                   </span>
                   {liveData.date && (
-                    <span className="text-xs text-white/60 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full font-mono">
+                    <span className="text-xs text-on-surface-variant bg-surface-container-high border border-outline-variant px-2.5 py-0.5 rounded-full font-mono">
                       {liveData.date}
                     </span>
                   )}
                 </div>
                 <div className="flex items-baseline gap-3 mt-2">
-                  <span className="text-3xl md:text-5xl font-extrabold font-mono text-white tracking-tight">
+                  <span className="text-3xl md:text-5xl font-extrabold font-mono text-on-surface tracking-tight">
                     {liveData.value}
                   </span>
                   {liveData.trend && (
@@ -900,12 +1301,12 @@ function LearnPageInner() {
                 </div>
               </div>
 
-              <div className="sm:text-right border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0">
-                <div className="text-xs uppercase tracking-wider text-white/40 mb-1">Source & Frequency</div>
-                <div className="text-sm text-white/80 font-medium">
+              <div className="sm:text-right border-t sm:border-t-0 border-outline-variant pt-3 sm:pt-0">
+                <div className="text-xs uppercase tracking-wider text-on-surface-variant mb-1">Source & Frequency</div>
+                <div className="text-sm text-on-surface font-medium">
                   {liveData.source || (company ? 'Company Quarterly Filings / BSE / NSE' : 'MoSPI · RBI · NSE Daily Feeds')}
                 </div>
-                <div className="text-[11px] text-emerald-400/80 font-mono mt-1 flex items-center sm:justify-end gap-1">
+                <div className="text-[11px] text-emerald-400 font-mono mt-1 flex items-center sm:justify-end gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Synced with live terminal
                 </div>
               </div>
@@ -940,7 +1341,7 @@ function LearnPageInner() {
           {/* Formula */}
           {content.formula && (
             <Section icon={Zap} title="The Formula">
-              <pre className="bg-black/40 p-4 md:p-6 rounded-xl font-mono text-sm text-[#D4AF37] whitespace-pre-wrap border border-[#D4AF37]/10 overflow-x-auto">
+              <pre className="bg-surface-container-high p-4 md:p-6 rounded-xl font-mono text-sm text-[#D4AF37] whitespace-pre-wrap border border-outline-variant overflow-x-auto">
                 {content.formula}
               </pre>
             </Section>
@@ -948,13 +1349,13 @@ function LearnPageInner() {
 
           {/* Good vs Bad */}
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-green-500/5 border border-green-500/20 rounded-2xl p-6 md:p-8">
-              <h3 className="text-lg font-bold text-green-400 mb-3 flex items-center gap-2"><CheckCircle size={18} /> Healthy Signs</h3>
-              <p className="text-white/80 text-[15px] leading-relaxed">{content.goodBad.good}</p>
+            <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 md:p-8">
+              <h3 className="text-lg font-bold text-emerald-400 mb-3 flex items-center gap-2"><CheckCircle size={18} /> Healthy Signs</h3>
+              <p className="text-on-surface/85 text-[15px] leading-relaxed">{content.goodBad.good}</p>
             </div>
-            <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-6 md:p-8">
-              <h3 className="text-lg font-bold text-red-400 mb-3 flex items-center gap-2"><AlertTriangle size={18} /> Red Flags</h3>
-              <p className="text-white/80 text-[15px] leading-relaxed">{content.goodBad.bad}</p>
+            <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-6 md:p-8">
+              <h3 className="text-lg font-bold text-rose-400 mb-3 flex items-center gap-2"><AlertTriangle size={18} /> Red Flags</h3>
+              <p className="text-on-surface/85 text-[15px] leading-relaxed">{content.goodBad.bad}</p>
             </div>
           </div>
 
@@ -983,8 +1384,8 @@ function LearnPageInner() {
         </div>
 
         {/* Footer */}
-        <div className="mt-16 pt-8 border-t border-white/5 text-center">
-          <p className="text-xs text-white/30">Piedmont Terminal · Financial Education · Not Financial Advice</p>
+        <div className="mt-16 pt-8 border-t border-outline-variant text-center">
+          <p className="text-xs text-on-surface-variant">Piedmont Terminal · Financial Education · Not Financial Advice</p>
         </div>
       </div>
     </div>
