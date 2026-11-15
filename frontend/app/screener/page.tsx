@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   SlidersHorizontal, 
   Search, 
@@ -103,6 +104,7 @@ function formatMarketCap(mcap: number): string {
 }
 
 export default function ScreenerPage() {
+  const router = useRouter();
   const [universe, setUniverse] = useState<Company[]>(INSTITUTIONAL_UNIVERSE);
   const [activePreset, setActivePreset] = useState<FactorPreset>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -648,6 +650,7 @@ export default function ScreenerPage() {
                       return (
                         <tr 
                           key={c.symbol} 
+                          onClick={() => router.push(`/equities/companies/${c.symbol}`)}
                           className="hover:bg-white/[0.04] transition-colors group cursor-pointer"
                         >
                           <td className="py-3 px-4 font-mono font-bold text-white">
