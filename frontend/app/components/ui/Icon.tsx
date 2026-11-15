@@ -32,7 +32,17 @@ import {
   Pause,
   PieChart,
   Eye,
-  Send
+  Send,
+  ChevronLeft,
+  ChevronRight,
+  CandlestickChart,
+  BarChart3,
+  GraduationCap,
+  BookOpen,
+  Shield,
+  ChevronsUp,
+  ChevronsDown,
+  ArrowRight
 } from 'lucide-react';
 
 interface IconProps {
@@ -61,6 +71,19 @@ export default function Icon({ name, className = '', size = 16 }: IconProps) {
     case 'arrow_downward':
     case 'arrow_down':
       return <ArrowDown {...iconProps} />;
+    case 'keyboard_double_arrow_up':
+    case 'chevrons_up':
+      return <ChevronsUp {...iconProps} />;
+    case 'keyboard_double_arrow_down':
+    case 'chevrons_down':
+      return <ChevronsDown {...iconProps} />;
+    case 'arrow_forward':
+    case 'arrow_right':
+      return <ArrowRight {...iconProps} />;
+    case 'chevron_left':
+      return <ChevronLeft {...iconProps} />;
+    case 'chevron_right':
+      return <ChevronRight {...iconProps} />;
     case 'horizontal_rule':
     case 'remove':
       return <Minus {...iconProps} />;
@@ -68,6 +91,10 @@ export default function Icon({ name, className = '', size = 16 }: IconProps) {
       return <LayoutDashboard {...iconProps} />;
     case 'show_chart':
       return <LineChart {...iconProps} />;
+    case 'candlestick_chart':
+      return <CandlestickChart {...iconProps} />;
+    case 'bar_chart':
+      return <BarChart3 {...iconProps} />;
     case 'business':
       return <Building2 {...iconProps} />;
     case 'tune':
@@ -85,6 +112,7 @@ export default function Icon({ name, className = '', size = 16 }: IconProps) {
     case 'schedule':
       return <Clock {...iconProps} />;
     case 'monitoring':
+    case 'activity':
       return <Activity {...iconProps} />;
     case 'search':
       return <Search {...iconProps} />;
@@ -104,6 +132,14 @@ export default function Icon({ name, className = '', size = 16 }: IconProps) {
     case 'ai':
     case 'copilot':
       return <Bot {...iconProps} />;
+    case 'school':
+    case 'learn':
+    case 'education':
+      return <GraduationCap {...iconProps} />;
+    case 'book':
+      return <BookOpen {...iconProps} />;
+    case 'shield':
+      return <Shield {...iconProps} />;
     case 'close':
     case 'x':
       return <X {...iconProps} />;
@@ -129,6 +165,6 @@ export default function Icon({ name, className = '', size = 16 }: IconProps) {
     case 'send':
       return <Send {...iconProps} />;
     default:
-      return <Activity {...iconProps} />;
+      return null;
   }
 }
