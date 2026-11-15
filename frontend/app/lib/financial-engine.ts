@@ -886,36 +886,49 @@ A three-factor DuPont analysis reveals the operational drivers behind ${info.nam
 
 function generateDynamicSemanticAnswer(originalQuery: string, normalized: string): CopilotResponse {
   return {
-    queryType: 'macro_outlook',
-    title: `Institutional Research Analysis: "${originalQuery}"`,
-    executiveSummary: `In response to your query regarding "${originalQuery}", Piedmont's financial reasoning engine analyzes the interaction between Indian macro conditions (Nifty 50 at 25,800, RBI Repo at 5.50%, CPI at 6.09%, WPI at 2.36%) and corporate earnings drivers. Structural capital deepening via domestic mutual fund SIPs (>₹24,500 Cr/month) continues to provide resilient multiple support across domestic cyclicals.`,
-    markdownSynthesis: `### 1. Macroeconomic Context & Capital Dynamics
-- **Macro Anchor**: The Indian economy exhibits robust real GDP growth (~7.0-7.2%) supported by sound public capex and healthy private corporate balance sheets with decade-low non-performing assets (NPAs).
-- **Inflation Regime**: While headline CPI printed at **6.09%** in October 2026 due to transitory food price spikes, wholesale WPI remains at a contained **2.36%**, indicating that underlying industrial input pressures are benign.
-- **Liquidity Foundation**: The structural influx of domestic retail capital into mutual fund SIPs creates an unprecedented valuation cushion, dampening downside volatility across large-cap leaders.
+    queryType: 'general',
+    title: `Unbound Query: "${originalQuery}"`,
+    executiveSummary: `Bespoke, open-ended market questions (such as "${originalQuery}") require an active Generative AI connection. Because no LLM key is currently active, Piedmont will not return a canned or pre-fed response.`,
+    markdownSynthesis: `### Generative AI Engine Required
 
-### 2. Multi-Factor Transmission Channels
-1. **Monetary Transmission**: The RBI's pause at 5.50% repo rate preserves banking Net Interest Margins (NIMs) while supporting ongoing retail and mortgage credit expansion.
-2. **External Stability**: With foreign exchange reserves at **$719.55 Billion** and gold reserves at **$104.80 Billion**, external balance of payments risks remain strictly contained.
-3. **Sectoral Dispersion**: Capital allocation continues to favor high-ROE domestic market compounders over highly leveraged or debt-heavy cyclicals.`,
+You asked: **"${originalQuery}"**
+
+To answer bespoke market queries dynamically without hardcoded templates, Piedmont Copilot uses **Google Gemini 2.5 Flash** or **Groq Cloud Llama 3.3**:
+
+1. **Why didn't you get an AI answer?**
+   - The production server currently does not have a server-side \`GEMINI_API_KEY\` or \`GROQ_API_KEY\` configured in Vercel environment variables.
+   - Without an active LLM key, the engine refuses to generate fake boilerplate answers.
+
+2. **How to activate Real Generative AI immediately (100% Free):**
+   - **Step 1:** Get a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey) (zero credit card, 15 RPM free forever) or [Groq Console](https://console.groq.com/keys) (ultra-fast LPU inference).
+   - **Step 2:** Click the **Settings (slider icon)** in the top right of this Copilot window.
+   - **Step 3:** Paste your key and click **Save Settings**.
+   - **Or for the whole site:** Add \`GEMINI_API_KEY\` to your Vercel Project Settings &rarr; Environment Variables.
+
+3. **Pre-calculated Quantitative Models (Active Now without AI Key):**
+   - You can still query our deterministic quantitative models without an AI key for:
+     - **Precious Metals & FX**: *"How do falling gold prices affect Nifty?"*, *"Silver price transmission"*
+     - **Commodities**: *"How does crude oil impact Asian Paints and Swiggy?"*
+     - **Monetary Policy**: *"RBI repo rate trajectory"*, *"CPI vs WPI divergence"*
+     - **Institutional Flows**: *"How do monthly SIPs of ₹24,500 Cr absorb FII selling?"*
+     - **Valuation Regimes**: *"Is Nifty overvalued at 25,800?"*
+     - **Constituent Diagnostics**: Any Nifty 50 stock (e.g. *"Reliance"*, *"TCS"*, *"HDFC Bank"* for DuPont 3-stage ROE).`,
     quantitativeMetrics: [
-      { label: 'Nifty 50 Benchmark', value: '25,800 Level', stance: 'positive' },
-      { label: 'RBI Repo Rate', value: '5.50% (Neutral)', stance: 'neutral' },
-      { label: 'CPI Inflation (Oct 2026)', value: '6.09% (Food-Led)', stance: 'negative' },
-      { label: 'WPI Inflation (Oct 2026)', value: '2.36% (Contained)', stance: 'positive' },
-      { label: 'Forex Cushion', value: '$719.55B (Record High)', stance: 'positive' },
-      { label: 'Manufacturing PMI', value: '54.7 (Expansion)', stance: 'positive' }
+      { label: 'LLM Connection Status', value: 'API Key Required', stance: 'negative' },
+      { label: 'Supported Free Engines', value: 'Gemini / Groq', stance: 'positive' },
+      { label: 'Deterministic Engine', value: 'Active (Fixed Models)', stance: 'neutral' }
     ],
-    actionableTakeaway: 'Focus on high-quality compounders with pristine balance sheets and pricing power; leverage market pullbacks driven by temporary inflation headlines to build strategic equity allocations.',
+    actionableTakeaway: 'Connect a free Google Gemini or Groq API key via Copilot Settings to enable unbounded, dynamic reasoning across all market questions.',
     risksAndMonitors: [
-      'RBI Monetary Policy Committee decision and forward guidance (Dec 2-4, 2026).',
-      'Global central bank rate divergences and crude oil geopolitical supply developments.',
-      'Corporate quarterly revenue and earnings delivery vs institutional expectations.'
+      'Avoid systems that fake AI with static string replacement.',
+      'Google Gemini API Free Tier provides 1M tokens/day with zero billing setup.',
+      'Groq Cloud provides sub-second LPU inference for high-speed analysis.'
     ],
     followUpSuggestions: [
-      'How does falling gold prices affect Nifty 50 and Titan Company?',
-      'How does crude oil impact Swiggy, Asian Paints, and IndiGo?',
-      'Explain the DuPont ROE decomposition for HDFC Bank or Reliance'
+      'How is gold prices falling affecting Nifty 50?',
+      'How does crude oil affect Asian Paints and Swiggy?',
+      'Why is CPI at 6.09% while WPI is at 2.36%?',
+      'Break down DuPont ROE for HDFC Bank'
     ],
     sourceModel: 'Deterministic Institutional Engine (Tier 1)'
   };
